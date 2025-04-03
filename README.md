@@ -25,3 +25,4 @@ $ cd examark/src
 $ python align_and_split.py
 ```
 
+B6: Zip 2 folder **unlabel_metadata** và **unlabel_assignment** đẩy lên roboflow đánh nhãn riêng, vì mình train 2 model cho 2 phần này.
