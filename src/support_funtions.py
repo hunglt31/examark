@@ -3,6 +3,10 @@ import numpy as np
 import os
 import random
 
+# Read reference image
+ref_img_path = "../reference/reference.png" 
+ref_img_gray = cv2.imread(ref_img_path, cv2.IMREAD_GRAYSCALE)
+
 
 # Support functions
 def loweMatch(knn_matches, good_matches, threshold):
@@ -79,42 +83,50 @@ def findSquares(image):
     return large_squares, small_squares
 
 
-def create_image_versions_conditional_padding(rotate=4, move=True, image=None, target_size=640, padding_color=[255, 255, 255]):
-    output_images = []
-    original_image = image.copy()
+def padding_image(image):
+    h, w = image.shape[:2]
+    scale = 640 / max(h, w)
+    new_w, new_h = int(w * scale), int(h * scale)
 
-    # Define rotate degree
-    if rotate == 4:
-        rotation_codes = [
-            None,
-            cv2.ROTATE_90_CLOCKWISE,
-            cv2.ROTATE_180,
-            cv2.ROTATE_90_COUNTERCLOCKWISE
-        ]
-    else:
-        rotation_codes = [
-            None,
-            cv2.ROTATE_90_CLOCKWISE,
-        ]
+    image = cv2.resize(image, (new_w, new_h))
+
+    pad_w, pad_h = 640 - new_w, 640 - new_h
+    left, right = pad_w // 2, pad_w - pad_w // 2
+    top, bottom = pad_h // 2, pad_h - pad_h // 2
+
+    return cv2.copyMakeBorder(image, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[255, 255, 255])
+
+
+def create_image_versions(image, target_size=640, padding_color=[255, 255, 255]):
+    output_images = []
+    original_image = image.copy() 
+
+    # Rtation codes 
+    rotation_codes = [
+        None,                        
+        cv2.ROTATE_90_CLOCKWISE,      
+        cv2.ROTATE_180,              
+        cv2.ROTATE_90_COUNTERCLOCKWISE 
+    ]
 
     for rot_code in rotation_codes:
-        # Rotate
         if rot_code is None:
             rotated_image = original_image
         else:
             rotated_image = cv2.rotate(original_image, rot_code)
 
-        # Scale
+        # Scale 
         h, w = rotated_image.shape[:2]
         scale = target_size / max(h, w)
         new_w, new_h = int(w * scale), int(h * scale)
         resized_image = cv2.resize(rotated_image, (new_w, new_h))
 
-        total_pad_w = max(0, target_size - new_w)
-        total_pad_h = max(0, target_size - new_h)
+        # 3. Calculate padding amounts
+        total_pad_w = target_size - new_w
+        total_pad_h = target_size - new_h
 
-        # Padding to create 3 versions
-        # --- Center version  ---
+        # --- Create 3 padding versions ---
+        # Version A: Centered padding
         left_c = total_pad_w // 2
         right_c = total_pad_w - left_c
         top_c = total_pad_h // 2
@@ -123,61 +135,78 @@ def create_image_versions_conditional_padding(rotate=4, move=True, image=None, t
                                            cv2.BORDER_CONSTANT, value=padding_color)
         output_images.append(center_padded)
 
-         # --- Conditional padding ---
-        if move:
-            if new_w >= new_h: # Wider or square image -> Pad Top/Center/Bottom
-                left_tb = left_c
-                right_tb = right_c
+        # Top bot take left right same as center
+        left_tb = left_c
+        right_tb = right_c
 
-                # Version B: Top-biased padding
-                if total_pad_h > 0:
-                    max_top_pad = max(0, total_pad_h // 4)
-                    top_t = random.randint(0, max_top_pad)
-                    bottom_t = total_pad_h - top_t
-                else:
-                    top_t, bottom_t = 0, 0
-                top_padded = cv2.copyMakeBorder(resized_image, top_t, bottom_t, left_tb, right_tb,
-                                                cv2.BORDER_CONSTANT, value=padding_color)
-                output_images.append(top_padded)
+        # Version B: Top-Biased Padding 
+        if total_pad_h > 0:
+            max_top_pad = max(0, total_pad_h // 3)
+            top_t = random.randint(0, max_top_pad)
+            bottom_t = total_pad_h - top_t
+        else: 
+            top_t, bottom_t = 0, 0
+        top_padded = cv2.copyMakeBorder(resized_image, top_t, bottom_t, left_tb, right_tb,
+                                         cv2.BORDER_CONSTANT, value=padding_color)
+        output_images.append(top_padded)
 
-                # Version C: Bottom-biased padding
-                if total_pad_h > 0:
-                    max_bottom_pad = max(0, total_pad_h // 4)
-                    bottom_b = random.randint(0, max_bottom_pad)
-                    top_b = total_pad_h - bottom_b
-                else:
-                    top_b, bottom_b = 0, 0
-                bottom_padded = cv2.copyMakeBorder(resized_image, top_b, bottom_b, left_tb, right_tb,
-                                                cv2.BORDER_CONSTANT, value=padding_color)
-                output_images.append(bottom_padded)
-
-            else: # Taller image -> Pad Left/Center/Right
-                top_lr = top_c
-                bottom_lr = bottom_c
-
-                # Version B: Left-biased padding
-                if total_pad_w > 0:
-                    max_left_pad = max(0, total_pad_w // 3)
-                    left_l = random.randint(0, max_left_pad)
-                    right_l = total_pad_w - left_l
-                else:
-                    left_l, right_l = 0, 0
-                left_padded = cv2.copyMakeBorder(resized_image, top_lr, bottom_lr, left_l, right_l,
-                                                cv2.BORDER_CONSTANT, value=padding_color)
-                output_images.append(left_padded)
-
-                # Version C: Right-biased padding
-                if total_pad_w > 0:
-                    max_right_pad = max(0, total_pad_w // 3)
-                    right_r = random.randint(0, max_right_pad)
-                    left_r = total_pad_w - right_r
-                else:
-                    left_r, right_r = 0, 0
-                right_padded = cv2.copyMakeBorder(resized_image, top_lr, bottom_lr, left_r, right_r,
-                                                cv2.BORDER_CONSTANT, value=padding_color)
-                output_images.append(right_padded)
+        # Version C: Bottom-Biased Padding 
+        if total_pad_h > 0:
+            # Randomly choose bottom padding amount, biased towards being small (e.g., 0 to 1/3rd of total)
+            max_bottom_pad = max(0, total_pad_h // 3) # Ensure range starts from 0
+            bottom_b = random.randint(0, max_bottom_pad)
+            top_b = total_pad_h - bottom_b
+        else: # No vertical padding needed
+            top_b, bottom_b = 0, 0
+        bottom_padded = cv2.copyMakeBorder(resized_image, top_b, bottom_b, left_tb, right_tb,
+                                           cv2.BORDER_CONSTANT, value=padding_color)
+        output_images.append(bottom_padded)
 
     return output_images
+
+# --- Example Usage ---
+if __name__ == "__main__":
+    # Create a dummy image for testing (e.g., 300x200, blue rectangle)
+    # Replace this with: img = cv2.imread('your_image_path.jpg')
+    test_image = np.zeros((200, 300, 3), dtype=np.uint8)
+    test_image[:, :] = [255, 0, 0] # Blue color in BGR
+
+    # Or load a real image
+    # try:
+    #     test_image = cv2.imread('path/to/your/image.png') # PUT YOUR IMAGE PATH HERE
+    #     if test_image is None:
+    #         raise FileNotFoundError("Image not found or could not be loaded.")
+    # except FileNotFoundError as e:
+    #     print(e)
+    #     exit()
+    # except Exception as e:
+    #     print(f"An error occurred loading the image: {e}")
+    #     exit()
+
+
+    image_versions = create_image_versions(test_image, target_size=640)
+
+    if image_versions:
+        print(f"Successfully generated {len(image_versions)} versions.")
+
+        # You can now process/save these versions
+        # Example: Save the first 3 versions (0 degrees rotation)
+        cv2.imwrite('output_0deg_center.png', image_versions[0])
+        cv2.imwrite('output_0deg_top.png', image_versions[1])
+        cv2.imwrite('output_0deg_bottom.png', image_versions[2])
+
+        # Example: Save the next 3 versions (90 degrees rotation)
+        cv2.imwrite('output_90deg_center.png', image_versions[3])
+        cv2.imwrite('output_90deg_top.png', image_versions[4])
+        cv2.imwrite('output_90deg_bottom.png', image_versions[5])
+        # ... and so on for 180 and 270 degrees
+
+        # Or display one
+        # cv2.imshow('Example - 0 deg Center', image_versions[0])
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+    else:
+        print("Image version generation failed.")
 
 
 def splitImage(image):
@@ -276,82 +305,43 @@ def splitImage(image):
         asgm_part24 = align_image[asgm_part24_c1y:asgm_part24_c2y, asgm_part24_c1x: asgm_part24_c2x]
 
         # Padding split images
-        student_id_images = create_image_versions_conditional_padding(rotate=2, image=student_id)
-        exam_id_images = create_image_versions_conditional_padding(rotate=2, image=exam_id)
-        asgm_part11_images = create_image_versions_conditional_padding(image=asgm_part11)
-        asgm_part12_images = create_image_versions_conditional_padding(image=asgm_part12)
-        asgm_part13_images = create_image_versions_conditional_padding(image=asgm_part13)
-        asgm_part14_images = create_image_versions_conditional_padding(image=asgm_part14)
-        asgm_part21_images = create_image_versions_conditional_padding(move=False, image=asgm_part21)
-        asgm_part22_images = create_image_versions_conditional_padding(move=False, image=asgm_part22)
-        asgm_part23_images = create_image_versions_conditional_padding(move=False, image=asgm_part23)
-        asgm_part24_images = create_image_versions_conditional_padding(move=False, image=asgm_part24)
-
+        student_id = padding_image(student_id)
+        exam_id = padding_image(exam_id)
+        asgm_part11 = padding_image(asgm_part11)
+        asgm_part12 = padding_image(asgm_part12)
+        asgm_part13 = padding_image(asgm_part13)
+        asgm_part14 = padding_image(asgm_part14)
+        asgm_part21 = padding_image(asgm_part21)
+        asgm_part22 = padding_image(asgm_part22)
+        asgm_part23 = padding_image(asgm_part23)
+        asgm_part24 = padding_image(asgm_part24)
 
         # Save images
-        for i in range(len(student_id_images)):
-            student_id_path = unlabel_metadata_folder_path + "/" + image_base_name + "_student_id_v" + str(i) + ".png"
-            cv2.imwrite(student_id_path, student_id_images[i])
-        
-        for i in range(len(exam_id_images)):
-            exam_id_path = unlabel_metadata_folder_path + "/" + image_base_name + "_exam_id_v" + str(i) + ".png"
-            cv2.imwrite(exam_id_path, exam_id_images[i])
-        
-        for i in range(len(asgm_part11_images)):        
-            asgm_part11_path = unlabel_assignment_folder_path + "/" + image_base_name + "_asgm_part11_v" + str(i) + ".png"
-            cv2.imwrite(asgm_part11_path, asgm_part11_images[i])
-
-        for i in range(len(asgm_part12_images)):
-            asgm_part12_path = unlabel_assignment_folder_path + "/" + image_base_name + "_asgm_part12_v" + str(i) + ".png"
-            cv2.imwrite(asgm_part12_path, asgm_part12_images[i])
-
-        for i in range(len(asgm_part13_images)):
-            asgm_part13_path = unlabel_assignment_folder_path + "/" + image_base_name + "_asgm_part13_v" + str(i) + ".png"
-            cv2.imwrite(asgm_part13_path, asgm_part13_images[i])
-
-        for i in range(len(asgm_part14_images)):
-            asgm_part14_path = unlabel_assignment_folder_path + "/" + image_base_name + "_asgm_part14_v" + str(i) + ".png"
-            cv2.imwrite(asgm_part14_path, asgm_part14_images[i])
-
-        for i in range(len(asgm_part21_images)):
-            asgm_part21_path = unlabel_assignment_folder_path + "/" + image_base_name + "_asgm_part21_v" + str(i) + ".png"
-            cv2.imwrite(asgm_part21_path, asgm_part21_images[i])
-
-        for i in range(len(asgm_part22_images)):
-            asgm_part22_path = unlabel_assignment_folder_path + "/" + image_base_name + "_asgm_part22_v" + str(i) + ".png"
-            cv2.imwrite(asgm_part22_path, asgm_part22_images[i])
-
-        for i in range(len(asgm_part23_images)):
-            asgm_part23_path = unlabel_assignment_folder_path + "/" + image_base_name + "_asgm_part23_v" + str(i) + ".png"
-            cv2.imwrite(asgm_part23_path, asgm_part23_images[i])
-
-        for i in range(len(asgm_part24_images)):
-            asgm_part24_path = unlabel_assignment_folder_path + "/" + image_base_name + "_asgm_part24_v" + str(i) + ".png"
-            cv2.imwrite(asgm_part24_path, asgm_part24_images[i]) 
+        cv2.imwrite(unlabel_data_folder_path + "/" + image_base_name + "_student_id.png", student_id)
+        cv2.imwrite(unlabel_data_folder_path + "/" + image_base_name + "_exam_id.png", exam_id)
+        cv2.imwrite(unlabel_data_folder_path + "/" + image_base_name + "_asgm_part11.png", asgm_part11)
+        cv2.imwrite(unlabel_data_folder_path + "/" + image_base_name + "_asgm_part12.png", asgm_part12)
+        cv2.imwrite(unlabel_data_folder_path + "/" + image_base_name + "_asgm_part13.png", asgm_part13)
+        cv2.imwrite(unlabel_data_folder_path + "/" + image_base_name + "_asgm_part14.png", asgm_part14)
+        cv2.imwrite(unlabel_data_folder_path + "/" + image_base_name + "_asgm_part21.png", asgm_part21)
+        cv2.imwrite(unlabel_data_folder_path + "/" + image_base_name + "_asgm_part22.png", asgm_part22)
+        cv2.imwrite(unlabel_data_folder_path + "/" + image_base_name + "_asgm_part23.png", asgm_part23)
+        cv2.imwrite(unlabel_data_folder_path + "/" + image_base_name + "_asgm_part24.png", asgm_part24)    
     
     except Exception as e:
         print(f"Unexpected error: {e}")    
 
-
 if __name__ == '__main__':
-    # Read reference image
-    ref_img_path = "../reference/reference.png" 
-    ref_img_gray = cv2.imread(ref_img_path, cv2.IMREAD_GRAYSCALE)
-
-    # Create folders
+    # Folders
     scan_images_folder_path = "../data/scan_images"
 
     align_images_folder_path = "../data/align_images"
     if not os.path.exists(align_images_folder_path):
         os.makedirs(align_images_folder_path) 
 
-    unlabel_metadata_folder_path = "../data/unlabel_metadata"
-    if not os.path.exists(unlabel_metadata_folder_path):
-        os.makedirs(unlabel_metadata_folder_path) 
-
-    unlabel_assignment_folder_path = "../data/unlabel_assignment"
-    if not os.path.exists(unlabel_assignment_folder_path):
-        os.makedirs(unlabel_assignment_folder_path) 
+    unlabel_data_folder_path = "../data/unlabel_data"
+    if not os.path.exists(unlabel_data_folder_path):
+        os.makedirs(unlabel_data_folder_path) 
 
     # Split images
     for image_file in os.listdir(scan_images_folder_path):
@@ -361,7 +351,7 @@ if __name__ == '__main__':
         splitImage(image)
         print(f"Image {image_file} split successfully.")
 
-    print("\n=========================================")
+    print("=============================")
     print("Split images done!")
 
 
