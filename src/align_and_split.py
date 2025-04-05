@@ -4,7 +4,7 @@ import os
 import random
 
 
-# Support functions
+# Function to match keypoints using Lowe's ratio test
 def loweMatch(knn_matches, good_matches, threshold):
     for m, n in knn_matches:
         if m.distance < threshold * n.distance:
@@ -12,8 +12,9 @@ def loweMatch(knn_matches, good_matches, threshold):
     return good_matches
 
 
-def alignImages(scanned_img, ref_img_gray):
-    scan_img_gray = cv2.cvtColor(scanned_img, cv2.COLOR_BGR2GRAY)
+# Function to align images using SIFT and FLANN
+def alignImages(scan_img, ref_img_gray, target_size=(2480, 3508)):
+    scan_img_gray = cv2.cvtColor(scan_img, cv2.COLOR_BGR2GRAY)
 
     # Create SIFT detector
     sift = cv2.SIFT_create()
@@ -32,13 +33,14 @@ def alignImages(scanned_img, ref_img_gray):
     # Find matches using k-NN and Lowe ratio
     knn_matches = flann.knnMatch(scan_descriptors, ref_descriptors, k=2)    
     good_matches = set()
-    threshold = 0.3
-    while len(good_matches) < 4:
+    threshold = 0.5
+    while len(good_matches) < 500:
         good_matches = loweMatch(knn_matches, good_matches, threshold)
         if threshold < 1:
             threshold += 0.1
         else:
-            raise ValueError("Can not find enough 4 good matches.")
+            raise ValueError("Can not find at least 500 good matches.")
+    print(f"Good matches found: {len(good_matches)} with threshold {threshold - 0.1}")
 
     # Extract matched keypoints locations
     points1 = np.float32([scan_keypoints[m.queryIdx].pt for m in good_matches])
@@ -50,36 +52,75 @@ def alignImages(scanned_img, ref_img_gray):
         raise ValueError("Homography estimation failed.")
 
     # Align
-    aligned_img = cv2.warpPerspective(scanned_img, h, (2480, 3508))
+    aligned_img = cv2.warpPerspective(scan_img, h, target_size, flags=cv2.INTER_LINEAR)
     
     return aligned_img
 
 
-def findSquares(image):
+# Function to find squares using template matching and NMS
+def findSquares(image_gray, template_gray, threshold):
+    # Find squares
+    h, w = template_gray.shape
+    res = cv2.matchTemplate(image_gray, template_gray, cv2.TM_CCOEFF_NORMED)
+    loc = np.where(res >= threshold)
+
+    # NMS
+    detections = []
+    for pt in zip(*loc[::-1]):  
+        detections.append((pt[0], pt[1], w, h, res[pt[1], pt[0]]))
+    detections.sort(key=lambda x: x[4], reverse=True)  
+
+    squares = []
+    while detections:
+        x1, y1, w, h, confidence = detections.pop(0)
+        squares.append((x1, y1, w, h))
+        # Remove overlapping detections
+        temp_detections = []
+        for x2, y2, _, _, _ in detections:
+            if not (x1 < x2 + w and x1 + w > x2 and y1 < y2 + h and y1 + h > y2):
+                temp_detections.append((x2, y2, w, h, confidence))
+        detections = temp_detections
+
+    # print("[DEBUG] Large squares found: ", len(large_squares))
+    # for idx, (x, y, w, h) in enumerate(large_squares):
+    #     cv2.rectangle(image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    #     cv2.putText(image, str(idx), (x + w + 10, y + h - 10),
+    #                 cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 2, cv2.LINE_AA)
+
+    # cv2.imwrite("result.png", image)
+    # print("[DEBUG] Export result.png"))
+
+    return squares
+
+
+# Function to find large squares and small squares using different thresholds
+def findAllSquares(image):
     image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    for large_thresh in np.arange(0.6, 0.95, 0.05):
+        large_squares = findSquares(image_gray, large_square_template_gray, large_thresh)
+        if len(large_squares) == 4:
+            print(f"Found 4 large squares with threshold {large_thresh}")
+            break
+    if len(large_squares) != 4:
+        raise ValueError("Could not find the required number of large squares after trying different thresholds.")
 
-    # Apply binary threshold (convert black to white)
-    _, binary = cv2.threshold(image_gray, 50, 255, cv2.THRESH_BINARY_INV)
-
-    # Find contours
-    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    large_squares = []
-    small_squares = []
-
-    for cnt in contours:
-        approx = cv2.approxPolyDP(cnt, 0.02 * cv2.arcLength(cnt, True), True)
-        if len(approx) == 4: 
-            x, y, w, h = cv2.boundingRect(approx)
-
-            if 60 <= w <= 80 and 60 <= h <= 80:
-                large_squares.append((x, y, w, h))
-            elif 24 <= w <= 44 and 24 <= h <= 44:
-                small_squares.append((x, y, w, h))
+    for small_thresh in np.arange(0.7, 0.95, 0.01):
+        small_squares = findSquares(image_gray, small_square_template_gray, small_thresh)
+        if len(small_squares) == 19:
+            print(f"Found 19 small squares with threshold {small_thresh}")
+            break
+    if len(small_squares) != 19:
+        print(f"Len of small_squares: {len(small_squares)}")
+        raise ValueError("Could not find the required number of squares after trying different thresholds.")
+    
+    large_squares = sorted(large_squares, key=lambda x: (x[1] + x[0]))
+    small_squares = sorted(small_squares, key=lambda x: (x[1] + x[0]))
 
     return large_squares, small_squares
 
 
-def create_image_versions_conditional_padding(rotate=4, move=True, image=None, target_size=640, padding_color=[255, 255, 255]):
+# Function to create image versions with conditional padding
+def createImageVersions(rotate=4, move=True, image=None, target_size=640, padding_color=[255, 255, 255]):
     output_images = []
     original_image = image.copy()
 
@@ -180,6 +221,7 @@ def create_image_versions_conditional_padding(rotate=4, move=True, image=None, t
     return output_images
 
 
+# Pipeline to split image
 def splitImage(image):
     try:
         # Align image
@@ -191,24 +233,7 @@ def splitImage(image):
 
         # Assign coordinate
         # c1 = top_left_corner, c2 = bottom_right_corner
-        large_squares, small_squares = findSquares(align_image)
-        large_squares.sort(key=lambda a: a[0] + a[1])
-        small_squares.sort(key=lambda a: a[0] + a[1])
-
-        # # Draw red boxes on large squares and label 
-        # for idx, (x, y, w, h) in enumerate(large_squares):
-        #     cv2.rectangle(align_image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-        #     cv2.putText(align_image, str(idx), (x + w + 10, y + h - 10),
-        #                 cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 2, cv2.LINE_AA)
-
-        # # Draw blue boxes on small squares and label 
-        # for idx, (x, y, w, h) in enumerate(small_squares):
-        #     cv2.rectangle(align_image, (x, y), (x + w, y + h), (255, 0, 0), 2)
-        #     cv2.putText(align_image, str(idx), (x + w + 10, y + h - 5),
-        #                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-
-        # # Save
-        # cv2.imwrite(align_image_name, align_image)
+        large_squares, small_squares = findAllSquares(align_image)
 
         # ID part
         student_id_c1x = large_squares[0][0] + large_squares[0][2]
@@ -217,13 +242,13 @@ def splitImage(image):
         student_id_c2y = small_squares[3][1]
 
         exam_id_c1x = small_squares[0][0] + small_squares[0][2]
-        exam_id_c1y = small_squares[0][1] + small_squares[0][3]
+        exam_id_c1y = small_squares[0][1] + small_squares[0][3] // 2
         exam_id_c2x = small_squares[6][0]
         exam_id_c2y = small_squares[6][1]
 
         # Assignment
         asgm_part11_c1x = small_squares[2][0] + int(1.8 * small_squares[2][2])
-        asgm_part11_c1y = small_squares[2][1] + small_squares[2][3] + 10
+        asgm_part11_c1y = small_squares[2][1] + small_squares[2][3] + 5
         asgm_part11_c2x = small_squares[8][0]
         asgm_part11_c2y = small_squares[8][1] - small_squares[8][3]
         
@@ -276,16 +301,16 @@ def splitImage(image):
         asgm_part24 = align_image[asgm_part24_c1y:asgm_part24_c2y, asgm_part24_c1x: asgm_part24_c2x]
 
         # Padding split images
-        student_id_images = create_image_versions_conditional_padding(rotate=2, image=student_id)
-        exam_id_images = create_image_versions_conditional_padding(rotate=2, image=exam_id)
-        asgm_part11_images = create_image_versions_conditional_padding(image=asgm_part11)
-        asgm_part12_images = create_image_versions_conditional_padding(image=asgm_part12)
-        asgm_part13_images = create_image_versions_conditional_padding(image=asgm_part13)
-        asgm_part14_images = create_image_versions_conditional_padding(image=asgm_part14)
-        asgm_part21_images = create_image_versions_conditional_padding(move=False, image=asgm_part21)
-        asgm_part22_images = create_image_versions_conditional_padding(move=False, image=asgm_part22)
-        asgm_part23_images = create_image_versions_conditional_padding(move=False, image=asgm_part23)
-        asgm_part24_images = create_image_versions_conditional_padding(move=False, image=asgm_part24)
+        student_id_images = createImageVersions(rotate=2, image=student_id)
+        exam_id_images = createImageVersions(rotate=2, image=exam_id)
+        asgm_part11_images = createImageVersions(image=asgm_part11)
+        asgm_part12_images = createImageVersions(image=asgm_part12)
+        asgm_part13_images = createImageVersions(image=asgm_part13)
+        asgm_part14_images = createImageVersions(image=asgm_part14)
+        asgm_part21_images = createImageVersions(move=False, image=asgm_part21)
+        asgm_part22_images = createImageVersions(move=False, image=asgm_part22)
+        asgm_part23_images = createImageVersions(move=False, image=asgm_part23)
+        asgm_part24_images = createImageVersions(move=False, image=asgm_part24)
 
 
         # Save images
@@ -330,15 +355,22 @@ def splitImage(image):
             cv2.imwrite(asgm_part24_path, asgm_part24_images[i]) 
     
     except Exception as e:
-        print(f"Unexpected error: {e}")    
+        print(f"Error: {e}")    
 
 
+# Main function
 if __name__ == '__main__':
-    # Read reference image
-    ref_img_path = "../reference/reference.png" 
+    # Read reference image and templates
+    ref_img_path = "../ref_tmpl/reference.png" 
     ref_img_gray = cv2.imread(ref_img_path, cv2.IMREAD_GRAYSCALE)
+    ref_img_gray = cv2.resize(ref_img_gray, (2480, 3508))
 
-    # Create folders
+    square_template_path = "../ref_tmpl/template.png"
+    square_template_gray = cv2.imread(square_template_path, cv2.IMREAD_GRAYSCALE)
+    large_square_template_gray = cv2.resize(square_template_gray, (80, 80))
+    small_square_template_gray = cv2.resize(square_template_gray, (40, 40))
+
+    # Read folders
     scan_images_folder_path = "../data/scan_images"
 
     align_images_folder_path = "../data/align_images"
@@ -355,16 +387,11 @@ if __name__ == '__main__':
 
     # Split images
     for image_file in os.listdir(scan_images_folder_path):
-        image_path = os.path.join(scan_images_folder_path, image_file)
-        image = cv2.imread(image_path)  
-        image = cv2.resize(image, (2480, 3508))
-        splitImage(image)
-        print(f"Image {image_file} split successfully.")
-
-    print("\n=========================================")
-    print("Split images done!")
-
-
-
-
+        if image_file == "page_013.png":
+            image_path = os.path.join(scan_images_folder_path, image_file)
+            image = cv2.imread(image_path)  
+            image = cv2.resize(image, (2480, 3508))
+            splitImage(image)
+            print(f"Image {image_file} split successfully.")
+            print("=====================================\n")
 
