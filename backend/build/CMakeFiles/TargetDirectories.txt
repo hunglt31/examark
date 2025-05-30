@@ -1,0 +1,4 @@
+/home/hunglt31/examark/backend/build/CMakeFiles/server.dir
+/home/hunglt31/examark/backend/build/CMakeFiles/engine-builder.dir
+/home/hunglt31/examark/backend/build/CMakeFiles/edit_cache.dir
+/home/hunglt31/examark/backend/build/CMakeFiles/rebuild_cache.dir

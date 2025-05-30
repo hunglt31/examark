@@ -1,0 +1,181 @@
+.MainPage {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+    background: #f8f9fa; /* Lighter background */
+    padding: 20px;
+    text-align: center;
+    color: #333; /* Default text color */
+}
+
+.MainPage-header {
+    background: #001F4D;
+    color: white;
+    padding: 15px 25px; /* Increased padding */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 0px; /* Rounded corners */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Softer shadow */
+    margin-bottom: 30px; /* Space below header */
+}
+
+.header-left {
+    flex: 0 0 auto; /* Adjust flex basis */
+    display: flex;
+    align-items: center;
+}
+
+.header-right {
+    flex: 0 0 auto; /* Adjust flex basis */
+    display: flex;
+    align-items: center;
+}
+
+.header-center {
+    flex: 1;
+    text-align: center;
+    padding: 0 20px; /* Add padding to prevent text touching logos */
+}
+
+.header-center h1 {
+    margin: 0;
+    font-size: 2.2em; /* Adjusted font size */
+    font-weight: 600; /* Slightly bolder */
+}
+
+/* Logo sizes */
+.header-logo {
+    height: 70px; /* Slightly adjusted */
+    margin-right: 15px; /* Space between logo and title */
+}
+
+.header-fami-logo {
+    max-height: 70px; /* Slightly adjusted */
+    margin-left: 15px; /* Space between title and logo */
+}
+
+/* Navigation Menu */
+.MainPage-nav {
+    margin: 30px 0; /* Increased margin */
+    display: flex;
+    justify-content: center;
+    gap: 30px; /* Gap between buttons */
+}
+
+.MainPage-nav a {
+    text-decoration: none;
+}
+
+.nav-button {
+    background-color: #004080 !important;
+    color: white !important;
+    border: none;
+    padding: 16px 36px; /* Adjusted padding */
+    border-radius: 12px; /* Pill shape buttons */
+    text-transform: uppercase;
+    cursor: pointer;
+    font-size: 1.1em; /* Adjusted font size */
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.2s ease, box-shadow 0.25s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.nav-button img {
+    width: 64px; /* Icon width */
+    height: 64px; /* Icon height */
+    filter: brightness(0) invert(1); /* Make icon white */
+}
+
+.nav-button:hover {
+    background-color:#003366; /* Darker on hover */
+    color: white;
+    transform: translateY(-3px); /* Slight lift */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Unified Dashboard Grid Section */
+.MainPage-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); /* Responsive grid */
+    gap: 25px;
+    margin: 35px 0; /* Increased margin */
+}
+
+.dashboard-card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px; /* More rounded */
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08); /* Softer, more spread shadow */
+    text-align: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start; /* Align items to start */
+    min-height: 220px; /* Minimum height for consistency */
+}
+
+.dashboard-card:hover {
+    transform: translateY(-6px); /* More lift on hover */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.card-icon {
+    font-size: 2.8em; /* Larger icon */
+    color: #0055a5;
+    margin-bottom: 18px; /* Increased space */
+}
+
+.dashboard-card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #003366;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.dashboard-card-value {
+    font-size: 2.2em;
+    font-weight: 700; /* Bolder value */
+    color: #212529; /* Darker text for value */
+    margin-bottom: 18px;
+}
+
+.card-link {
+    display: inline-block;
+    margin-top: auto; /* Pushes link to the bottom */
+    padding: 10px 22px;
+    background-color: #f0f0f0; /* Lighter background for link */
+    color: #0055a5;
+    border-radius: 20px; /* Pill shape */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9em;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.card-link:hover {
+    background-color: #0055a5;
+    color: white;
+}
+
+/* App Guide Section - Ensure it has some top margin */
+.AppGuide-section {
+    margin-top: 40px;
+    margin-bottom: 40px; /* Add bottom margin */
+}
+
+/* Footer */
+.MainPage-footer {
+    margin-top: 50px; /* Increased margin */
+    padding: 25px 0; /* Increased padding */
+    font-size: 0.9em; /* Adjusted font size */
+    color: #555; /* Slightly darker footer text */
+    border-top: 1px solid #e0e0e0; /* Lighter border */
+}
+
+.MainPage-footer p {
+    margin: 5px 0; /* Space between footer lines */
+}

@@ -1,0 +1,472 @@
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Main container - uses full viewport height */
+.ResultsPage {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #f5f5f5;
+}
+
+/* Results Page Header */
+.results-header {
+  background: #001F4D;
+  color: white;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 0px;
+  position: relative;
+  z-index: 50;
+}
+
+.results-header-left {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.results-header-right {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.results-header-center {
+  flex: 1;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.results-header-center h1 {
+  margin: 0;
+  font-size: 2.2em;
+  font-weight: 600;
+  color: white;
+}
+
+.results-header-center p {
+  margin: 5px 0 0 0;
+  color: #666;
+  font-size: 1.0rem;
+}
+
+.results-header-logo {
+  height: 70px;
+  margin-right: 15px;
+}
+
+.results-header-fami-logo {
+  max-height: 70px;
+  margin-left: 15px;
+}
+
+/* Bottom right buttons - positioned fixed */
+.bottom-right-buttons {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  z-index: 100;
+}
+
+.results-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+  width: 160px;
+  height: 45px;
+}
+
+.results-btn-primary {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.results-btn-primary:hover {
+  background-color: #138496; 
+}
+
+.results-btn-secondary {
+  background-color: #28a745;
+  color: white;
+}
+
+.results-btn-secondary:hover {
+  background-color: #218838; 
+}
+
+.results-btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.results-btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* Main results container - takes remaining space */
+.results-container {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Main display area */
+.results-display {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  gap: 10px;
+  padding: 10px;
+  overflow: hidden;
+  position: relative; 
+}
+
+/* Image display side - larger portion */
+.result-image-display {
+  flex: 0.65;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Image itself - scales to use available height */
+.result-image {
+  width: 100%;
+  height: 100vh;
+  object-fit: contain;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Image navigation */
+.results-image-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 10px; 
+  margin-top: 0;
+}
+
+.results-nav-button {
+  padding: 8px 16px;
+  border: 1px solid #17a2b8;
+  border-radius: 4px;
+  background-color: #17a2b8;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  transition: background-color 0.2s;
+  width: 100px;
+}
+
+.results-nav-button:hover:not(:disabled) {
+  background-color: #138496; 
+  border-color: #138496;
+}
+
+.results-nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #6c757d; 
+  border-color: #6c757d;
+}
+
+.results-nav-text {
+  font-weight: bold;
+  color: #333;
+  margin: 0px 20px;
+}
+
+/* Results text side */
+.results-text {
+  flex: 0.65;
+  height: 90%;
+  overflow-y: auto;
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 0;
+}
+
+.approve-button,
+.edit-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.approve-button {
+  background-color: #28a745;
+  color: white;
+}
+
+.approve-button:hover {
+  background-color: #218838;
+}
+
+.edit-button {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.edit-button:hover {
+  background-color: #e0a800;
+}
+
+/* Metadata and action buttons row */
+.metadata-action-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.metadata-inline {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.metadata-item-inline {
+  font-size: 22px;
+  white-space: nowrap;
+}
+
+.metadata-item-inline strong {
+  color: #495057;
+}
+
+.metadata-item-inline span[contenteditable] {
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  padding: 2px 6px;
+  min-width: 100px;
+  display: inline-block;
+}
+
+.action-buttons-inline {
+  flex-shrink: 0;
+}
+
+/* Part labels */
+.part-label {
+  margin: 20px 0 10px 0;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* Part 1 grid */
+.part1-grid {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.part1-column {
+  flex: 1;
+  min-width: 150px;
+}
+
+.question-item {
+  margin-bottom: 8px;
+  padding: 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.question-item strong {
+  color: #495057;
+  margin-right: 8px;
+}
+
+.question-item span[contenteditable] {
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  padding: 4px 8px;
+  min-width: 30px;
+  display: inline-block;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Part 2 table */
+.part2-table {
+  margin-bottom: 20px;
+}
+
+.part2-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border: 1px solid #dee2e6;
+}
+
+.part2-table th,
+.part2-table td {
+  border: 1px solid #dee2e6;
+  padding: 8px;
+  text-align: center;
+}
+
+.part2-table th {
+  background-color: #e9ecef;
+  font-weight: bold;
+  color: #495057;
+}
+
+.part2-table td span[contenteditable] {
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 3px;
+  padding: 4px 8px;
+  min-width: 30px;
+  display: inline-block;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Approval status */
+.approval-status {
+  text-align: center;
+  padding: 15px;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  margin-top: 20px;
+}
+
+.approval-status strong {
+  font-size: 18px;
+}
+
+/* No images state */
+.no-images {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6c757d;
+  font-size: 18px;
+}
+
+/* No results message */
+.no-results-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  text-align: center;
+  padding: 20px;
+}
+
+.no-results-message p {
+  font-size: 18px;
+  color: #6c757d;
+  margin-bottom: 20px;
+}
+
+.start-grading-button {
+  padding: 12px 24px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.start-grading-button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .results-display {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .result-image-display,
+  .results-text {
+    flex: none;
+  }
+  
+  .result-image {
+    height: 300px;
+  }
+  
+  .part1-grid {
+    flex-direction: column;
+  }
+  
+  .bottom-right-buttons {
+    position: relative;
+    bottom: auto;
+    right: auto;
+    margin: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+/* Editable content styling */
+span[contenteditable]:focus {
+  outline: 2px solid #007bff;
+  background-color: #fff3cd;
+}
+
+/* Placeholder styling for empty editable content */
+span[contenteditable]:empty:before {
+  content: attr(data-placeholder);
+  color: #6c757d;
+  font-style: italic;
+}
