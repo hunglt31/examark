@@ -1,11 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import './SummarizePage.css';
+import './SheetPage.css';
+import CustomAlert from '../components/CustomAlert';
 
 import UniversityLogo from '../assets/logos/logo_hust.png';
 import FamiLogo from '../assets/logos/logo_fami.png';
 
-function SummarizePage() {
+import BackArrowIcon from '../assets/icons/back-arrow.png';
+import ResultIcon from '../assets/icons/result.png'; 
+import DownloadIcon from '../assets/icons/download.png';
+import DeleteIcon from '../assets/icons/delete.png';
+
+import NextIcon from '../assets/icons/next.png';
+import PreviousIcon from '../assets/icons/previous.png';
+
+function SheetPage() {
   const [csvData, setCsvData] = useState('');
   const [csvRows, setCsvRows] = useState([]);
   const [images, setImages] = useState([]);
@@ -25,6 +34,29 @@ function SummarizePage() {
   const [answerKey, setAnswerKey] = useState(Array(24).fill(''));
   const [pointValues, setPointValues] = useState(Array(24).fill(1));
   const [gradingResults, setGradingResults] = useState(null);
+
+  // Add alert state
+  const [alert, setAlert] = useState({
+    isOpen: false,
+    message: '',
+    type: 'info'
+  });
+
+  const showAlert = (message, type = 'info') => {
+    setAlert({
+      isOpen: true,
+      message,
+      type
+    });
+  };
+
+  const closeAlert = () => {
+    setAlert({
+      isOpen: false,
+      message: '',
+      type: 'info'
+    });
+  };
 
   // Load data on component mount
   useEffect(() => {
@@ -94,8 +126,8 @@ function SummarizePage() {
     }
   }, [window.location.search]);
 
-// New helper function to apply edits to CSV rows
-const applyEditsToRows = (rows, edits, images) => {
+  // New helper function to apply edits to CSV rows
+  const applyEditsToRows = (rows, edits) => {
     if (!edits || !rows.length) return rows;
     
     const newRows = rows.map(row => [...row]); 
@@ -103,16 +135,20 @@ const applyEditsToRows = (rows, edits, images) => {
     // Apply metadata edits
     if (edits.metadata) {
       Object.entries(edits.metadata).forEach(([imageIndex, metadataObj]) => {
-        // Find columns that correspond to this image
         const imgIdx = parseInt(imageIndex, 10);
-        const startCol = 2 + imgIdx; // Assuming metadata starts at column 2
+        
+        // Map image index to CSV column - this should match ResultsPage logic
+        const csvColumnIndex = imgIdx + 2; // Assuming metadata starts at column 2
         
         // Apply each metadata edit
         Object.entries(metadataObj).forEach(([label, value]) => {
-          // Find the row for this metadata item (typically rows 0-3)
-          for (let i = 0; i < 4; i++) {
+          // Find the row for this metadata item
+          for (let i = 0; i < Math.min(4, newRows.length); i++) {
+            // Check both first and second columns for the label
             if (newRows[i][0] === label || newRows[i][1] === label) {
-              newRows[i][startCol] = value;
+              if (csvColumnIndex < newRows[i].length) {
+                newRows[i][csvColumnIndex] = value;
+              }
               break;
             }
           }
@@ -122,67 +158,90 @@ const applyEditsToRows = (rows, edits, images) => {
     
     // Apply answer edits
     if (edits.answers) {
-    Object.entries(edits.answers).forEach(([key, value]) => {
+      Object.entries(edits.answers).forEach(([key, value]) => {
         // Parse key format: "[imageIndex]-[part]-[questionIdx]"
         const [imgIdx, part, questionIdx] = key.split('-');
         const imageIndex = parseInt(imgIdx, 10);
         
-        // Map to the correct column in the CSV
-        const colIndex = 2 + imageIndex; // Assuming data starts at column 2
+        // Map image index to CSV column
+        const csvColumnIndex = imageIndex + 2; // Same mapping as metadata
         
         // Find the correct row based on part and question index
         let rowIndex = -1;
         
         if (part === '1') {
-        // For part 1, find corresponding row (usually after row 3)
-        for (let i = 4; i < newRows.length; i++) {
-            if (newRows[i][0] === '1' && newRows[i][1] === questionIdx) {
-            rowIndex = i;
-            break;
+          // For part 1, find the row with matching part and question
+          const flatQuestionIndex = parseInt(questionIdx, 10);
+          const actualQuestionNumber = flatQuestionIndex + 1; // Convert 0-based to 1-based
+          
+          for (let i = 4; i < newRows.length; i++) {
+            if (newRows[i][0] === '1' && parseInt(newRows[i][1]) === actualQuestionNumber) {
+              rowIndex = i;
+              break;
             }
-        }
+          }
         } else if (part === '2') {
-        // For part 2, use a different approach based on your CSV structure
-        const [qIdx, qRow] = questionIdx.split('-'); // if format is "qIdx-row"
-        for (let i = 4; i < newRows.length; i++) {
-            if (newRows[i][0] === '2' && newRows[i][1] === qIdx) {
-            rowIndex = i + parseInt(qRow, 10); // Adjust if needed
-            break;
+          // For part 2, handle the format "qIdx-row"
+          const [qIdx, qRow] = questionIdx.split('-');
+          const questionNumber = parseInt(qIdx, 10) + 1; // Convert 0-based to 1-based
+          const rowOffset = parseInt(qRow, 10);
+          
+          // Find the base row for this question in part 2
+          for (let i = 4; i < newRows.length; i++) {
+            if (newRows[i][0] === '2' && parseInt(newRows[i][1]) === questionNumber) {
+              rowIndex = i;
+              break;
             }
-        }
+          }
+          
+          // For part 2, we need to handle multi-character answers
+          // The value should be placed as a single character in the answer string
+          if (rowIndex >= 0 && csvColumnIndex < newRows[rowIndex].length) {
+            let currentAnswer = newRows[rowIndex][csvColumnIndex] || '';
+            
+            // Ensure the answer string is long enough
+            while (currentAnswer.length <= rowOffset) {
+              currentAnswer += 'X'; // Use 'X' as placeholder
+            }
+            
+            // Replace the character at the specific position
+            const answerArray = currentAnswer.split('');
+            answerArray[rowOffset] = value;
+            newRows[rowIndex][csvColumnIndex] = answerArray.join('');
+          }
+          
+          // Skip the normal assignment below
+          rowIndex = -1;
         }
         
-        // Apply the edit if we found the correct row
-        if (rowIndex >= 0 && colIndex < newRows[rowIndex].length) {
-        newRows[rowIndex][colIndex] = value;
+        // Apply the edit for part 1 or if we didn't handle it above
+        if (rowIndex >= 0 && csvColumnIndex < newRows[rowIndex].length) {
+          newRows[rowIndex][csvColumnIndex] = value;
         }
-    });
+      });
     }
     
-    // Update the state with the edited rows
-    setCsvRows(newRows);
     return newRows;
-};
+  };
 
-// Updated saveChanges function
-const saveChanges = () => {
-    // First update the local state
+  const saveChanges = () => {
+    // First update the local state and get the updated CSV
     const updatedCsv = updateCsvFromRows();
     
     // Prepare edits in the format expected by ResultsPage
     const editsToSave = {
-    metadata: {},
-    answers: {}
+      metadata: {},
+      answers: {}
     };
     
     // Extract edits by comparing with original CSV data
     const originalRows = csvData.split('\n')
-    .map(line => line.split(',')
+      .map(line => line.split(',')
         .map(cell => cell.trim()));
     
     // Check each cell for changes
     csvRows.forEach((row, rowIndex) => {
-    row.forEach((cell, colIndex) => {
+      row.forEach((cell, colIndex) => {
         // Skip first two columns (part and question)
         if (colIndex < 2) return;
         
@@ -197,31 +256,53 @@ const saveChanges = () => {
         
         // Check if the value has changed
         if (cell !== originalRows[rowIndex][colIndex]) {
-        if (isMetadata) {
+          if (isMetadata) {
             // It's metadata
             const label = row[0] || row[1]; // Use whichever column has the label
             if (!editsToSave.metadata[imageIndex]) {
-            editsToSave.metadata[imageIndex] = {};
+              editsToSave.metadata[imageIndex] = {};
             }
             editsToSave.metadata[imageIndex][label] = cell;
-        } else {
-            // It's an answer
+          } else {
+            // It's an answer - need to convert CSV format to ResultsPage format
             const part = row[0];
-            const questionIdx = row[1];
-            const key = `${imageIndex}-${part}-${questionIdx}`;
-            editsToSave.answers[key] = cell;
+            const questionNumber = parseInt(row[1], 10);
+            
+            if (part === '1') {
+              // For Part 1: convert 1-based question number to 0-based index
+              const questionIdx = questionNumber - 1;
+              const key = `${imageIndex}-${part}-${questionIdx}`;
+              editsToSave.answers[key] = cell;
+            } else if (part === '2') {
+              // For Part 2: need to handle multi-character answers
+              // Each character in the answer string corresponds to a different row in ResultsPage
+              const questionIdx = questionNumber - 1; // Convert to 0-based
+              
+              // Split the cell value into individual characters
+              const answerString = cell || '';
+              for (let charIndex = 0; charIndex < answerString.length; charIndex++) {
+                const char = answerString[charIndex];
+                if (char && char.trim() !== '') {
+                  const key = `${imageIndex}-${part}-${questionIdx}-${charIndex}`;
+                  editsToSave.answers[key] = char;
+                }
+              }
+            }
+          }
         }
-        }
-    });
+      });
     });
     
     // Save the edits to localStorage
     localStorage.setItem('examarkEdits', JSON.stringify(editsToSave));
     
+    // Update the csvData state with the updated CSV
+    setCsvData(updatedCsv);
+    
     // Update UI
     setIsEditing(false);
-    alert('CSV data saved successfully!');
-};
+    showAlert('CSV data saved successfully!', 'success');
+  };
 
   // Parse CSV data into a rows array
   const parseCsvData = (csvString) => {
@@ -576,13 +657,16 @@ const saveChanges = () => {
     setIsGrading(true);
     
     try {
+      const currentCsvData = updateCsvFromRows();
+
       const response = await fetch('http://localhost:8080/grade-exam', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          jobId
+          jobId,
+          csvData: currentCsvData
         })
       });
       
@@ -611,55 +695,113 @@ const saveChanges = () => {
   };
 
   return (
-    <div className="SummarizePage">
+    <div className="SheetPage">
+      <CustomAlert
+        isOpen={alert.isOpen}
+        message={alert.message}
+        type={alert.type}
+        onClose={closeAlert}
+      />
+
       {/* Header Section */}
-      <header className="summarize-header">
-        <div className="summarize-header-left">
-          <img src={UniversityLogo} alt="HUST Logo" className="summarize-header-logo" />
+      <header className="page-header">
+        <div className="page-header-left">
+          <img src={UniversityLogo} alt="HUST Logo" className="page-header-logo" draggable="false" />
         </div>
-        <div className="summarize-header-center">
-          <h1>Exam Summary</h1>
-          <p>Edit and review your exam results in spreadsheet format</p>
+        <div className="page-header-center">
+          <h1>Grading Sheet</h1>
+          <p>Review and edit exams results in spreadsheet format</p>
         </div>
-        <div className="summarize-header-right">
-          <img src={FamiLogo} alt="Fami Logo" className="summarize-header-fami-logo" />
+        <div className="page-header-right">
+          <div className="header-buttons">
+            <Link to="/" draggable="false">
+              <button className="header-btn header-btn-primary">
+                Dashboard
+                <img src={BackArrowIcon} alt="Back" className="header-btn-icon" draggable="false" />
+              </button>
+            </Link>
+            <Link to="/results" draggable="false">
+              <button className="header-btn header-btn-primary">
+                View Results
+                <img src={ResultIcon} alt="Result" className="header-btn-icon" draggable="false" />
+              </button>
+            </Link>
+            <button 
+              className="header-btn header-btn-secondary"
+              onClick={() => {
+                const csvContent = updateCsvFromRows();
+                const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "exam_results.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+            >
+              Save Excel
+              <img src={DownloadIcon} alt="Download" className="header-btn-icon" draggable="false" />
+            </button>
+            <button
+              className="header-btn header-btn-danger"
+              onClick={() => {
+                if (window.confirm('Are you sure you want to clear all results data?')) {
+                  localStorage.removeItem('examarkJobId');
+                  localStorage.removeItem('examarkCsvData');
+                  localStorage.removeItem('examarkImages');
+                  localStorage.removeItem('examarkEdits');
+                  setHasResults(false);
+                  setCsvRows([]);
+                  setImages([]);
+                }
+              }}
+            >
+              Clear Sheet
+              <img src={DeleteIcon} alt="Delete" className="header-btn-icon" draggable="false" />
+            </button>
+          </div>
+          <img src={FamiLogo} alt="Fami Logo" className="page-header-fami-logo" draggable="false" />
         </div>
       </header>
       
       {hasResults ? (
         <>
-          <div className="summarize-container">
-            <div className="image-display">
-              {images.length > 0 ? (
-                <>
-                  <img 
-                    src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`} 
-                    alt={`Exam page ${currentImageIndex + 1}`}
-                    className="result-image"
-                  />
-                  <div className="summarize-image-navigation">
+          {/* Image Container */}
+          <div className="image-container">
+            {images.length > 0 ? (
+              <>
+                <img 
+                  src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`} 
+                  alt={`Exam page ${currentImageIndex + 1}`}
+                  className="result-image"
+                />
+                <div className="sheet-image-navigation">
+                  <div className="sheet-image-navigation-buttons">
                     <button 
-                      className="summarize-nav-button"
+                      className="sheet-nav-button"
                       onClick={showPrevImage} 
                       disabled={currentImageIndex === 0}
                     >
-                      Previous
+                      <img src={PreviousIcon} alt="Previous" className="nav-icon" draggable="false" />
                     </button>
-                    <span className="summarize-nav-text">Page {currentImageIndex + 1} of {images.length}</span>
+                    <span className="sheet-nav-text">Page {currentImageIndex + 1} of {images.length}</span>
                     <button 
-                      className="summarize-nav-button"
+                      className="sheet-nav-button"
                       onClick={showNextImage} 
                       disabled={currentImageIndex === images.length - 1}
                     >
-                      Next
+                      <img src={NextIcon} alt="Next" className="nav-icon" draggable="false" />
                     </button>
                   </div>
-                </>
-              ) : (
-                <div className="no-images">No images available</div>
-              )}
-            </div>
-            
+                </div>
+              </>
+            ) : (
+              <div className="no-images">No images available</div>
+            )}
+          </div>
+
+          {/* Text Container - CSV Editor */}
+          <div className="text-container">
             <div className="csv-display">
               <div className="csv-controls">
                 <h3>CSV Data Editor</h3>
@@ -701,51 +843,6 @@ const saveChanges = () => {
                   <p>Editing: Answer cells are auto-converted to uppercase. Invalid answers are highlighted.</p>
                 </div>
               )}
-
-              <div className="action-footer">
-                <button
-                  className="btn btn-info btn-medium"
-                  onClick={() => window.location.href = '/'}
-                >
-                  Back to Main
-                </button>
-                
-                <Link to="/results">
-                  <button className="btn btn-info btn-medium">View Results</button>
-                </Link>
-                
-                <button 
-                  className="btn btn-success btn-medium"
-                  onClick={() => {
-                    const csvContent = updateCsvFromRows();
-                    const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", encodedUri);
-                    link.setAttribute("download", "exam_results.csv");
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
-                >
-                  Download CSV
-                </button>
-                
-                <button
-                  className="btn btn-danger btn-medium"
-                  onClick={() => {
-                    if (window.confirm('Are you sure you want to clear all results data?')) {
-                      localStorage.removeItem('examarkJobId');
-                      localStorage.removeItem('examarkCsvData');
-                      localStorage.removeItem('examarkImages');
-                      setHasResults(false);
-                      setCsvRows([]);
-                      setImages([]);
-                    }
-                  }}
-                >
-                  Clear Results
-                </button>
-              </div>
             </div>
           </div>
         </>
@@ -760,4 +857,4 @@ const saveChanges = () => {
     </div>
   );
 }
-export default SummarizePage;
+export default SheetPage;

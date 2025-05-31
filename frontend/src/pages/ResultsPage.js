@@ -5,13 +5,23 @@ import './ResultsPage.css';
 import UniversityLogo from '../assets/logos/logo_hust.png';
 import FamiLogo from '../assets/logos/logo_fami.png';
 
+import NextIcon from '../assets/icons/next.png';
+import PreviousIcon from '../assets/icons/previous.png';
+
+import BackArrowIcon from '../assets/icons/back-arrow.png';
+import TableIcon from '../assets/icons/table.png';
+import DownloadIcon from '../assets/icons/download.png';
+import DeleteIcon from '../assets/icons/delete.png';
+
+import CheckIcon from '../assets/icons/check.png';
+
 function ResultsPage() {
   const [csvData, setCsvData] = useState(null);
   const [images, setImages] = useState([]);
   const [jobId, setJobId] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [hasResults, setHasResults] = useState(false);
-  // Store edits per image index
+
   const [editedMetadata, setEditedMetadata] = useState({});
   const [editedAnswers, setEditedAnswers] = useState({});
   const [approved, setApproved] = useState(false);
@@ -318,183 +328,338 @@ function ResultsPage() {
     );
   };
 
+    // Add this function to prepare edited CSV data
+  const prepareEditedCsvData = () => {
+    if (!csvData) return null;
+    
+    const rows = csvData.split('\n');
+    const updatedRows = [...rows];
+    
+    // Update metadata rows (Student ID and Exam ID)
+    Object.keys(editedMetadata).forEach(imageIndex => {
+      const metadata = editedMetadata[imageIndex];
+      const imageColumnIndex = parseInt(imageIndex) + 2; // Assuming page_0 is at column index 2
+      
+      if (metadata['Student ID'] && updatedRows[1]) {
+        const studentIdRow = updatedRows[1].split(',');
+        if (studentIdRow.length > imageColumnIndex) {
+          studentIdRow[imageColumnIndex] = metadata['Student ID'];
+          updatedRows[1] = studentIdRow.join(',');
+        }
+      }
+      
+      if (metadata['Exam ID'] && updatedRows[2]) {
+        const examIdRow = updatedRows[2].split(',');
+        if (examIdRow.length > imageColumnIndex) {
+          examIdRow[imageColumnIndex] = metadata['Exam ID'];
+          updatedRows[2] = examIdRow.join(',');
+        }
+      }
+    });
+    
+    // Update answer rows
+    Object.keys(editedAnswers).forEach(key => {
+      const [imageIndex, part, questionInfo] = key.split('-');
+      const imageColumnIndex = parseInt(imageIndex) + 2;
+      const newValue = editedAnswers[key];
+      
+      // Find the corresponding row in CSV
+      let questionHeaderRow = 3;
+      for (let i = 3; i < updatedRows.length; i++) {
+        const cells = updatedRows[i].split(',');
+        if (cells.length > 1 && cells[0].trim() === 'Part' && cells[1].trim() === 'Question') {
+          questionHeaderRow = i;
+          break;
+        }
+      }
+      
+      // Update the specific answer
+      for (let i = questionHeaderRow + 1; i < updatedRows.length; i++) {
+        const row = updatedRows[i].split(',');
+        if (row.length > imageColumnIndex) {
+          const rowPart = row[0].trim();
+          const rowQuestion = row[1].trim();
+          
+          if (part === '1' && rowPart === '1') {
+            const flatIndex = parseInt(questionInfo);
+            const expectedQuestion = (flatIndex + 1).toString();
+            if (rowQuestion === expectedQuestion) {
+              row[imageColumnIndex] = newValue;
+              updatedRows[i] = row.join(',');
+              break;
+            }
+          } else if (part === '2' && rowPart === '2') {
+            const [qIndex, rowIndex] = questionInfo.split('-');
+            // For Part 2, we need to update the character at the specific position
+            const questionNum = parseInt(qIndex) + 1;
+            if (rowQuestion === questionNum.toString()) {
+              let currentAnswer = row[imageColumnIndex] || '';
+              const charIndex = parseInt(rowIndex);
+              
+              // Ensure the string is long enough
+              while (currentAnswer.length <= charIndex) {
+                currentAnswer += 'X';
+              }
+              
+              // Replace the character at the specific position
+              const answerArray = currentAnswer.split('');
+              answerArray[charIndex] = newValue;
+              row[imageColumnIndex] = answerArray.join('');
+              updatedRows[i] = row.join(',');
+              break;
+            }
+          }
+        }
+      }
+    });
+    
+    return updatedRows.join('\n');
+  };
+
+  // Handle saving edited data as Excel
+  const handleSaveExcel = () => {
+    try {
+      const editedCsv = prepareEditedCsvData();
+      
+      if (!editedCsv) {
+        alert('No data to save');
+        return;
+      }
+      
+      // Parse CSV data into rows
+      const csvRows = editedCsv.split('\n').filter(row => row.trim());
+      const data = csvRows.map(row => row.split(',').map(cell => cell.trim()));
+      
+      // Create simple Excel XML format
+      let excelXML = `<?xml version="1.0"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Worksheet ss:Name="Exam Results">
+  <Table>`;
+
+      // Add data rows
+      data.forEach((row) => {
+        excelXML += '<Row>';
+        row.forEach(cell => {
+          const cellValue = cell.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+          excelXML += `<Cell><Data ss:Type="String">${cellValue}</Data></Cell>`;
+        });
+        excelXML += '</Row>';
+      });
+
+      excelXML += `  </Table>
+ </Worksheet>
+</Workbook>`;
+      
+      // Create blob with Excel MIME type
+      const blob = new Blob([excelXML], { 
+        type: 'application/vnd.ms-excel' 
+      });
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `grading_results_${jobId}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+    } catch (error) {
+      console.error('Error saving Excel:', error);
+      alert('Error saving Excel file');
+    }
+  };
+
+  const isValidMetadata = (value) => {
+    return value === /^\d+$/.test(value.toString().trim());
+  };
+
   return (
     <div className="ResultsPage">
       {hasResults ? (
         <>
           {/* Header Section */}
-          <header className="results-header">
-            <div className="results-header-left">
-              <img src={UniversityLogo} alt="HUST Logo" className="results-header-logo" />
+                    <header className="page-header">
+            <div className="page-header-left">
+              <img src={UniversityLogo} alt="HUST Logo" className="page-header-logo" draggable="false" />
             </div>
-            <div className="results-header-center">
-              <h1>Exam Results</h1>
+            <div className="page-header-center">
+              <h1>Grading Results</h1>
               <p>Review and edit your graded exam results</p>
             </div>
-            <div className="results-header-right">
-              <img src={FamiLogo} alt="Fami Logo" className="results-header-fami-logo" />
+            <div className="page-header-right">
+              <div className="header-buttons">
+                <Link to="/" draggable="false">
+                  <button className="header-btn header-btn-primary">
+                    Dashboard
+                    <img src={BackArrowIcon} alt="Back" className="header-btn-icon" draggable="false" />
+                  </button>
+                </Link>
+                <Link to="/sheet" draggable="false">
+                  <button className="header-btn header-btn-primary">
+                    Review Sheet
+                    <img src={TableIcon} alt="Table" className="header-btn-icon" draggable="false" />
+                  </button>
+                </Link>
+                <button 
+                  className="header-btn header-btn-secondary"
+                  onClick={handleSaveExcel}
+                >
+                  Save Excel
+                  <img src={DownloadIcon} alt="Download" className="header-btn-icon" draggable="false" />
+                </button>
+                <button
+                  className="header-btn header-btn-danger"
+                  onClick={() => {
+                    localStorage.removeItem('examarkJobId');
+                    localStorage.removeItem('examarkCsvData');
+                    localStorage.removeItem('examarkImages');
+                    setHasResults(false);
+                  }}
+                >
+                  Clear Results
+                  <img src={DeleteIcon} alt="Delete" className="header-btn-icon" draggable="false" />
+                </button>
+              </div>
+              <img src={FamiLogo} alt="Fami Logo" className="page-header-fami-logo" draggable="false" />
             </div>
           </header>
 
-          <div className="bottom-right-buttons">
-            <Link to="/">
-              <button className="results-btn results-btn-primary">Back to Main</button>
-            </Link>
-            <Link to="/summarize">
-             <button className="results-btn results-btn-primary">View Summary</button>
-            </Link>
-            <button 
-              className="results-btn results-btn-secondary"
-              onClick={() => window.open(`http://127.0.0.1:8080/results/${jobId}/csv`, '_blank')}
-            >
-              Download CSV
-            </button>
-            <button
-              className="results-btn results-btn-danger"
-              onClick={() => {
-                localStorage.removeItem('examarkJobId');
-                localStorage.removeItem('examarkCsvData');
-                localStorage.removeItem('examarkImages');
-                setHasResults(false);
-              }}
-            >
-              Clear Results
-            </button>
-          </div>    
+          {/* Image Container */}
+          <div className="image-container">
+            {images.length > 0 ? (
+              <>
+                <img 
+                  src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`} 
+                  alt={`Graded exam page ${currentImageIndex + 1}`}
+                  className="result-image"
+                />
+                <div className="results-image-navigation">
+                  <div className="results-image-navigation-buttons">
+                    <button 
+                      className="results-nav-button"
+                      onClick={showPrevImage} 
+                      disabled={currentImageIndex === 0}
+                    >
+                      <img src={PreviousIcon} alt="Previous" className="nav-icon" />
+                    </button>
+                    <span className="results-nav-text">Page {currentImageIndex + 1} of {images.length}</span>
+                    <button 
+                      className="results-nav-button"
+                      onClick={showNextImage} 
+                      disabled={currentImageIndex === images.length - 1}
+                    >
+                      <img src={NextIcon} alt="Next" className="nav-icon" />
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="no-images">No images available</div>
+            )}
+          </div>
 
-          <div className="results-container">
-            <div className="results-display">
-              <div className="result-image-display">
-                {images.length > 0 ? (
-                  <>
-                    <img 
-                      src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`} 
-                      alt={`Graded exam page ${currentImageIndex + 1}`}
-                      className="result-image"
-                    />
-                    <div className="results-image-navigation">
-                      <div className="results-image-navigation-buttons">
-                        <button 
-                          className="results-nav-button"
-                          onClick={showPrevImage} 
-                          disabled={currentImageIndex === 0}
-                        >
-                          Previous
-                        </button>
-                        <span className="results-nav-text">Page {currentImageIndex + 1} of {images.length}</span>
-                        <button 
-                          className="results-nav-button"
-                          onClick={showNextImage} 
-                          disabled={currentImageIndex === images.length - 1}
-                        >
-                          Next
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="no-images">No images available</div>
-                )}
-              </div>
-                <div className="results-text">
-                {(() => {
-                  const results = getCurrentImageResults();
-                  return (
-                    <>
-                      {/* Metadata and Action buttons in one row */}
-                      <div className="metadata-action-row">
-                        <div className="metadata-inline">
-                          {results.metadata.map((item, index) => (
-                            <div className="metadata-item-inline" key={`meta-${index}`}>
-                              <strong>{item.label}:</strong>{" "}
-                              {(item.label === "Student ID" || item.label === "Exam ID") ? (
-                                <span
-                                  contentEditable
-                                  suppressContentEditableWarning
-                                  onBlur={(e) => handleMetadataEdit(item.label, e.target.textContent.trim())}
-                                >
-                                  {(editedMetadata[currentImageIndex] && editedMetadata[currentImageIndex][item.label]) || item.value}
-                                </span>
-                              ) : (
-                                item.value
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                        <div className="action-buttons-inline">
-                          {!approved ? (
-                            <button className="approve-button" onClick={() => setApproved(true)}>
-                              Approve Exam
-                            </button>
+          {/* Text Container */}
+          <div className="text-container">
+            {(() => {
+              const results = getCurrentImageResults();
+              return (
+                <>
+                  {/* Metadata and Action buttons in one row */}
+                  <div className="metadata-action-row">
+                    <div className="metadata-inline">
+                      {results.metadata.map((item, index) => (
+                        <div className="metadata-item-inline" key={`meta-${index}`}>
+                          <strong>{item.label}:</strong>{" "}
+                          {(item.label === "Student ID" || item.label === "Exam ID") ? (
+                            <span
+                              contentEditable
+                              suppressContentEditableWarning
+                              onBlur={(e) => handleMetadataEdit(item.label, e.target.textContent.trim())}
+                            >
+                              {(editedMetadata[currentImageIndex] && editedMetadata[currentImageIndex][item.label]) || item.value}
+                            </span>
                           ) : (
-                            <button className="edit-button" onClick={() => setApproved(false)}>
-                              Edit Exam
-                            </button>
+                            item.value
                           )}
                         </div>
+                      ))}
+                    </div>
+                    <div className="action-buttons-inline">
+                      {!approved ? (
+                        <button className="approve-button" onClick={() => setApproved(true)}>
+                          Approve Result
+                        </button>
+                      ) : (
+                        <button className="edit-button" onClick={() => setApproved(false)}>
+                          Edit Result
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  {/* Part 1 */}
+                  <div className="part-label">
+                    <strong>Part 1</strong>
+                  </div>
+                  <div className="part1-grid">
+                    {[0, 1, 2, 3].map((colIndex) => (
+                      <div className="part1-column" key={`col-${colIndex}`}>
+                        {results.part1.slice(colIndex * 4, colIndex * 4 + 4).map((item, rowIndex) => {
+                          const flatIndex = colIndex * 4 + rowIndex;
+                          const cellId = `cell-1-${colIndex}-${rowIndex}`;
+                          return (
+                            <div className="question-item" key={`p1-${cellId}`}>
+                              <strong>Q{item.question}:</strong> {renderAnswer('1', flatIndex, item.answer, cellId)}
+                            </div>
+                          );
+                        })}
                       </div>
-                      {/* Part 1 */}
-                      <div className="part-label">
-                        <strong>Part 1</strong>
-                      </div>
-                      <div className="part1-grid">
-                        {[0, 1, 2, 3].map((colIndex) => (
-                          <div className="part1-column" key={`col-${colIndex}`}>
-                            {results.part1.slice(colIndex * 4, colIndex * 4 + 4).map((item, rowIndex) => {
-                              const flatIndex = colIndex * 4 + rowIndex;
-                              const cellId = `cell-1-${colIndex}-${rowIndex}`;
+                    ))}
+                  </div>
+                  {/* Part 2 */}
+                  <div className="part-label">
+                    <strong>Part 2</strong>
+                  </div>
+                  <div className="part2-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          {results.part2.map((item, qIndex) => (
+                            <th key={`p2-h-${qIndex}`}>{`Q${item.question}`}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {Array.from({ length: 6 }).map((_, rowIndex) => (
+                          <tr key={`p2-row-${rowIndex}`}>
+                            {results.part2.map((item, qIndex) => {
+                              const answerLetter =
+                                item.answer && item.answer.length > rowIndex
+                                  ? item.answer[rowIndex]
+                                  : 'X';
+                              const cellId = `cell-2-${qIndex}-${rowIndex}`;
                               return (
-                                <div className="question-item" key={`p1-${cellId}`}>
-                                  <strong>Q{item.question}:</strong> {renderAnswer('1', flatIndex, item.answer, cellId)}
-                                </div>
+                                <td key={`p2-${qIndex}-${rowIndex}`}>
+                                  {renderAnswer('2', `${qIndex}-${rowIndex}`, answerLetter, cellId)}
+                                </td>
                               );
                             })}
-                          </div>
+                          </tr>
                         ))}
-                      </div>
-                      {/* Part 2 */}
-                      <div className="part-label">
-                        <strong>Part 2</strong>
-                      </div>
-                      <div className="part2-table">
-                        <table>
-                          <thead>
-                            <tr>
-                              {results.part2.map((item, qIndex) => (
-                                <th key={`p2-h-${qIndex}`}>{`Q${item.question}`}</th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {Array.from({ length: 6 }).map((_, rowIndex) => (
-                              <tr key={`p2-row-${rowIndex}`}>
-                                {results.part2.map((item, qIndex) => {
-                                  const answerLetter =
-                                    item.answer && item.answer.length > rowIndex
-                                      ? item.answer[rowIndex]
-                                      : 'X';
-                                  const cellId = `cell-2-${qIndex}-${rowIndex}`;
-                                  return (
-                                    <td key={`p2-${qIndex}-${rowIndex}`}>
-                                      {renderAnswer('2', `${qIndex}-${rowIndex}`, answerLetter, cellId)}
-                                    </td>
-                                  );
-                                })}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                      {approved && (
-                        <div className="approval-status">
-                          <strong>Approved</strong>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
-            </div>
+                      </tbody>
+                    </table>
+                  </div>
+                  {approved && (
+                    <div className="approval-status">
+                      <strong>Approved</strong>
+                      <img src={CheckIcon} alt="Checked" className="check-icon" draggable="false" />
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </>
       ) : (

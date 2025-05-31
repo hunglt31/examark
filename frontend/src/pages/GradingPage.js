@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './GradeExamPage.css';
+import './GradingPage.css';
 
 import UniversityLogo from '../assets/logos/logo_hust.png';
 import FamiLogo from '../assets/logos/logo_fami.png';

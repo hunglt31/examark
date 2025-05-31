@@ -7,7 +7,7 @@ import AppGuide from '../components/AppGuide';
 
 import GradeIcon from '../assets/icons/marking.png';
 import ResultsIcon from '../assets/icons/result.png';
-import SummarizeIcon from '../assets/icons/csv.png';
+import SheetIcon from '../assets/icons/table.png';
 import HelpIcon from '../assets/icons/help.png';
 
 function MainPage() {
@@ -16,13 +16,13 @@ function MainPage() {
       {/* Header with university logo, title, and Fami logo */}
       <header className="MainPage-header">
         <div className="header-left">
-          <img src={UniversityLogo} alt="HUST Logo" className="header-logo" />
+          <img src={UniversityLogo} alt="HUST Logo" className="header-logo" draggable="false" />
         </div>
         <div className="header-center">
-          <h1>HUST Examark Main Page</h1>
+          <h1>EXAMARK DASHBOARD</h1>
         </div>
         <div className="header-right">
-          <img src={FamiLogo} alt="Fami Logo" className="header-fami-logo" />
+          <img src={FamiLogo} alt="Fami Logo" className="header-fami-logo" draggable="false" />
         </div>
       </header>
       
@@ -30,25 +30,25 @@ function MainPage() {
       <nav className="MainPage-nav">
         <Link to="/grade">
           <button className="nav-button">
-            <img src={GradeIcon} alt="Grade Exam" />
-            Grade Exam
+            <img src={GradeIcon} alt="Grade Exam" draggable="false" />
+            Grade Exams
           </button>
         </Link>
         <Link to="/results">
           <button className="nav-button">
-            <img src={ResultsIcon} alt="View Results" />
+            <img src={ResultsIcon} alt="Check Results" draggable="false" />
             View Results
           </button>
         </Link>
-        <Link to="/summarize">
+        <Link to="/sheet">
           <button className="nav-button">
-            <img src={SummarizeIcon} alt="Summarize Results" />
-            View Summary
+            <img src={SheetIcon} alt="Review Sheet" draggable="false" />
+            Review Sheet
           </button>
         </Link>
         <Link to="/help">
           <button className="nav-button">
-            <img src={HelpIcon} alt="Help" />
+            <img src={HelpIcon} alt="Help" draggable="false" />
             Help
           </button>
         </Link>
@@ -66,7 +66,7 @@ function MainPage() {
           <i className="fas fa-check-circle card-icon"></i>
           <h3>Graded Today</h3>
           <p className="dashboard-card-value">12</p>
-          <Link to="/results" className="card-link">View Reports</Link>
+          <Link to="/results" className="card-link">View Results</Link>
         </div>
         <div className="dashboard-card">
           <i className="fas fa-calendar-alt card-icon"></i>

@@ -129,7 +129,8 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
 
     // Generate a job ID based on filename and timestamp
     std::string timestamp = std::to_string(std::time(nullptr));
-    std::string jobId = pdfFile.filename + "_" + timestamp;
+    std::string baseName = pdfFile.filename.substr(0, pdfFile.filename.find_last_of('.'));
+    std::string jobId = baseName + "_" + timestamp;
     
     {
       std::lock_guard<std::mutex> lock(resultsMutex);

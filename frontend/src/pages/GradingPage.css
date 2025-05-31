@@ -1,4 +1,4 @@
-@import '../styles/buttons.css';
+@import '../styles/button.css';
 
 .grade-header {
   background: #001F4D;
@@ -41,7 +41,7 @@
 
 .grade-header-center p {
   margin: 5px 0 0 0;
-  color: #ccc;
+  color: #666;
   font-size: 1.0rem;
 }
 

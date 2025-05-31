@@ -1,0 +1,89 @@
+/* ===== SHARED IMAGE DISPLAY STYLES ===== */
+.result-image {
+  width: 100%;
+  height: 100%; 
+  flex: 1;
+  object-fit: contain;
+}
+
+/* Image navigation container */
+.results-image-navigation,
+.sheet-image-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  height: 40px;
+  margin: 0px 10px 10px 10px;
+}
+
+/* Navigation buttons container */
+.results-image-navigation-buttons,
+.sheet-image-navigation-buttons {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Navigation button styles */
+.results-nav-button,
+.sheet-nav-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Navigation icon styles */
+.nav-icon {
+  width: 25px;
+  height: 25px;
+  filter: brightness(0) saturate(100%) invert(30%) sepia(11%) saturate(200%) hue-rotate(174deg) brightness(90%) contrast(85%);
+  transition: all 0.2s ease;
+  user-select: none; 
+  pointer-events: none;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+}
+
+/* Hover effects for navigation buttons */
+.results-nav-button:hover:not(:disabled) .nav-icon,
+.sheet-nav-button:hover:not(:disabled) .nav-icon {
+  filter: brightness(0) saturate(100%) invert(20%) sepia(15%) saturate(300%) hue-rotate(174deg) brightness(70%) contrast(90%);
+  transform: scale(1.2);
+}
+
+/* Disabled button styles */
+.results-nav-button:disabled,
+.sheet-nav-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.results-nav-button:disabled .nav-icon,
+.sheet-nav-button:disabled .nav-icon {
+  filter: brightness(0) saturate(100%) invert(50%);
+}
+
+/* Navigation text styles */
+.results-nav-text,
+.sheet-nav-text {
+  font-weight: bold;
+  color: #495057;
+  font-size: 14px;
+}
+
+/* No images state */
+.no-images {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6c757d;
+  font-size: 18px;
+}
