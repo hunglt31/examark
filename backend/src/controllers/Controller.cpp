@@ -92,17 +92,51 @@ public:
 // Global thread pool
 ThreadPool grading_thread_pool(std::thread::hardware_concurrency());
 
-// Structure to track grading job results
-struct GradingResult {
-  bool completed;
+// Tracking grading progress
+struct JobProgress {
+  bool processCompleted;
   std::string outputDir;
   std::string pdfFilename;
+  std::string csvContent;
+  std::string currentStage;
+  std::string currentStep;
+  int currentPage;
+  int totalPages;
+  double progressPercent;
+  bool hasError;
+  std::string errorMessage;
+  
+  JobProgress() : processCompleted(false), currentPage(0), totalPages(0), 
+                  progressPercent(0.0), hasError(false) {}
 };
 
 // Global map to track grading results
-std::unordered_map<std::string, GradingResult> gradingResults;
-std::mutex resultsMutex;
+std::unordered_map<std::string, JobProgress> jobProgressMap;
+std::mutex progressMutex;
 
+void updateJobProgress(
+  const std::string& jobId, const std::string& stage, 
+  const std::string& step, int currentPage = 0, int totalPages = 0, 
+  double progressPercent = 0.0, bool isError = false, const std::string& errorMsg = "") 
+{
+  std::lock_guard<std::mutex> lock(progressMutex);
+  auto& progress = jobProgressMap[jobId];
+  progress.currentStage = stage;
+  progress.currentStep = step;
+  progress.currentPage = currentPage;
+  progress.totalPages = totalPages;
+  progress.progressPercent = progressPercent;
+  progress.hasError = isError;
+  progress.errorMessage = errorMsg;
+  
+  std::string logMsg = "Job " + jobId + " [" + stage + "]: " + step;
+  if (totalPages > 0) {
+    logMsg += " (" + std::to_string(currentPage) + "/" + std::to_string(totalPages) + ")";
+  }
+  if (progressPercent > 0) {
+    logMsg += " - " + std::to_string((int)progressPercent) + "%";
+  }
+}
 
 void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
   // Main grading endpoint
@@ -133,8 +167,14 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
     std::string jobId = baseName + "_" + timestamp;
     
     {
-      std::lock_guard<std::mutex> lock(resultsMutex);
-      gradingResults[jobId] = {false, "", pdfFile.filename};
+      std::lock_guard<std::mutex> lock(progressMutex);
+      auto& progress = jobProgressMap[jobId];
+      progress.processCompleted = false;
+      progress.pdfFilename = pdfFile.filename;
+      progress.csvContent = csvFile.content;
+      progress.currentStage = "initializing";
+      progress.currentStep = "Starting processing...";
+      progress.progressPercent = 0.0;
     }
         
     // Respond with job ID (use JSON format)
@@ -145,36 +185,63 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
       std::string baseName = pdfFile.filename.substr(0, pdfFile.filename.find_last_of('.'));
       std::string outputDir = "/home/" + USER_NAME + "/examark-data/" + baseName + "_" + timestamp;
         
-      bool success = grading(pdfFile.filename, pdfFile.content, csvFile.content, outputDir, tritonClient);
-      std::lock_guard<std::mutex> lock(resultsMutex);
+      bool success = grading(pdfFile.filename, pdfFile.content, csvFile.content, outputDir, tritonClient, jobId);
+      
+      std::lock_guard<std::mutex> lock(progressMutex);
+      auto& progress = jobProgressMap[jobId];
       if (success) {
-        gradingResults[jobId] = {true, outputDir, pdfFile.filename};
+        progress.processCompleted = true;
+        progress.outputDir = outputDir;
+        progress.currentStage = "completed";
+        progress.currentStep = "Grading completed successfully";
+        progress.progressPercent = 100.0;
+      } else {
+        progress.hasError = true;
+        if (progress.errorMessage.empty()) {
+          progress.errorMessage = "Grading process failed";
+        }
+        progress.currentStage = "error";
+        progress.currentStep = "Grading failed";
       }
     });
   });
     
-  // Add endpoint to check status
+  // Status endpoint
   server.Get("/status/:jobId", [](const httplib::Request &req, httplib::Response &res) {
     res.set_header("Access-Control-Allow-Origin", "*");
         
     std::string jobId = req.path_params.at("jobId");
         
-    std::lock_guard<std::mutex> lock(resultsMutex);
-    auto it = gradingResults.find(jobId);
-    if (it == gradingResults.end()) {
+    std::lock_guard<std::mutex> lock(progressMutex);
+    auto it = jobProgressMap.find(jobId);
+    if (it == jobProgressMap.end()) {
       res.status = 404;
       res.set_content("{\"error\":\"Job not found\"}", "application/json");
       return;
     }
         
-      bool completed = it->second.completed;
-      std::string status = completed ? "completed" : "processing";
-        
-      res.set_header("Content-Type", "application/json");
-      res.set_content("{\"status\":\"" + status + "\"}", "application/json");
-    });
+    const auto& progress = it->second;
+    nlohmann::json response;
     
-  // Add endpoint to get CSV results
+    if (progress.hasError) {
+      response["status"] = "error";
+      response["error"] = progress.errorMessage;
+    } else if (progress.processCompleted) {
+      response["status"] = "completed";
+    } else {
+      response["status"] = "processing";
+    }
+    
+    response["currentStage"] = progress.currentStage;
+    response["currentStep"] = progress.currentStep;
+    response["currentPage"] = progress.currentPage;
+    response["totalPages"] = progress.totalPages;
+    response["progress"] = progress.progressPercent;
+    
+    res.set_content(response.dump(), "application/json");
+  });
+    
+  // Get CSV results endpoint
   server.Get("/results/:jobId/csv", [](const httplib::Request &req, httplib::Response &res) {
     res.set_header("Access-Control-Allow-Origin", "*");
         
@@ -184,9 +251,9 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
     std::string outputDir;
     std::string filename;
     {
-      std::lock_guard<std::mutex> lock(resultsMutex);
-      auto it = gradingResults.find(jobId);
-      if (it == gradingResults.end() || !it->second.completed) {
+      std::lock_guard<std::mutex> lock(progressMutex);
+      auto it = jobProgressMap.find(jobId);
+      if (it == jobProgressMap.end() || !it->second.processCompleted) {
         res.status = 404;
         res.set_content("{\"error\":\"Results not ready or job not found\"}", "application/json");
         return;
@@ -220,7 +287,7 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
     res.set_content(csvContent, "text/csv");
   });
     
-  // Add endpoint to get the list of images
+  // Get images list endpoint
   server.Get("/results/:jobId/images", [](const httplib::Request &req, httplib::Response &res) {
     res.set_header("Access-Control-Allow-Origin", "*");
       
@@ -229,9 +296,9 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
     // Get the job result
     std::string outputDir;
     {
-      std::lock_guard<std::mutex> lock(resultsMutex);
-      auto it = gradingResults.find(jobId);
-      if (it == gradingResults.end() || !it->second.completed) {
+      std::lock_guard<std::mutex> lock(progressMutex);
+      auto it = jobProgressMap.find(jobId);
+      if (it == jobProgressMap.end() || !it->second.processCompleted) {
         res.status = 404;
         res.set_content("{\"error\":\"Results not ready or job not found\"}", "application/json");
         return;
@@ -248,20 +315,14 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
     }
       
     // Create JSON response with image URLs
-    std::string jsonResponse = "{\"images\":[";
-    for (size_t i = 0; i < imageList.size(); ++i) {
-      jsonResponse += "\"" + imageList[i] + "\"";
-      if (i < imageList.size() - 1) {
-        jsonResponse += ",";
-      }
-    }
-    jsonResponse += "]}";
+    nlohmann::json response;
+    response["images"] = imageList;
       
     res.set_header("Content-Type", "application/json");
-    res.set_content(jsonResponse, "application/json");
+    res.set_content(response.dump(), "application/json");
   });
   
-  // Add endpoint to get a specific image
+  // Get specific image endpoint
   server.Get("/results/:jobId/images/:imageName", [](const httplib::Request &req, httplib::Response &res) {
     res.set_header("Access-Control-Allow-Origin", "*");
       
@@ -271,9 +332,9 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
     // Get the job result
     std::string outputDir;
     {
-      std::lock_guard<std::mutex> lock(resultsMutex);
-      auto it = gradingResults.find(jobId);
-      if (it == gradingResults.end() || !it->second.completed) {
+      std::lock_guard<std::mutex> lock(progressMutex);
+      auto it = jobProgressMap.find(jobId);
+      if (it == jobProgressMap.end() || !it->second.processCompleted) {
         res.status = 404;
         res.set_content("{\"error\":\"Results not ready or job not found\"}", "application/json");
         return;
@@ -324,291 +385,134 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
     res.status = 204;
   });
 
-  server.Post("/grade-exam", [](const httplib::Request &req, httplib::Response &res) {
+  server.Post("/cancel/:jobId", [](const httplib::Request &req, httplib::Response &res) {
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_header("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.set_header("Access-Control-Allow-Headers", "Content-Type");
-    res.set_header("Content-Type", "application/json");
     
-    try {
-      // Parse JSON request body
-      nlohmann::json requestData = nlohmann::json::parse(req.body);
-      std::string jobId = requestData["jobId"];
+    std::string jobId = req.path_params.at("jobId");
+    
+    {
+      std::lock_guard<std::mutex> lock(progressMutex);
+      auto it = jobProgressMap.find(jobId);
+      if (it != jobProgressMap.end()) {
+        auto& progress = it->second;
+        progress.hasError = true;
+        progress.errorMessage = "Job cancelled by user";
+        progress.currentStage = "cancelled";
+        progress.currentStep = "Process terminated";
+        
+        // Note: In a more sophisticated implementation, you would need to
+        // actually kill the running thread/process. For now, we just mark it as cancelled.
+        // The grading function should check for cancellation status periodically.
+      }
+    }
+    
+    res.set_header("Content-Type", "application/json");
+    res.set_content("{\"message\":\"Job cancellation requested\"}", "application/json");
+  });
+
+  // Handle CORS preflight for cancel endpoint
+  server.Options("/cancel/(.*)", [](const httplib::Request&, httplib::Response &res) {
+    res.set_header("Access-Control-Allow-Origin", "*");
+    res.set_header("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.set_header("Access-Control-Allow-Headers", "Content-Type");
+    res.status = 204;
+  });
+
+  // Re-grade endpoint
+  server.Post("/regrade", [tritonClient](const httplib::Request &req, httplib::Response &res) {
+    res.set_header("Access-Control-Allow-Origin", "*");
+    res.set_header("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.set_header("Access-Control-Allow-Headers", "Content-Type");
+    
+    // Check if request is multipart form data
+    if (req.is_multipart_form_data()) {
+      auto jobIdPart = req.get_file_value("jobId");
+      auto csvFilePart = req.get_file_value("csvFile");
+      auto answerKeyPart = req.get_file_value("answerKey");
+
+      std::string jobId = jobIdPart.content;
       
-      // Get stored results path
+      // Check if any required field is missing
+      if (jobId.empty()) {
+        res.status = 400;
+        res.set_content("{\"error\":\"Missing jobId parameter\"}", "application/json");
+        Logger::error("CONTROLLER", "Missing jobId in regrade request");
+        return;
+      }
+      
+      if (csvFilePart.content.empty()) {
+        res.status = 400;
+        res.set_content("{\"error\":\"Missing or empty csvFile\"}", "application/json");
+        Logger::error("CONTROLLER", "Missing or empty csvFile in regrade request");
+        return;
+      }
+      
+      if (answerKeyPart.content.empty()) {
+        res.status = 400;
+        res.set_content("{\"error\":\"Missing or empty answerKey file\"}", "application/json");
+        Logger::error("CONTROLLER", "Missing or empty answerKey in regrade request");
+        return;
+      }
+      
+      std::string csvData = csvFilePart.content;
+      std::string answerKeyData = answerKeyPart.content;
+      
+      // Check if the original job exists and get output directory
       std::string outputDir;
-      std::string filename;
       {
-        std::lock_guard<std::mutex> lock(resultsMutex);
-        auto it = gradingResults.find(jobId);
-        if (it == gradingResults.end() || !it->second.completed) {
+        std::lock_guard<std::mutex> lock(progressMutex);
+        auto it = jobProgressMap.find(jobId);
+        if (it == jobProgressMap.end() || !it->second.processCompleted) {
           res.status = 404;
-          res.set_content("{\"error\":\"Results not ready or job not found\"}", "application/json");
+          res.set_content("{\"error\":\"Original job not found or not completed\"}", "application/json");
+          Logger::error("CONTROLLER", "Original job not found: " + jobId);
           return;
         }
         outputDir = it->second.outputDir;
-        filename = it->second.pdfFilename;
       }
       
-      // Read the stored answer key CSV
-      std::string answerKeyPath = outputDir + "/answer_key.csv";
-      std::ifstream answerKeyFile(answerKeyPath);
-      if (!answerKeyFile.is_open()) {
-        res.status = 500;
-        res.set_content("{\"error\":\"Answer key file not found\"}", "application/json");
-        return;
-      }
-      
-      // Parse answer key CSV
-      std::vector<std::vector<std::string>> answerKeyData;
-      std::string line;
-      while (std::getline(answerKeyFile, line)) {
-        std::vector<std::string> row;
-        std::stringstream ss(line);
-        std::string cell;
+      try {
+        // Call the re-grading service directly (synchronous)
+        bool success = regradeExam(outputDir, csvData, answerKeyData, jobId, jobId);
         
-        while (std::getline(ss, cell, ',')) {
-          // Remove any quotes and trim whitespace
-          if (!cell.empty() && cell.front() == '"' && cell.back() == '"') {
-            cell = cell.substr(1, cell.length() - 2);
-          }
-          cell.erase(cell.begin(), std::find_if(cell.begin(), cell.end(), [](unsigned char ch) {
-            return !std::isspace(ch);
-          }));
-          cell.erase(std::find_if(cell.rbegin(), cell.rend(), [](unsigned char ch) {
-            return !std::isspace(ch);
-          }).base(), cell.end());
-          
-          row.push_back(cell);
-        }
-        answerKeyData.push_back(row);
-      }
-      answerKeyFile.close();
-      
-      // Parse answer key CSV format based on the provided sample
-      // Format: First row has headers like ",Exam ID,101,102"
-      // Subsequent rows: "Part,Question,Key,Key" then actual answers
-      std::map<std::string, std::vector<std::string>> examAnswerKeys;
-      std::vector<int> pointValues(24, 1); // Default 1 point per question
-
-      if (answerKeyData.size() < 3) {
-        res.status = 400;
-        res.set_content("{\"error\":\"Answer key CSV must have at least 3 rows\"}", "application/json");
-        return;
-      }
-
-      // Get all ExamIDs from first row (skip first two columns: empty and "Exam ID")
-      std::vector<std::string> examIds;
-      for (int col = 2; col < answerKeyData[0].size(); col++) {
-        std::string examId = answerKeyData[0][col];
-        if (!examId.empty()) {
-          examIds.push_back(examId);
-        }
-      }
-
-      // Extract answers for each ExamID (skip header row, start from row 2)
-      for (int i = 0; i < examIds.size(); i++) {
-        std::vector<std::string> answers;
-        int columnIndex = 2 + i; // Skip first two columns (Part and Question)
-        
-        // Extract answers from rows 2-25 (24 questions total)
-        for (int row = 2; row < answerKeyData.size() && answers.size() < 24; row++) {
-          if (answerKeyData[row].size() > columnIndex) {
-            answers.push_back(answerKeyData[row][columnIndex]);
-          }
-        }
-        
-        if (answers.size() == 24) {
-          examAnswerKeys[examIds[i]] = answers;
-        } else {
-          Logger::error("CONTROLLER", "Incomplete answers for ExamID: " + examIds[i] + 
-                        " (found " + std::to_string(answers.size()) + ")");
-        }
-      }
-
-      if (examAnswerKeys.empty()) {
-        res.status = 400;
-        res.set_content("{\"error\":\"No valid answer keys found in CSV\"}", "application/json");
-        return;
-      }
-      
-      // Read student answers CSV
-      std::string baseName = filename.substr(0, filename.find_last_of('.'));
-      std::string csvPath = outputDir + "/" + baseName + ".csv";
-      
-      std::ifstream csvFile(csvPath);
-      if (!csvFile.is_open()) {
-        res.status = 500;
-        res.set_content("{\"error\":\"Student answers CSV file not found\"}", "application/json");
-        return;
-      }
-      
-      // Parse student answers CSV (transposed format)
-      std::vector<std::vector<std::string>> csvData;
-      while (std::getline(csvFile, line)) {
-        std::vector<std::string> row;
-        std::stringstream ss(line);
-        std::string cell;
-        
-        while (std::getline(ss, cell, ',')) {
-          row.push_back(cell);
-        }
-        csvData.push_back(row);
-      }
-      csvFile.close();
-
-      // Remove existing grading result rows if they exist
-      // Look for grading result rows by checking for specific headers
-      std::vector<std::vector<std::string>> cleanedCsvData;
-      for (int i = 0; i < csvData.size(); i++) {
-        // Check if this row is a grading result row
-        bool isGradingRow = false;
-        if (!csvData[i].empty()) {
-          std::string firstCell = csvData[i][0];
-          // Check for grading headers
-          if (firstCell == "Part 1" || firstCell == "Part 2" || firstCell == "Total") {
-            // Also check second column to be more specific
-            if (csvData[i].size() > 1) {
-              std::string secondCell = csvData[i][1];
-              if (secondCell == "Correct" || secondCell == "Points") {
-                isGradingRow = true;
-              }
+        if (success) {
+          {
+            std::lock_guard<std::mutex> lock(progressMutex);
+            auto originalIt = jobProgressMap.find(jobId);
+            if (originalIt != jobProgressMap.end()) {
+              originalIt->second.processCompleted = true;
+              originalIt->second.currentStage = "completed";
+              originalIt->second.currentStep = "Re-grading completed";
+              originalIt->second.progressPercent = 100.0;
             }
           }
-        }
-        
-        // Only keep non-grading rows
-        if (!isGradingRow) {
-          cleanedCsvData.push_back(csvData[i]);
-        }
-      }
-
-      // Update csvData to use the cleaned version
-      csvData = cleanedCsvData;
-
-      // Process each student and add grading results
-      ExamGrader grader;
-      std::vector<std::vector<std::string>> gradingResultsData = csvData;
-
-      // Add 6 new rows for grading results
-      std::vector<std::string> part1CorrectRow, part1PointsRow, part2CorrectRow;
-      std::vector<std::string> part2PointsRow, totalCorrectRow, totalPointsRow;
-
-      // Add headers for new columns
-      part1CorrectRow.push_back("Part 1");
-      part1PointsRow.push_back("Part 1");
-      part2CorrectRow.push_back("Part 2");
-      part2PointsRow.push_back("Part 2");
-      totalCorrectRow.push_back("Total");
-      totalPointsRow.push_back("Total");
-
-      // Add subheaders
-      part1CorrectRow.push_back("Correct");
-      part1PointsRow.push_back("Points");
-      part2CorrectRow.push_back("Correct");
-      part2PointsRow.push_back("Points");
-      totalCorrectRow.push_back("Correct");
-      totalPointsRow.push_back("Points");
-
-      int studentsGraded = 0;
-      int studentsWithAnswerKey = 0;
-
-      // Process each student (skip first 2 header columns)
-      for (int studentCol = 2; studentCol < csvData[0].size(); studentCol++) {
-        // Extract student data from this column
-        std::vector<std::string> studentAnswers;
-        std::string studentExamId = "";
-        
-        for (int row = 0; row < csvData.size(); row++) {
-          if (studentCol < csvData[row].size()) {
-            studentAnswers.push_back(csvData[row][studentCol]);
-          } else {
-            studentAnswers.push_back("");
-          }
-        }
-        
-        // Get student's ExamID (should be at index 2 in their answers)
-        if (studentAnswers.size() > 2) {
-          studentExamId = studentAnswers[2];
-        }
-        
-        studentsGraded++;
-        
-        // Find matching answer key
-        auto keyIt = examAnswerKeys.find(studentExamId);
-        if (keyIt != examAnswerKeys.end()) {
-          studentsWithAnswerKey++;
           
-          // Grade this student
-          auto gradingResult = grader.gradeStudentExam(studentAnswers, keyIt->second, pointValues);
-          
-          // Add results to new rows
-          part1CorrectRow.push_back(std::to_string(gradingResult.part1CorrectCount));
-          part1PointsRow.push_back(std::to_string(gradingResult.part1TotalPoints));
-          part2CorrectRow.push_back(std::to_string(gradingResult.part2CorrectCount));
-          part2PointsRow.push_back(std::to_string(gradingResult.part2TotalPoints));
-          totalCorrectRow.push_back(std::to_string(gradingResult.totalCorrectCount));
-          totalPointsRow.push_back(std::to_string(gradingResult.totalPoints));
+          // Respond with success
+          res.set_header("Content-Type", "application/json");
+          res.set_content("{\"status\":\"success\",\"jobId\":\"" + jobId + "_regrade\",\"message\":\"Re-grading completed successfully\"}", "application/json");
           
         } else {
-          // No answer key found for this ExamID
-          part1CorrectRow.push_back("N/A");
-          part1PointsRow.push_back("N/A");
-          part2CorrectRow.push_back("N/A");
-          part2PointsRow.push_back("N/A");
-          totalCorrectRow.push_back("N/A");
-          totalPointsRow.push_back("N/A");
-          
-          Logger::warning("CONTROLLER", "No answer key found for ExamID: " + studentExamId);
+          res.status = 500;
+          res.set_content("{\"error\":\"Re-grading process failed\"}", "application/json");
         }
-      }
-
-      // Add the new grading result rows to CSV
-      gradingResultsData.push_back(part1CorrectRow);
-      gradingResultsData.push_back(part1PointsRow);
-      gradingResultsData.push_back(part2CorrectRow);
-      gradingResultsData.push_back(part2PointsRow);
-      gradingResultsData.push_back(totalCorrectRow);
-      gradingResultsData.push_back(totalPointsRow);
-      
-      // Write updated CSV
-      std::ofstream outCsvFile(csvPath);
-      if (!outCsvFile.is_open()) {
+        
+      } catch (const std::exception& e) {
+        Logger::error("CONTROLLER", "Exception in re-grading: " + std::string(e.what()));
         res.status = 500;
-        res.set_content("{\"error\":\"Failed to write updated CSV file\"}", "application/json");
-        return;
+        res.set_content("{\"error\":\"Re-grading exception: " + std::string(e.what()) + "\"}", "application/json");
       }
       
-      for (int i = 0; i < gradingResultsData.size(); i++) {
-        for (int j = 0; j < gradingResultsData[i].size(); j++) {
-          outCsvFile << gradingResultsData[i][j];
-          if (j < gradingResultsData[i].size() - 1) {
-            outCsvFile << ",";
-          }
-        }
-        outCsvFile << "\n";
-      }
-      outCsvFile.close();
-      
-      // Success response
-      nlohmann::json response;
-      response["success"] = true;
-      response["message"] = "Grading completed successfully";
-      response["studentsGraded"] = studentsGraded;
-      response["studentsWithAnswerKey"] = studentsWithAnswerKey;
-      response["answerKeysUsed"] = examAnswerKeys.size();
-      response["examIds"] = examIds;
-      
-      res.set_content(response.dump(), "application/json");
-      
-    } catch (const std::exception& e) {
-      res.status = 500;
-      res.set_content("{\"error\":\"Failed to process grading request: " + std::string(e.what()) + "\"}", "application/json");
+    } else {
+      res.status = 400;
+      res.set_content("{\"error\":\"Request must be multipart form data\"}", "application/json");
+      Logger::error("CONTROLLER", "Regrade request is not multipart form data");
     }
   });
 
-  // Add CORS handler for the grading endpoint
-  server.Options("/grade-exam", [](const httplib::Request&, httplib::Response &res) {
+  // Handle CORS preflight for regrade endpoint
+  server.Options("/regrade", [](const httplib::Request&, httplib::Response &res) {
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_header("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.set_header("Access-Control-Allow-Headers", "Content-Type");

@@ -63,6 +63,15 @@
 
 .MainPage-nav a {
     text-decoration: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    -webkit-touch-callout: none;
 }
 
 .nav-button {
@@ -80,12 +89,49 @@
     gap: 10px;
     transition: transform 0.2s ease, box-shadow 0.25s ease;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    -webkit-touch-callout: none;
+    pointer-events: auto;
+}
+
+/* Prevent text nodes from being selectable/draggable */
+.nav-button span,
+.nav-button div,
+.nav-button p {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    -webkit-touch-callout: none;
 }
 
 .nav-button img {
     width: 64px; /* Icon width */
     height: 64px; /* Icon height */
     filter: brightness(0) invert(1); /* Make icon white */
+    
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    -webkit-touch-callout: none;
+    pointer-events: none; 
 }
 
 .nav-button:hover {

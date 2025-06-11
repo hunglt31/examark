@@ -5,3 +5,7 @@ Installl nvidia container
 Config docker
 
 Install triton
+
+nlohmann
+
+

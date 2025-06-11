@@ -351,4 +351,5 @@ CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o: \
  /usr/include/opencv4/opencv2/video/tracking.hpp \
  /usr/include/opencv4/opencv2/video/background_segm.hpp \
  /home/hunglt31/examark/backend/includes/utils/Logger.h \
- /home/hunglt31/examark/backend/includes/utils/Detection.h
+ /home/hunglt31/examark/backend/includes/utils/Detection.h \
+ /home/hunglt31/examark/backend/includes/utils/ExamConfig.h

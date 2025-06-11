@@ -35,18 +35,29 @@ function SheetPage() {
   const [pointValues, setPointValues] = useState(Array(24).fill(1));
   const [gradingResults, setGradingResults] = useState(null);
 
+  const [isRegrade, setIsRegrade] = useState(false);
+  const [regradeJobId, setRegradeJobId] = useState(null);
+  const [answerKeyFile, setAnswerKeyFile] = useState(null);
+  const [showRegradeModal, setShowRegradeModal] = useState(false);
+
+  const answerKeyInputRef = useRef(null);
+
   // Add alert state
   const [alert, setAlert] = useState({
     isOpen: false,
     message: '',
-    type: 'info'
+    type: 'info', 
+    showConfirm: false,
+    onConfirm: null
   });
 
-  const showAlert = (message, type = 'info') => {
+  const showAlert = (message, type = 'info', showConfirm = false, onConfirm = null) => {
     setAlert({
       isOpen: true,
       message,
-      type
+      type,
+      showConfirm,
+      onConfirm
     });
   };
 
@@ -54,8 +65,28 @@ function SheetPage() {
     setAlert({
       isOpen: false,
       message: '',
-      type: 'info'
+      type: 'info',
+      showConfirm: false,
+      onConfirm: null
     });
+  };
+
+    const handleClearSheet = () => {
+    showAlert(
+      'Do you want to clear all sheet data? This action cannot be undone.',
+      'warning',
+      true,
+      () => {
+        localStorage.removeItem('examarkJobId');
+        localStorage.removeItem('examarkCsvData');
+        localStorage.removeItem('examarkImages');
+        localStorage.removeItem('examarkEdits');
+        setHasResults(false);
+        setCsvRows([]);
+        setImages([]);
+        closeAlert();
+      }
+    );
   };
 
   // Load data on component mount
@@ -341,6 +372,22 @@ function SheetPage() {
     
     let value = e.target.textContent;
     
+    // For Student ID (row 1) and Exam ID (row 2), only allow numbers
+    if ((rowIndex === 1 || rowIndex === 2) && colIndex > 1) {
+      const numbersOnly = value.replace(/\D/g, '');
+      if (numbersOnly !== value) {
+        e.target.textContent = numbersOnly;
+        // Move cursor to end
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(e.target);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      return;
+    }
+    
     // Auto uppercase for answer cells (rows after headers, non-metadata columns)
     if (rowIndex > 3 && colIndex > 1) {
       if (value.length > 1) {
@@ -357,16 +404,22 @@ function SheetPage() {
 
   // Determine cell style based on content
   const getCellStyle = (value, rowIndex, colIndex) => {
-    // Skip styling for header rows
-    if (rowIndex < 4) return {};
-    
+    if (rowIndex < 4) {
+      if ((rowIndex === 1 || rowIndex === 2) && colIndex > 1) {
+        if (value && !isValidId(value)) {
+          return { backgroundColor: 'yellow' };
+        }
+      }
+      return {};
+    }
+      
     // Only apply to answer columns
     if (colIndex < 2) return {};
 
-      let styles = {};
+    let styles = {};
 
-    // Check if this is one of the last 6 rows (grading results)
-    const isGradingResultRow = csvRows.length > 0 && rowIndex >= csvRows.length - 7;
+    // Check if this is one of the last 3 rows (grading results)
+    const isGradingResultRow = csvRows.length > 0 && rowIndex >= csvRows.length - 4;
     
     if (isGradingResultRow) {
       if (value && /^\d+(\.\d+)?$/.test(value.toString())) {
@@ -376,15 +429,14 @@ function SheetPage() {
         const rowLabel = csvRows[rowIndex]?.[1]?.toLowerCase() || '';
         
         if (rowLabel.includes('correct')) {
-          // Blue background for correct answers
-          styles.backgroundColor = '#e3f2fd';
-          styles.color = '#1976d2';
-          styles.border = '2px solid #2196f3';
+          styles.backgroundColor = '#f3e5f5';
+          styles.color = '#6a1b9a';
+          styles.border = '2px solid #9c27b0';
         } else if (rowLabel.includes('points')) {
-          // Green background for points
-          styles.backgroundColor = '#e8f5e8';
-          styles.color = '#2e7d32';
-          styles.border = '2px solid #4caf50';
+          // Red background for points (last row)
+          styles.backgroundColor = '#ffebee';
+          styles.color = '#c62828';
+          styles.border = '2px solid #f44336';
         }
       }
       
@@ -548,6 +600,10 @@ function SheetPage() {
   const handleKeyDown = (e, rowIndex, colIndex) => {
     if (!isEditing) return;
 
+    const selection = window.getSelection();
+    const isEditingContent = selection.rangeCount > 0 && 
+      selection.getRangeAt(0).startContainer.nodeType === Node.TEXT_NODE;
+
     const rows = csvRows.length;
     const cols = csvRows[0]?.length || 0;
     let newRow = rowIndex;
@@ -579,6 +635,14 @@ function SheetPage() {
         break;
         
       case 'ArrowLeft':
+        // Allow left arrow to move within cell content if actively editing
+        if (isEditingContent) {
+          const range = selection.getRangeAt(0);
+          if (range.startOffset > 0) {
+            return; // Let browser handle cursor movement within cell
+          }
+        }
+        
         newCol = Math.max(0, colIndex - 1);
         // Skip frozen columns
         while (newCol >= 0 && isCellNonEditable(rowIndex, newCol)) {
@@ -588,6 +652,15 @@ function SheetPage() {
         break;
         
       case 'ArrowRight':
+        // Allow right arrow to move within cell content if actively editing
+        if (isEditingContent) {
+          const range = selection.getRangeAt(0);
+          const textContent = range.startContainer.textContent || '';
+          if (range.startOffset < textContent.length) {
+            return; // Let browser handle cursor movement within cell
+          }
+        }
+        
         newCol = Math.min(cols - 1, colIndex + 1);
         break;
         
@@ -647,51 +720,175 @@ function SheetPage() {
     }
   };
 
-  // Render the CSV table and image display
-  const handleGradeExam = async () => {
-    if (!jobId) {
-      alert('No job ID available. Please re-upload the exam.');
-      return;
-    }
-    
-    setIsGrading(true);
-    
+  const handleSaveExcel = () => {
     try {
       const currentCsvData = updateCsvFromRows();
+      
+      if (!currentCsvData) {
+        showAlert('No data to save', 'error');
+        return;
+      }
+      
+      // Parse CSV data into rows
+      const csvRows = currentCsvData.split('\n').filter(row => row.trim());
+      const data = csvRows.map(row => row.split(',').map(cell => cell.trim()));
+      
+      // Create simple Excel XML format
+      let excelXML = `<?xml version="1.0"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Worksheet ss:Name="Exam Results">
+  <Table>`;
 
-      const response = await fetch('http://localhost:8080/grade-exam', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          jobId,
-          csvData: currentCsvData
-        })
+      // Add data rows
+      data.forEach((row) => {
+        excelXML += '<Row>';
+        row.forEach(cell => {
+          const cellValue = cell.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+          excelXML += `<Cell><Data ss:Type="String">${cellValue}</Data></Cell>`;
+        });
+        excelXML += '</Row>';
+      });
+
+      excelXML += `  </Table>
+ </Worksheet>
+</Workbook>`;
+      
+      // Create blob with Excel MIME type
+      const blob = new Blob([excelXML], { 
+        type: 'application/vnd.ms-excel' 
       });
       
-      if (!response.ok) {
-        throw new Error(`Server responded with ${response.status}`);
-      }
-      
-      // Get the updated CSV data
-      const csvResponse = await fetch(`http://localhost:8080/results/${jobId}/csv`);
-      if (!csvResponse.ok) {
-        throw new Error(`Failed to fetch updated CSV: ${csvResponse.status}`);
-      }
-      
-      const updatedCsvData = await csvResponse.text();
-      setCsvData(updatedCsvData);
-      parseCsvData(updatedCsvData);
-      
-      alert('Grading completed successfully!');
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `exam_results_${jobId || 'sheet'}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
       
     } catch (error) {
-      console.error('Error during grading:', error);
-      alert(`Grading failed: ${error.message}`);
-    } finally {
-      setIsGrading(false);
+      console.error('Error saving Excel:', error);
+      showAlert('Error saving Excel file', 'error');
     }
+  };
+
+  // Handle answer key file selection
+  const handleAnswerKeyFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type !== 'text/csv' && !file.name.toLowerCase().endsWith('.csv')) {
+        showAlert('Please select a CSV file for the answer key.', 'error');
+        return;
+      }
+      setAnswerKeyFile(file);
+    }
+  };
+
+  // Handle re-grade button click
+  const handleRegradeClick = () => {
+    if (!jobId) {
+      showAlert('No job ID found. Cannot perform re-grading.', 'error');
+      return;
+    }
+    setShowRegradeModal(true);
+  };
+
+  // Handle re-grade submission
+  const handleRegradeSubmit = async () => {
+    if (!answerKeyFile) {
+      showAlert('Please select an answer key CSV file.', 'error');
+      return;
+    }
+
+    if (!jobId) {
+      showAlert('No job ID found. Cannot perform re-grading.', 'error');
+      return;
+    }
+
+    try {
+      setIsRegrade(true);
+      setShowRegradeModal(false);
+      
+      // Get current CSV data with any edits applied
+      const currentCsvData = updateCsvFromRows();
+      
+      if (!currentCsvData) {
+        showAlert('No CSV data available for re-grading.', 'error');
+        setIsRegrade(false);
+        return;
+      }
+
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('jobId', jobId);
+      formData.append('answerKey', answerKeyFile);
+      
+      // Create a blob from CSV data and append as file
+      const csvBlob = new Blob([currentCsvData], { type: 'text/csv' });
+      formData.append('csvFile', csvBlob, 'current_results.csv');
+
+      // Send re-grade request
+      const response = await fetch('http://127.0.0.1:8080/regrade', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.status === 'success') {
+        setIsRegrade(false);
+        showAlert('Re-grading completed successfully! Fetching updated results...', 'success');
+        
+        try {
+          // Fetch the updated CSV data from the server
+          const updatedCsvResponse = await fetch(`http://127.0.0.1:8080/results/${jobId}/csv`);
+          if (updatedCsvResponse.ok) {
+            const updatedCsvData = await updatedCsvResponse.text();
+            
+            // Update the state with new data
+            setCsvData(updatedCsvData);
+            const newRows = updatedCsvData.split('\n').map(line => 
+              line.split(',').map(cell => cell.trim())
+            );
+            setCsvRows(newRows);
+            
+            // Update localStorage with new data
+            localStorage.setItem('examarkCsvData', updatedCsvData);
+            
+            showAlert('Results updated successfully!', 'success');
+          } else {
+            throw new Error('Failed to fetch updated results');
+          }
+        } catch (error) {
+          console.error('Error fetching updated results:', error);
+          showAlert('Re-grading completed but failed to fetch updated results. Please refresh the page.', 'warning');
+        }
+      }
+    } catch (error) {
+      setIsRegrade(false);
+      showAlert(`Re-grading failed: ${error.message}`, 'error');
+    }
+  };
+
+  // Cancel re-grade modal
+  const handleRegradeCancel = () => {
+    setShowRegradeModal(false);
+    setAnswerKeyFile(null);
+    if (answerKeyInputRef.current) {
+      answerKeyInputRef.current.value = '';
+    }
+  };
+
+  const isValidId = (value) => {
+    return /^\d*$/.test(value.toString().trim());
   };
 
   return (
@@ -701,6 +898,10 @@ function SheetPage() {
         message={alert.message}
         type={alert.type}
         onClose={closeAlert}
+        showConfirm={alert.showConfirm}
+        onConfirm={alert.onConfirm}
+        confirmText="Clear Data"
+        cancelText="Cancel"
       />
 
       {/* Header Section */}
@@ -709,8 +910,8 @@ function SheetPage() {
           <img src={UniversityLogo} alt="HUST Logo" className="page-header-logo" draggable="false" />
         </div>
         <div className="page-header-center">
-          <h1>Grading Sheet</h1>
-          <p>Review and edit exams results in spreadsheet format</p>
+          <h1>Exam Results Sheet</h1>
+          <p>Review and edit results of all exams in spreadsheet format</p>
         </div>
         <div className="page-header-right">
           <div className="header-buttons">
@@ -722,39 +923,20 @@ function SheetPage() {
             </Link>
             <Link to="/results" draggable="false">
               <button className="header-btn header-btn-primary">
-                View Results
+                Review Exam
                 <img src={ResultIcon} alt="Result" className="header-btn-icon" draggable="false" />
               </button>
             </Link>
             <button 
               className="header-btn header-btn-secondary"
-              onClick={() => {
-                const csvContent = updateCsvFromRows();
-                const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "exam_results.csv");
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
+              onClick={handleSaveExcel}
             >
               Save Excel
               <img src={DownloadIcon} alt="Download" className="header-btn-icon" draggable="false" />
             </button>
             <button
               className="header-btn header-btn-danger"
-              onClick={() => {
-                if (window.confirm('Are you sure you want to clear all results data?')) {
-                  localStorage.removeItem('examarkJobId');
-                  localStorage.removeItem('examarkCsvData');
-                  localStorage.removeItem('examarkImages');
-                  localStorage.removeItem('examarkEdits');
-                  setHasResults(false);
-                  setCsvRows([]);
-                  setImages([]);
-                }
-              }}
+              onClick={handleClearSheet}
             >
               Clear Sheet
               <img src={DeleteIcon} alt="Delete" className="header-btn-icon" draggable="false" />
@@ -804,19 +986,19 @@ function SheetPage() {
           <div className="text-container">
             <div className="csv-display">
               <div className="csv-controls">
-                <h3>CSV Data Editor</h3>
+                <h3>Grading Sheet Editor</h3>
                 <div className="action-buttons">
                   {!isEditing ? (
                     <>  
                       <button className="btn btn-primary btn-small" onClick={() => setIsEditing(true)}>
-                        EDIT CSV FILE
+                        EDIT SHEET
                       </button>
                       <button 
                         className="btn btn-success btn-small" 
-                        onClick={handleGradeExam}
-                        disabled={isGrading}
+                        onClick={handleRegradeClick}
+                        disabled={isRegrade}
                       >
-                        {isGrading ? 'GRADING...' : 'GRADE EXAM'}
+                        {isRegrade ? 'RE-GRADING...' : 'RE-GRADE EXAMS'}
                       </button>
                     </>
                   ) : (
@@ -834,6 +1016,63 @@ function SheetPage() {
                   )}
                 </div>
               </div>
+
+              {/* Re-grade Modal */}
+              {showRegradeModal && (
+                <div className="modal-overlay">
+                  <div className="modal-content">
+                    <h3>Regrade Exams</h3>
+                    <p>Upload a new answer key CSV file to regrade the current exam results.</p>
+                    
+                    <div className="file-upload-section">
+                      <div className="file-upload-area">
+                        <button
+                          type="button"
+                          onClick={() => answerKeyInputRef.current && answerKeyInputRef.current.click()}
+                          className="btn btn-info btn-large"
+                        >
+                          <i className="fas fa-file-csv"></i> Upload Answer Key CSV
+                        </button>
+                        <input
+                          type="file"
+                          accept=".csv"
+                          onChange={handleAnswerKeyFileChange}
+                          ref={answerKeyInputRef}
+                          style={{ display: 'none' }}
+                        />
+                        {answerKeyFile && <span className="file-name">CSV: {answerKeyFile.name}</span>}
+                      </div>
+                    </div>
+
+                    <div className="modal-buttons">
+                      <button
+                        className="btn btn-success"
+                        onClick={handleRegradeSubmit}
+                        disabled={!answerKeyFile}
+                      >
+                        Start Regrading
+                      </button>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={handleRegradeCancel}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Re-grading Progress Indicator */}
+              {isRegrade && (
+                <div className="regrade-progress">
+                  <div className="progress-content">
+                    <div className="spinner"></div>
+                    <span>Regrading in progress... Please wait.</span>
+                  </div>
+                </div>
+              )}
+
               <div className="csv-table-container">
                 {renderCsvTable()}
               </div>

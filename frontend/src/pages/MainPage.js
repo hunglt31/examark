@@ -28,25 +28,25 @@ function MainPage() {
       
       {/* Navigation Menu */}
       <nav className="MainPage-nav">
-        <Link to="/grade">
+        <Link to="/grade" draggable="false">
           <button className="nav-button">
             <img src={GradeIcon} alt="Grade Exam" draggable="false" />
-            Grade Exams
+            Start Auto Grading
           </button>
         </Link>
-        <Link to="/results">
+        <Link to="/results" draggable="false">
           <button className="nav-button">
             <img src={ResultsIcon} alt="Check Results" draggable="false" />
-            View Results
+            Review Exam Details
           </button>
         </Link>
-        <Link to="/sheet">
+        <Link to="/sheet" draggable="false">
           <button className="nav-button">
             <img src={SheetIcon} alt="Review Sheet" draggable="false" />
-            Review Sheet
+            Review Results Sheet
           </button>
         </Link>
-        <Link to="/help">
+        <Link to="/help" draggable="false">
           <button className="nav-button">
             <img src={HelpIcon} alt="Help" draggable="false" />
             Help

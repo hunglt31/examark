@@ -38,98 +38,94 @@
   overflow-y: auto;
 }
 
-/* ===== TEXT CONTENT STYLES ===== */
-.metadata-action-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* ===== SCORING SECTION STYLES ===== */
+.scoring-section {
   margin-bottom: 15px;
-  padding: 15px;
   background-color: #f8f9fa;
-  border-radius: 4px;
   border: 1px solid #e9ecef;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.scoring-header {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 15px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.scoring-items {
+  padding: 15px;
+  display: flex;
+  justify-content: space-around;
   flex-wrap: wrap;
   gap: 15px;
 }
 
-.metadata-inline {
+.scoring-item {
   display: flex;
-  gap: 30px;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-}
-
-.metadata-item-inline {
-  font-size: 22px;
-  white-space: nowrap;
-}
-
-.metadata-item-inline strong {
-  color: #495057;
-  margin-right: 8px;
-}
-
-.metadata-item-inline span[contenteditable] {
-  background-color: white;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  padding: 6px 10px;
   min-width: 100px;
-  display: inline-block;
+}
+
+.scoring-label {
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 4px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.scoring-value {
+  font-size: 22px;
+  font-weight: bold;
+  color: #28a745;
+  background-color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 2px solid #28a745;
+  min-width: 50px;
+  text-align: center;
   transition: all 0.2s ease;
 }
 
-.action-buttons-inline {
-  flex-shrink: 0;
+/* Editable scoring values */
+.scoring-value.editable {
+  cursor: text;
+  color: #007bff;
+  border-color: #007bff;
 }
 
-.approve-button,
-.edit-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  transition: all 0.2s ease;
+.scoring-value.editable:focus {
+  outline: 2px solid #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
-.approve-button {
-  background-color: #28a745;
-  color: white;
-}
-
-.approve-button:hover {
-  background-color: #218838;
-}
-
-.edit-button {
-  background-color: #ffc107;
-  color: #212529;
-}
-
-.edit-button:hover {
-  background-color: #e0a800;
+.scoring-value.editable:hover {
+  border-color: #0056b3;
 }
 
 /* ===== PART STYLES ===== */
 /* Part labels */
 .part-label {
-  margin: 20px 0 15px 0;
-  padding: 12px;
+  margin: 15px 0 10px 0;
+  padding: 10px;
   background-color: #007bff;
   color: white;
   border-radius: 6px;
   text-align: center;
-  font-size: 20px;
+  font-size: 16px;
 }
 
 /* Part 1 grid */
 .part1-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
 .part1-column {
@@ -168,6 +164,7 @@
   font-weight: bold;
   flex-shrink: 0;
 }
+
 /* Part 2 table */
 .part2-table {
   margin-bottom: 20px;
@@ -202,29 +199,6 @@
   display: inline-block;
   text-align: center;
   font-weight: bold;
-}
-
-/* Approval status */
-.approval-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 15px;
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
-  border-radius: 4px;
-  margin-top: 20px;
-}
-
-.approval-status strong {
-  font-size: 18px;
-}
-
-.check-icon {
-  width: 20px;
-  height: 20px;
 }
 
 /* No images state */

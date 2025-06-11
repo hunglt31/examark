@@ -2,12 +2,15 @@
 #define IMAGE_PROCESSOR_H
 
 #include <opencv2/opencv.hpp>
+#include <functional>
 #include <string>
 #include <vector>
 #include "utils/Logger.h"
 
 const int IMAGE_WIDTH = 2480;
 const int IMAGE_HEIGHT = 3508;
+
+using ProgressCallback = std::function<void(int currentPage, int totalPages, double progressPercent)>;
 
 class ImageProcessor {
 private: 
@@ -37,6 +40,30 @@ private:
   cv::Mat alignImage(const cv::Mat &imgScan, cv::Size imgSize = cv::Size(IMAGE_WIDTH, IMAGE_HEIGHT));
 
 public:
+  /**
+   * @brief Callback type for progress updates during image processing.
+   *
+   * This callback is invoked to report the progress of image extraction.
+   * It provides the current page number, total pages, and the percentage of completion.
+   */
+  using ProgressCallback = std::function<void(int currentPage, int totalPages, double percent)>;
+  
+  /**
+   * @brief Converts PDF data to images with callback.
+   *
+   * This function reads PDF raw data and converts each page into an image.
+   * The images are resized to a standard size and padded to ensure uniformity.
+   *
+   * @param pdfData The data of the PDF file.
+   * @param dataSize The size of the PDF data.
+   * @param images Vector to store the converted images.
+   * @param progressCallback A callback function to report progress during the conversion.
+   * @param dpi The DPI for the conversion (default is 300).
+   * @return true if the conversion is successful, false otherwise.
+   */
+  bool getRequestImagesWithProgress(const char* pdfData, int dataSize, std::vector<cv::Mat> &images, 
+                                    ProgressCallback progressCallback, double dpi = 300.0);
+
   /**
    * @brief Reads PDF data and extracts images from it.
    *

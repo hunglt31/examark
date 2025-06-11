@@ -19,7 +19,7 @@
   background: white;
   border-radius: 8px;
   padding: 24px;
-  width: 350px;
+  width: 400px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
@@ -90,3 +90,69 @@
     transform: translate(-50%, -50%) scale(0.9);
   }
 }
+
+/* Add to CustomAlert.css or update existing styles */
+
+.custom-alert-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.custom-alert-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  min-width: 100px;
+}
+
+.custom-alert-confirm {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.custom-alert-confirm:hover {
+  background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.custom-alert-cancel {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+.custom-alert-cancel:hover {
+  background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
+.custom-alert-close {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.custom-alert-close:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+/* Button pressed states */
+.custom-alert-button:active,
+.custom-alert-close:active {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+

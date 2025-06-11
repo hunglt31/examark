@@ -18,21 +18,23 @@ public:
    * The function takes metadata and content detections, processes them into matrices,
    * and extracts the student ID, exam ID, and answers for both parts of the assignment.
    *
+   * @param imageBasename The base name of the image file (without extension).
    * @param metadataDetections A vector of metadata detections.
    * @param contentDetections A vector of content detections.
-   * @return std::vector<std::string> A vector containing the student ID, exam ID, and answers.
+   * @param examAnswerKeys A map containing the answer keys for each exam ID.
+   * @return std::vector<std::string> A vector containing the student ID, exam ID, answers and score.
    */
-  std::vector<std::string> extractAnswers(
+  std::vector<std::string> extractAnswersAndGradeExam(
     const std::string& imageBasename,
     const std::vector<std::vector<Detection>>& metadataDetections,
-    const std::vector<std::vector<Detection>>& contentDetections
+    const std::vector<std::vector<Detection>>& contentDetections,
+    const std::map<std::string, std::vector<std::string>>& examAnswerKeys
 );
 
   struct QuestionResult {
-    bool isCorrect;
-    int pointsEarned;
     std::string studentAnswer;
     std::string correctAnswer;
+    bool isCorrect;
   };
   
   struct ExamGradingResult {
@@ -40,10 +42,7 @@ public:
     std::vector<QuestionResult> part2Results;  
     
     int part1CorrectCount;
-    int part1TotalPoints;
     int part2CorrectCount;
-    int part2TotalPoints;
-    int totalCorrectCount;
     int totalPoints;
   };
 
@@ -55,14 +54,31 @@ public:
    *
    * @param studentAnswers A vector of strings representing the student's answers.
    * @param answerKey A vector of strings representing the correct answers.
-   * @param pointValues A vector of integers representing the point values for each question.
    * @return GradingResult A struct containing the grading results.
    */
   ExamGradingResult gradeStudentExam(
     const std::vector<std::string>& studentAnswers, 
-    const std::vector<std::string>& answerKey,
-    const std::vector<int>& pointValues
+    const std::vector<std::string>& answerKey
   );
+
+  /**
+   * @brief Re-grades an exam using existing CSV data without extracting answers
+   * 
+   * Takes pre-extracted student answers from CSV and re-grades them against
+   * the answer key. This is used for re-grading functionality where answers
+   * have already been extracted and potentially modified.
+   * 
+   * @param imageBasename The base name of the image being re-graded
+   * @param studentAnswers Vector containing the student's answers from CSV
+   * @param examAnswerKeys Map of exam IDs to their corresponding answer keys
+   * @return Vector of strings containing the re-graded results
+   */
+  std::vector<std::string> regradeExamFromCsv(
+    const std::string& imageBasename,
+    const std::vector<std::string>& studentAnswers,
+    const std::map<std::string, std::vector<std::string>>& examAnswerKeys
+  );
+
 private:
   /**
    * @brief Create matrix for student ID and exam ID.

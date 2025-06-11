@@ -9,6 +9,7 @@
 #include <cctype>
 #include "utils/ExamGrader.h"
 #include "utils/Detection.h"
+#include "utils/ExamConfig.h"
 
 // Constants for matrix sizes
 const int STUDENT_ID_NUM_CENTER_X = 9;
@@ -21,15 +22,9 @@ const int PART_1_NUM_CENTER_Y = 4;
 const int PART_2_NUM_CENTER_X = 4;
 const int PART_2_NUM_CENTER_Y = 6;
 
-// Constants for grading
-const int PART_1_START_INDEX = 4;
-const int PART_2_START_INDEX = 20;
-const int PART_1_NUM_QUESTIONS = 16;
-const int PART_1_MAX_SCORE = 16;
-const int PART_2_NUM_QUESTIONS = 8;
-const int PART_2_MAX_SCORE = 8;
-const int TOTAL_NUM_QUESTIONS = PART_1_NUM_QUESTIONS + PART_2_NUM_QUESTIONS;
-const int TOTAL_MAX_SCORE = PART_1_MAX_SCORE + PART_2_MAX_SCORE;
+const int NUM_SUBMATRICES_PART_2 = 8;
+const int NUM_SUBMATRICES_ON_IMG = 2;
+const int NUM_SUBMATRIX_COLS = 2;
 
 cv::Mat ExamGrader::createMetadataMatrix(const std::vector<Detection>& detections,
                                          int numRows, int numCols) {
@@ -39,14 +34,13 @@ cv::Mat ExamGrader::createMetadataMatrix(const std::vector<Detection>& detection
     return matrix;
   }
   
-  // Use K-means to assign detections to grid positions instead of sorting
+  // Use K-means to assign detections to grid positions
   std::vector<cv::Point2f> centers;
   for (const auto& detection : detections) {
     centers.push_back(cv::Point2f(detection.box.x + detection.box.width/2, 
                                   detection.box.y + detection.box.height/2));
   }
   
-  // Find bounding box of all detections
   float minX = centers[0].x, maxX = centers[0].x;
   float minY = centers[0].y, maxY = centers[0].y;
   for (const auto& center : centers) {
@@ -56,29 +50,26 @@ cv::Mat ExamGrader::createMetadataMatrix(const std::vector<Detection>& detection
     maxY = std::max(maxY, center.y);
   }
   
-  // Calculate grid step sizes
   float stepX = (maxX - minX) / std::max(1.0f, (float)(numCols - 1));
   float stepY = (maxY - minY) / std::max(1.0f, (float)(numRows - 1));
   
-  // Group detections by column using K-means assignment
   std::vector<std::vector<std::pair<int, Detection>>> columnCandidates(numCols);
   
+  // Group detections by column using K-means assignment
   for (int i = 0; i < detections.size(); i++) {
     float x = centers[i].x;
     float y = centers[i].y;
     
-    // Find nearest grid position
     int col = stepX > 0 ? std::round((x - minX) / stepX) : 0;
     int row = stepY > 0 ? std::round((y - minY) / stepY) : 0;
     
-    // Clamp to valid range
     col = std::max(0, std::min(col, numCols - 1));
     row = std::max(0, std::min(row, numRows - 1));
     
     columnCandidates[col].push_back({row, detections[i]});
   }
   
-  // Keep your existing logic for processing each column
+  // Process each column to select candidates
   for (int col = 0; col < numCols; ++col) {
     if (!columnCandidates[col].empty()) {
       std::vector<std::pair<int, Detection>> class1Candidates;
@@ -155,14 +146,13 @@ cv::Mat ExamGrader::createPart1Matrix(const std::vector<Detection>& detections,
     return matrix;
   }
   
-  // Use K-means to assign detections to grid positions instead of sorting
+  // Use K-means to assign detections to grid positions
   std::vector<cv::Point2f> centers;
   for (const auto& detection : detections) {
     centers.push_back(cv::Point2f(detection.box.x + detection.box.width/2, 
                                   detection.box.y + detection.box.height/2));
   }
   
-  // Find bounding box of all detections
   float minX = centers[0].x, maxX = centers[0].x;
   float minY = centers[0].y, maxY = centers[0].y;
   for (const auto& center : centers) {
@@ -172,29 +162,25 @@ cv::Mat ExamGrader::createPart1Matrix(const std::vector<Detection>& detections,
     maxY = std::max(maxY, center.y);
   }
   
-  // Calculate grid step sizes
   float stepX = (maxX - minX) / std::max(1.0f, (float)(numCols - 1));
   float stepY = (maxY - minY) / std::max(1.0f, (float)(numRows - 1));
   
-  // Group detections by row using K-means assignment
   std::vector<std::vector<std::pair<int, Detection>>> rowCandidates(numRows);
   
   for (int i = 0; i < detections.size(); i++) {
     float x = centers[i].x;
     float y = centers[i].y;
-    
-    // Find nearest grid position
+  
     int col = stepX > 0 ? std::round((x - minX) / stepX) : 0;
     int row = stepY > 0 ? std::round((y - minY) / stepY) : 0;
     
-    // Clamp to valid range
     col = std::max(0, std::min(col, numCols - 1));
     row = std::max(0, std::min(row, numRows - 1));
     
     rowCandidates[row].push_back({col, detections[i]});
   }
   
-  // Keep your existing logic for processing each row
+  // Process each row to select candidates
   for (int row = 0; row < numRows; ++row) {
     if (!rowCandidates[row].empty()) {
       std::vector<std::pair<int, Detection>> class1Candidates;
@@ -207,10 +193,10 @@ cv::Mat ExamGrader::createPart1Matrix(const std::vector<Detection>& detections,
       if (class1Candidates.empty()) {
         // Keep 0 values
       } else if (class1Candidates.size() == 1) {
-        // Only one class 1 candidate—select it directly.
+        // Only one class 1 candidate—select it directly
         matrix.at<uchar>(row, class1Candidates[0].first) = 1;
       } else {
-        // Multiple class 1 candidates—filter out those that are significantly lighter.
+        // Multiple class 1 candidates—filter out those that are significantly lighter
         std::vector<std::pair<int, Detection>> filtered;
         for (const auto &cand : class1Candidates) {
           bool removeCand = false;
@@ -252,14 +238,13 @@ cv::Mat ExamGrader::createPart2Matrix(const std::vector<Detection>& detections,
     return matrix;
   }
   
-  // Use K-means to assign detections to grid positions instead of sorting
+  // Use K-means to assign detections to grid positions
   std::vector<cv::Point2f> centers;
   for (const auto& detection : detections) {
     centers.push_back(cv::Point2f(detection.box.x + detection.box.width/2, 
                                   detection.box.y + detection.box.height/2));
   }
   
-  // Find bounding box of all detections
   float minX = centers[0].x, maxX = centers[0].x;
   float minY = centers[0].y, maxY = centers[0].y;
   for (const auto& center : centers) {
@@ -269,37 +254,31 @@ cv::Mat ExamGrader::createPart2Matrix(const std::vector<Detection>& detections,
     maxY = std::max(maxY, center.y);
   }
   
-  // Calculate grid step sizes
   float stepX = (maxX - minX) / std::max(1.0f, (float)(numCols - 1));
   float stepY = (maxY - minY) / std::max(1.0f, (float)(numRows - 1));
   
-  // Group detections by row using K-means assignment
   std::vector<std::vector<std::pair<int, Detection>>> rowCandidates(numRows);
   
   for (int i = 0; i < detections.size(); i++) {
     float x = centers[i].x;
     float y = centers[i].y;
     
-    // Find nearest grid position
     int col = stepX > 0 ? std::round((x - minX) / stepX) : 0;
     int row = stepY > 0 ? std::round((y - minY) / stepY) : 0;
-    
-    // Clamp to valid range
+
     col = std::max(0, std::min(col, numCols - 1));
     row = std::max(0, std::min(row, numRows - 1));
     
     rowCandidates[row].push_back({col, detections[i]});
   }
   
-  // Keep your existing submatrix processing logic
-  int numSubmatrices = 2;
-  int subCols = 2;
-  for (int sm = 0; sm < numSubmatrices; ++sm) {
-    int colStart = sm * subCols;
+  // Process each row to select candidates
+  for (int sm = 0; sm < NUM_SUBMATRICES_ON_IMG; ++sm) {
+    int colStart = sm * NUM_SUBMATRIX_COLS;
     for (int row = 0; row < numRows; ++row) {
       std::vector<std::pair<int, Detection>> subRowCandidates;
       for (const auto& cand : rowCandidates[row]) {
-        if (cand.first >= colStart && cand.first < colStart + subCols)
+        if (cand.first >= colStart && cand.first < colStart + NUM_SUBMATRIX_COLS)
           subRowCandidates.push_back(cand);
       }
       // Keep your existing logic for processing each subrow
@@ -450,22 +429,21 @@ std::vector<std::string> ExamGrader::processContentPart2(const cv::Mat& array) {
     return overallAnswers;
   }
   
-  const int numSubmatrices = 8;
-  const int submatrixCols = 2;
-  const int rows = array.rows;
   const uchar* data = array.data;
   int step = static_cast<int>(array.step[0]);
     
-  for (int i = 0; i < numSubmatrices; i++) {
+  for (int i = 0; i < NUM_SUBMATRICES_PART_2; i++) {
     std::string eachAnswer;
-    int colStart = i * submatrixCols;
-    for (int r = 0; r < rows; r++) {
+    int colStart = i * NUM_SUBMATRIX_COLS;
+    
+    for (int r = 0; r < PART_2_NUM_CENTER_Y; r++) {
       const uchar* rowPtr = data + r * step;
       uchar val0 = rowPtr[colStart];
       uchar val1 = rowPtr[colStart + 1];
       
       bool isSuggested = (val0 == 2 || val1 == 2);
       bool hasMultiple = (val0 == 3 || val1 == 3);
+      
       if (val0 == 1) {
         eachAnswer.push_back('D');
       } else if (val1 == 1) {
@@ -487,17 +465,18 @@ std::vector<std::string> ExamGrader::processContentPart2(const cv::Mat& array) {
   return overallAnswers;
 }
 
-std::vector<std::string> ExamGrader::extractAnswers(
+std::vector<std::string> ExamGrader::extractAnswersAndGradeExam(
   const std::string& imageBasename,
   const std::vector<std::vector<Detection>>& metadataDetections,
-  const std::vector<std::vector<Detection>>& contentDetections) 
+  const std::vector<std::vector<Detection>>& contentDetections,
+  const std::map<std::string, std::vector<std::string>>& examAnswerKeys) 
 {
   try {
-    // Process metadata 
+    // Process metadata matrix
     cv::Mat studentIdMatrix = createMetadataMatrix(metadataDetections[0], STUDENT_ID_NUM_CENTER_Y, STUDENT_ID_NUM_CENTER_X);
     cv::Mat examIdMatrix = createMetadataMatrix(metadataDetections[1], EXAM_ID_NUM_CENTER_Y, EXAM_ID_NUM_CENTER_X);
 
-    // Process content part 1 to a 16x4 matrix
+    // Process content part 1 matrix
     cv::Mat content11Matrix = createPart1Matrix(contentDetections[0], PART_1_NUM_CENTER_Y, PART_1_NUM_CENTER_X);
     cv::Mat content12Matrix = createPart1Matrix(contentDetections[1], PART_1_NUM_CENTER_Y, PART_1_NUM_CENTER_X);
     cv::Mat content13Matrix = createPart1Matrix(contentDetections[2], PART_1_NUM_CENTER_Y, PART_1_NUM_CENTER_X);
@@ -507,7 +486,7 @@ std::vector<std::string> ExamGrader::extractAnswers(
     std::vector<cv::Mat> matricesPart1 = { content11Matrix, content12Matrix, content13Matrix, content14Matrix };
     cv::vconcat(matricesPart1, contentPart1Matrix);
 
-    // Process content part 2 to a 6x16 matrix
+    // Process content part 2 matrix
     cv::Mat content21Matrix = createPart2Matrix(contentDetections[4], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
     cv::Mat content22Matrix = createPart2Matrix(contentDetections[5], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
     cv::Mat content23Matrix = createPart2Matrix(contentDetections[6], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
@@ -517,7 +496,7 @@ std::vector<std::string> ExamGrader::extractAnswers(
     std::vector<cv::Mat> matricesPart2 = { content21Matrix, content22Matrix, content23Matrix, content24Matrix };
     cv::hconcat(matricesPart2, contentPart2Matrix);
     
-    // Process exam to a vector of strings
+    // Extract answers
     std::string studentId = getStudentId(studentIdMatrix);
     std::string examId = getExamId(examIdMatrix);
     std::vector<std::string> contentPart1Answers = processContentPart1(contentPart1Matrix);
@@ -531,119 +510,144 @@ std::vector<std::string> ExamGrader::extractAnswers(
     result.insert(result.end(), contentPart1Answers.begin(), contentPart1Answers.end());
     result.insert(result.end(), contentPart2Answers.begin(), contentPart2Answers.end());
 
+    // Grade exam
+    auto answerKeyIt = examAnswerKeys.find(examId);
+    if (answerKeyIt != examAnswerKeys.end()) {
+      const std::vector<std::string>& correctAnswers = answerKeyIt->second;
+      ExamGradingResult gradingResult = gradeStudentExam(result, correctAnswers);
+      
+      result.push_back(std::to_string(gradingResult.part1CorrectCount));  
+      result.push_back(std::to_string(gradingResult.part2CorrectCount)); 
+      result.push_back(std::to_string(gradingResult.totalPoints));       
+    } else {
+      result.push_back("N/A");  
+      result.push_back("N/A");  
+      result.push_back("N/A"); 
+    }
+
     return result;
   } catch (const std::exception& e) {
-    Logger::error("EXAM GRADER", "Answer extraction failed for " + imageBasename + ": " + std::string(e.what()));
+    Logger::error("EXAM GRADER", "Answer extraction and grading failed for " + imageBasename + ": " + std::string(e.what()));
     return {};
+  }
+}
+
+std::vector<std::string> ExamGrader::regradeExamFromCsv(
+  const std::string& imageBasename,
+  const std::vector<std::string>& studentAnswers,
+  const std::map<std::string, std::vector<std::string>>& examAnswerKeys) 
+{
+  try {
+    // Extract exam ID from student answers (should be at index 2)
+    if (studentAnswers.size() < 3) {
+      return {};
+    }
+    
+    std::string examId = studentAnswers[2]; 
+    
+    // Find the answer key for this exam ID
+    auto answerKeyIt = examAnswerKeys.find(examId);
+    if (answerKeyIt == examAnswerKeys.end()) {
+      std::vector<std::string> result = studentAnswers;
+      if (result.size() >= 3) {
+        // Add or update grading results
+        while (result.size() < studentAnswers.size() + 3) {
+          result.push_back("N/A");
+        }
+        result[result.size() - 3] = "N/A"; 
+        result[result.size() - 2] = "N/A"; 
+        result[result.size() - 1] = "N/A";  
+      }
+      return result;
+    }
+    
+    const std::vector<std::string>& correctAnswers = answerKeyIt->second;
+    
+    // Perform grading using existing grading logic
+    ExamGradingResult gradingResult = gradeStudentExam(studentAnswers, correctAnswers);
+    
+    // Prepare result with updated scores
+    std::vector<std::string> result = studentAnswers;
+    
+    // Ensure result has space for grading scores
+    while (result.size() < studentAnswers.size() + 3) {
+      result.push_back("0");
+    }
+    
+    // Update the last 3 elements with new grading results
+    result[result.size() - 3] = std::to_string(gradingResult.part1CorrectCount); 
+    result[result.size() - 2] = std::to_string(gradingResult.part2CorrectCount);  
+    result[result.size() - 1] = std::to_string(gradingResult.totalPoints);        
+    
+    return result;
+    
+  } catch (const std::exception& e) {
+    return studentAnswers;
   }
 }
 
 ExamGrader::ExamGradingResult ExamGrader::gradeStudentExam(
   const std::vector<std::string>& studentAnswers,
-  const std::vector<std::string>& correctAnswers,
-  const std::vector<int>& pointValues
-) {
+  const std::vector<std::string>& correctAnswers) 
+{
   ExamGradingResult result;
-  
-  // Initialize counters
   result.part1CorrectCount = 0;
-  result.part1TotalPoints = 0;
   result.part2CorrectCount = 0;
-  result.part2TotalPoints = 0;
-  result.totalCorrectCount = 0;
   result.totalPoints = 0;
   
-  // Student answers start from index 3 (skip image name, student ID, exam ID)
-  const int answerStartIndex = 4;
-  
-  // Grade Part 1 questions (16 questions, multiple choice A-D)
-  for (int i = 0; i < 16; i++) {
+  // Grade Part 1 
+  for (int i = 0; i < PART_1_NUM_QUESTIONS; i++) {
     QuestionResult qResult;
     
-    int studentAnswerIndex = answerStartIndex + i;
-    std::string studentAns = (studentAnswerIndex < studentAnswers.size()) ? 
-                           studentAnswers[studentAnswerIndex] : "_";
-    std::string correctAns = (i < correctAnswers.size()) ? correctAnswers[i] : "";
-    int points = (i < pointValues.size()) ? pointValues[i] : 1;
+    int studentAnswerIndex = PART_1_START_INDEX + i;
+    std::string studentAns = studentAnswers[studentAnswerIndex];
+    std::string correctAns = correctAnswers[i];
     
     qResult.studentAnswer = studentAns;
     qResult.correctAnswer = correctAns;
-    qResult.pointsEarned = 0;
     qResult.isCorrect = false;
     
-    // Skip grading if student didn't answer or marked multiple/invalid
     if (studentAns != "_" && studentAns != "X" && !correctAns.empty()) {
-      // Convert to uppercase for comparison (handles suggested answers in lowercase)
       std::string studentUpper = studentAns;
-      std::string correctUpper = correctAns;
       std::transform(studentUpper.begin(), studentUpper.end(), studentUpper.begin(), ::toupper);
-      std::transform(correctUpper.begin(), correctUpper.end(), correctUpper.begin(), ::toupper);
       
-      if (studentUpper == correctUpper) {
+      if (studentUpper == correctAns) {
         qResult.isCorrect = true;
-        qResult.pointsEarned = points;
         result.part1CorrectCount++;
-        result.part1TotalPoints += points;
       }
     }
-    
     result.part1Results.push_back(qResult);
   }
   
-  // Grade Part 2 questions (8 questions, D/S format)
-  for (int i = 0; i < 8; i++) {
+  // Grade Part 2 
+  for (int i = 0; i < PART_2_NUM_QUESTIONS; i++) {
     QuestionResult qResult;
     
-    int studentAnswerIndex = answerStartIndex + 16 + i; // After Part 1 questions
-    int correctAnswerIndex = 16 + i; // After Part 1 in answer key
+    int studentAnswerIndex = PART_2_START_INDEX + i; 
+    int correctAnswerIndex = PART_1_NUM_QUESTIONS + i;
     
-    std::string studentAns = (studentAnswerIndex < studentAnswers.size()) ? 
-                           studentAnswers[studentAnswerIndex] : "_";
-    std::string correctAns = (correctAnswerIndex < correctAnswers.size()) ? 
-                           correctAnswers[correctAnswerIndex] : "";
-    int points = (correctAnswerIndex < pointValues.size()) ? pointValues[correctAnswerIndex] : 1;
+    std::string studentAns = studentAnswers[studentAnswerIndex];
+    std::string correctAns = correctAnswers[correctAnswerIndex];
     
     qResult.studentAnswer = studentAns;
     qResult.correctAnswer = correctAns;
-    qResult.pointsEarned = 0;
     qResult.isCorrect = false;
     
-    // Part 2 answers are strings like "DSDSDS" - must match exactly
-    if (!studentAns.empty() && !correctAns.empty() && 
-        studentAns != "_" && studentAns != "X") {
+    if (!studentAns.empty() && !correctAns.empty() &&
+      studentAns.find('_') == std::string::npos &&
+      studentAns.find('X') == std::string::npos) {
       
-      // Convert both to uppercase for comparison
       std::string studentUpper = studentAns;
-      std::string correctUpper = correctAns;
       std::transform(studentUpper.begin(), studentUpper.end(), studentUpper.begin(), ::toupper);
-      std::transform(correctUpper.begin(), correctUpper.end(), correctUpper.begin(), ::toupper);
       
-      // For Part 2, check if the length matches and all characters match
-      if (studentUpper.length() == correctUpper.length()) {
-        bool allMatch = true;
-        for (size_t j = 0; j < studentUpper.length(); j++) {
-          // Allow '_' in student answer (unfilled) but don't count as wrong
-          if (studentUpper[j] != correctUpper[j] && studentUpper[j] != '_') {
-            allMatch = false;
-            break;
-          }
-        }
-        
-        if (allMatch) {
-          qResult.isCorrect = true;
-          qResult.pointsEarned = points;
-          result.part2CorrectCount++;
-          result.part2TotalPoints += points;
-        }
+      if (studentUpper == correctAns) {
+        qResult.isCorrect = true;
+        result.part2CorrectCount++;
       }
     }
-    
     result.part2Results.push_back(qResult);
   }
   
-  // Calculate totals
-  result.totalCorrectCount = result.part1CorrectCount + result.part2CorrectCount;
-  result.totalPoints = result.part1TotalPoints + result.part2TotalPoints;
-  
+  result.totalPoints = result.part1CorrectCount + result.part2CorrectCount;
   return result;
 }

@@ -2655,6 +2655,66 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /usr/include/opencv4/opencv2/video.hpp \
   /usr/include/opencv4/opencv2/video/tracking.hpp \
   /usr/include/opencv4/opencv2/video/background_segm.hpp \
+  /usr/include/nlohmann/json.hpp \
+  /usr/include/c++/11/iterator \
+  /usr/include/c++/11/bits/stream_iterator.h \
+  /usr/include/c++/11/numeric \
+  /usr/include/c++/11/bits/stl_numeric.h \
+  /usr/include/c++/11/pstl/glue_numeric_defs.h \
+  /usr/include/nlohmann/adl_serializer.hpp \
+  /usr/include/nlohmann/detail/conversions/from_json.hpp \
+  /usr/include/c++/11/forward_list \
+  /usr/include/c++/11/bits/forward_list.h \
+  /usr/include/c++/11/bits/forward_list.tcc \
+  /usr/include/c++/11/valarray \
+  /usr/include/c++/11/bits/valarray_array.h \
+  /usr/include/c++/11/bits/valarray_array.tcc \
+  /usr/include/c++/11/bits/valarray_before.h \
+  /usr/include/c++/11/bits/slice_array.h \
+  /usr/include/c++/11/bits/valarray_after.h \
+  /usr/include/c++/11/bits/gslice.h \
+  /usr/include/c++/11/bits/gslice_array.h \
+  /usr/include/c++/11/bits/mask_array.h \
+  /usr/include/c++/11/bits/indirect_array.h \
+  /usr/include/nlohmann/detail/exceptions.hpp \
+  /usr/include/nlohmann/detail/value_t.hpp \
+  /usr/include/nlohmann/detail/string_escape.hpp \
+  /usr/include/nlohmann/detail/macro_scope.hpp \
+  /usr/include/nlohmann/thirdparty/hedley/hedley.hpp \
+  /usr/include/nlohmann/detail/meta/detected.hpp \
+  /usr/include/nlohmann/detail/meta/void_t.hpp \
+  /usr/include/c++/11/cassert \
+  /usr/include/nlohmann/detail/input/position_t.hpp \
+  /usr/include/nlohmann/detail/meta/cpp_future.hpp \
+  /usr/include/nlohmann/detail/meta/identity_tag.hpp \
+  /usr/include/nlohmann/detail/meta/type_traits.hpp \
+  /usr/include/nlohmann/detail/iterators/iterator_traits.hpp \
+  /usr/include/nlohmann/detail/meta/call_std/begin.hpp \
+  /usr/include/nlohmann/detail/meta/call_std/end.hpp \
+  /usr/include/nlohmann/json_fwd.hpp \
+  /usr/include/nlohmann/detail/conversions/to_json.hpp \
+  /usr/include/nlohmann/detail/iterators/iteration_proxy.hpp \
+  /usr/include/nlohmann/byte_container_with_subtype.hpp \
+  /usr/include/nlohmann/detail/hash.hpp \
+  /usr/include/nlohmann/detail/input/binary_reader.hpp \
+  /usr/include/nlohmann/detail/input/input_adapters.hpp \
+  /usr/include/nlohmann/detail/input/json_sax.hpp \
+  /usr/include/nlohmann/detail/input/lexer.hpp \
+  /usr/include/nlohmann/detail/meta/is_sax.hpp \
+  /usr/include/nlohmann/detail/input/parser.hpp \
+  /usr/include/nlohmann/detail/iterators/internal_iterator.hpp \
+  /usr/include/nlohmann/detail/iterators/primitive_iterator.hpp \
+  /usr/include/nlohmann/detail/iterators/iter_impl.hpp \
+  /usr/include/nlohmann/detail/iterators/json_reverse_iterator.hpp \
+  /usr/include/nlohmann/detail/json_pointer.hpp \
+  /usr/include/nlohmann/detail/json_ref.hpp \
+  /usr/include/nlohmann/detail/output/binary_writer.hpp \
+  /usr/include/nlohmann/detail/output/output_adapters.hpp \
+  /usr/include/nlohmann/detail/output/serializer.hpp \
+  /usr/include/nlohmann/detail/conversions/to_chars.hpp \
+  /usr/include/nlohmann/ordered_map.hpp \
+  /usr/include/nlohmann/detail/macro_unscope.hpp \
+  /usr/include/nlohmann/thirdparty/hedley/hedley_undef.hpp \
   ../includes/services/Service.h \
   /usr/include/pwd.h \
   ../includes/models/TritonClient.h \
@@ -2697,8 +2757,6 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/serialization_traits.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/slice.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/string_ref.h \
-  /usr/include/c++/11/iterator \
-  /usr/include/c++/11/bits/stream_iterator.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/status.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/sync.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/sync.h \
@@ -2721,7 +2779,6 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /home/hunglt31/Downloads/TritonClientSDK/include/absl/synchronization/internal/kernel_timeout.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/raw_logging.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/atomic_hook.h \
-  /usr/include/c++/11/cassert \
   /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/log_severity.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/macros.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/absl/time/clock.h \
@@ -2878,7 +2935,8 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   ../includes/utils/Logger.h \
   ../includes/utils/ImageProcessor.h \
   ../includes/utils/ExamGrader.h \
-  ../includes/utils/Detection.h
+  ../includes/utils/Detection.h \
+  ../includes/utils/ExamConfig.h
 
 CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o: ../src/utils/ExamGrader.cpp \
   /usr/include/stdc-predef.h \
@@ -3295,7 +3353,8 @@ CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o: ../src/utils/ExamGrader.cpp \
   /usr/include/opencv4/opencv2/video/tracking.hpp \
   /usr/include/opencv4/opencv2/video/background_segm.hpp \
   ../includes/utils/Logger.h \
-  ../includes/utils/Detection.h
+  ../includes/utils/Detection.h \
+  ../includes/utils/ExamConfig.h
 
 CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcessor.cpp \
   /usr/include/stdc-predef.h \
@@ -4197,6 +4256,8 @@ CMakeFiles/server.dir/src/utils/Logger.cpp.o: ../src/utils/Logger.cpp \
 /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/endian.h:
 
 /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/generated_enum_util.h:
+
+../includes/utils/ExamConfig.h:
 
 /usr/include/opencv4/opencv2/flann.hpp:
 

@@ -221,15 +221,15 @@
   background-color: #f0f8ff;
 }
 
-.summarize-button {
+.sheet-button {
   color: #28a745;
 }
 
-.summarize-button i {
+.sheet-button i {
   color: #28a745;
 }
 
-.summarize-button:hover {
+.sheet-button:hover {
   background-color: #f0fff0;
 }
 
@@ -248,4 +248,165 @@
 .reset-button:hover {
   background-color: #e0e0e0;
   transform: translateY(-1px);
+}
+
+/* Progress Bar Styling */
+.progress-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.progress-info {
+  margin-bottom: 15px;
+}
+
+.progress-stage {
+  font-size: 16px;
+  color: #007bff;
+  margin-bottom: 5px;
+}
+
+.progress-step {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.progress-pages {
+  font-size: 12px;
+  color: #888;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #e9ecef;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007bff 0%, #28a745 100%);
+  transition: width 0.3s ease;
+  border-radius: 10px;
+}
+
+.progress-percentage {
+  text-align: center;
+  font-weight: bold;
+  color: #495057;
+  margin-top: 5px;
+}
+
+/* CSV Helper Section Styles */
+/* CSV Helper Section Styles */
+.csv-helper-section {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 20px auto;
+  max-width: 500px;
+}
+
+.helper-info {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.helper-info h3 {
+  color: #495057;
+  margin-bottom: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.helper-info h3 i {
+  color: #007bff;
+  margin-right: 6px;
+}
+
+.helper-info p {
+  color: #6c757d;
+  margin-bottom: 12px;
+  font-size: 0.9em;
+}
+
+.btn.btn-outline {
+  border: 2px solid #007bff;
+  color: #007bff;
+  padding: 8px 16px;
+  border-radius: 5px;
+  font-weight: 500;
+  font-size: 0.9em;
+  transition: all 0.3s ease;
+}
+
+.btn.btn-outline:hover {
+  background: #007bff;
+  color: white;
+}
+
+.btn.btn-outline:disabled {
+  border-color: #6c757d;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.btn.btn-outline i {
+  margin-right: 6px;
+}
+
+.csv-format-info {
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+  padding: 12px;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.csv-format-info h4 {
+  color: #495057;
+  margin-bottom: 10px;
+  font-size: 0.95em;
+  font-weight: 600;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 5px;
+  text-align: center;
+}
+
+.csv-format-info ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 0;
+  text-align: left;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.csv-format-info li {
+  padding: 6px 0;
+  border-bottom: 1px solid #f8f9fa;
+  color: #6c757d;
+  font-size: 0.85em;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+}
+
+.csv-format-info li:last-child {
+  border-bottom: none;
+}
+
+.csv-format-info li strong {
+  color: #495057;
+  min-width: 120px;
+  flex-shrink: 0;
+  margin-right: 10px;
 }

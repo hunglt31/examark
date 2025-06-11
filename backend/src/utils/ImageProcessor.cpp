@@ -100,6 +100,67 @@ const int CONTENT_24_CONTOUR_1_COORD_Y = 1685;
 const int CONTENT_24_CONTOUR_2_COORD_X = 2270;
 const int CONTENT_24_CONTOUR_2_COORD_Y = 2180;
 
+bool ImageProcessor::getRequestImagesWithProgress(
+  const char* pdfData, int dataSize, std::vector<cv::Mat> &images, 
+  ProgressCallback progressCallback, double dpi) 
+{
+  images.clear();
+  
+  // Load PDF document
+  if (progressCallback) {
+    progressCallback(0, 0, 5.0);
+  }
+  
+  std::unique_ptr<poppler::document> doc(poppler::document::load_from_raw_data(pdfData, dataSize));
+  if (!doc) {
+    return false;
+  }
+  
+  int numPages = doc->pages();
+  if (numPages == 0) {
+    return false;
+  }
+
+  if (progressCallback) {
+    progressCallback(0, numPages, 10.0);
+  }
+
+  poppler::page_renderer renderer;
+  images.reserve(numPages);
+  
+  for (int i = 0; i < numPages; ++i) {    
+    std::unique_ptr<poppler::page> page(doc->create_page(i));
+    if (!page) {
+      continue;
+    }
+
+    poppler::image popImg = renderer.render_page(page.get(), dpi, dpi); 
+    if (!popImg.is_valid()) {
+      continue;
+    }
+    
+    cv::Mat img(popImg.height(), popImg.width(), CV_8UC4, (void*)popImg.data(), popImg.bytes_per_row());
+    cv::Mat imgBGR;
+    cv::cvtColor(img, imgBGR, cv::COLOR_BGRA2BGR);
+    cv::Mat imgAligned = alignImage(imgBGR);
+
+    cv::Mat corrected;
+    cv::LUT(imgAligned, GAMMA_LUT, corrected);
+    images.emplace_back(corrected);
+    
+    if (progressCallback) {
+      double pageProgress = 10.0 + ((double)(i + 1) / numPages) * 65.0;
+      progressCallback(i + 1, numPages, pageProgress);
+    }
+  }
+  
+  if (progressCallback) {
+    progressCallback(numPages, numPages, 75.0); 
+  }
+  
+  return !images.empty();
+}
+
 bool ImageProcessor::getRequestImages(const char* pdfData, int dataSize, std::vector<cv::Mat> &images, double dpi) {
   images.clear();
   // Load PDF document
@@ -117,24 +178,27 @@ bool ImageProcessor::getRequestImages(const char* pdfData, int dataSize, std::ve
 
   // Render pages to images
   poppler::page_renderer renderer;
+  images.reserve(numPages);
   for (int i = 0; i < numPages; ++i) {
     std::unique_ptr<poppler::page> page(doc->create_page(i));
     if (!page) {
-        Logger::error("IMAGE PROCESSOR", "Failed to create page " + std::to_string(i) + " from PDF document.");
-        continue;
+      continue;
     }
 
     poppler::image popImg = renderer.render_page(page.get(), dpi, dpi); 
     if (!popImg.is_valid()) {
-        Logger::error("IMAGE PROCESSOR", "Failed to render page " + std::to_string(i) + " to image.");
-        continue;
+      continue;
     }
     
     cv::Mat img(popImg.height(), popImg.width(), CV_8UC4, (void*)popImg.data(), popImg.bytes_per_row());
     cv::Mat imgBGR;
     cv::cvtColor(img, imgBGR, cv::COLOR_BGRA2BGR);
+
     cv::Mat imgAligned = alignImage(imgBGR);
-    images.push_back(imgAligned);
+    
+    cv::Mat corrected;
+    cv::LUT(imgAligned, GAMMA_LUT, corrected);
+    images.emplace_back(corrected);
   }
   return !images.empty();
 }

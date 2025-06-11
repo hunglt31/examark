@@ -1,0 +1,18 @@
+#ifndef EXAM_CONFIG_H
+#define EXAM_CONFIG_H
+
+const int ANSWER_KEY_START_COLUMN = 2;
+const int ANSWER_KEY_START_INDEX = 2;
+
+const int PART_1_START_INDEX = 4;
+const int PART_2_START_INDEX = 20;
+
+const int PART_1_NUM_QUESTIONS = 16;
+const int PART_2_NUM_QUESTIONS = 8;
+
+const int PART_2_STRING_SIZE = 6;
+
+const int TOTAL_QUESTIONS = PART_1_NUM_QUESTIONS + PART_2_NUM_QUESTIONS;
+const float MAX_SCORE = 10.0f;
+
+#endif // EXAM_CONFIG_H

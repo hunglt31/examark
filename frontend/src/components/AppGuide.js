@@ -7,17 +7,17 @@ function AppGuide() {
       <h2>How to Use the App</h2>
       <ol>
         <li>
-          <strong>Navigation:</strong> Use the menu buttons at the top to access sections such as Grade Exam, View Results, View Summary and Help.
+          <strong>Navigation:</strong> Use the menu buttons at the top to access sections such as Start Auto Grading, Review Exam Details, Review Results Sheet and Help.
         </li>
         <li>
-          <strong>Grade Exams:</strong> Click on "Grade Exam" to start reviewing and grading exams. Follow the on-screen instructions to upload and submit your grading data.
+          <strong>Start Auto Grading:</strong> Click on "Start Auto Grading" to start reviewing and grading exams. Follow the on-screen instructions to upload and submit your grading data.
         </li>
         <li>
-          <strong>View Results:</strong> Check exam statistics and detailed reports by clicking "View Results."
+          <strong>Review Exam Details:</strong> Check exam statistics and detailed reports by clicking "Review Exam Details."
         </li>
 
         <li>
-          <strong>View Summary:</strong>  Access the "View Summary" section to see a summary of all graded exams, including average scores and distribution.
+          <strong>Review Results Sheet:</strong>  Access the "Review Results Sheet" section to see a spreadsheet of all graded exams, including answers and scores in details.
         </li>
         <li>
           <strong>Help:</strong> Need assistance? Visit the Help section to view FAQs or contact support.

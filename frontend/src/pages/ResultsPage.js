@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './ResultsPage.css';
+import CustomAlert from '../components/CustomAlert';
 
 import UniversityLogo from '../assets/logos/logo_hust.png';
 import FamiLogo from '../assets/logos/logo_fami.png';
@@ -24,8 +25,51 @@ function ResultsPage() {
 
   const [editedMetadata, setEditedMetadata] = useState({});
   const [editedAnswers, setEditedAnswers] = useState({});
-  const [approved, setApproved] = useState(false);
 
+  const [alert, setAlert] = useState({
+    isOpen: false,
+    message: '',
+    type: 'info',
+    showConfirm: false,
+    onConfirm: null
+  });
+
+  const showAlert = (message, type = 'info', showConfirm = false, onConfirm = null) => {
+    setAlert({
+      isOpen: true,
+      message,
+      type,
+      showConfirm,
+      onConfirm
+    });
+  };
+
+  const closeAlert = () => {
+    setAlert({
+      isOpen: false,
+      message: '',
+      type: 'info',
+      showConfirm: false,
+      onConfirm: null
+    });
+  };
+
+  const handleClearResults = () => {
+    showAlert(
+      'Do you want to clear all results data? This action cannot be undone.',
+      'warning',
+      true,
+      () => {
+        localStorage.removeItem('examarkJobId');
+        localStorage.removeItem('examarkCsvData');
+        localStorage.removeItem('examarkImages');
+        localStorage.removeItem('examarkEdits');
+        setHasResults(false);
+        closeAlert();
+      }
+    );
+  };
+  
   useEffect(() => {
     // Get URL parameters to check if we should force refresh
     const queryParams = new URLSearchParams(window.location.search);
@@ -61,8 +105,6 @@ function ResultsPage() {
       
       // Reset editing state when data is refreshed
       if (shouldRefresh) {
-        setApproved(false);
-        
         // Remove the refresh parameter from URL without page reload
         const newUrl = window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
@@ -92,22 +134,20 @@ function ResultsPage() {
 
   // Modify handleAnswerEdit to save to localStorage
   const handleAnswerEdit = (part, questionIdx, newValue) => {
-    if (!approved) {
-      const key = `${currentImageIndex}-${part}-${questionIdx}`;
-      const updatedAnswers = {
-        ...editedAnswers,
-        [key]: newValue.toUpperCase()
-      };
-      
-      setEditedAnswers(updatedAnswers);
-      
-      // Save to localStorage
-      const editsToSave = {
-        metadata: editedMetadata,
-        answers: updatedAnswers
-      };
-      localStorage.setItem('examarkEdits', JSON.stringify(editsToSave));
-    }
+    const key = `${currentImageIndex}-${part}-${questionIdx}`;
+    const updatedAnswers = {
+      ...editedAnswers,
+      [key]: newValue.toUpperCase()
+    };
+    
+    setEditedAnswers(updatedAnswers);
+    
+    // Save to localStorage
+    const editsToSave = {
+      metadata: editedMetadata,
+      answers: updatedAnswers
+    };
+    localStorage.setItem('examarkEdits', JSON.stringify(editsToSave));
   };
 
   // Get the current answer value (either edited or original)
@@ -131,11 +171,11 @@ function ResultsPage() {
   
   // Parse CSV to get results for current image
   const getCurrentImageResults = () => {
-    if (!csvData || images.length === 0) return { metadata: [], part1: [], part2: [] };
+    if (!csvData || images.length === 0) return { metadata: [], part1: [], part2: [], scoring: [] };
     
     // Parse CSV
     const rows = csvData.split('\n');
-    if (rows.length < 4) return { metadata: [], part1: [], part2: [] };
+    if (rows.length < 4) return { metadata: [], part1: [], part2: [], scoring: [] };
     
     // Get the current image filename (e.g., "page_0.jpg")
     const currentImageName = images[currentImageIndex]; 
@@ -161,13 +201,14 @@ function ResultsPage() {
     
     // If still not found, return empty
     if (imageColumnIndex === -1 || imageColumnIndex >= headerRow.length) {
-      return { metadata: [], part1: [], part2: [] };
+      return { metadata: [], part1: [], part2: [], scoring: [] };
     }
     
     // Prepare result containers
     const metadata = [];
     const part1 = [];
     const part2 = [];
+    const scoring = [];
     
     // Add metadata (Student ID, Exam ID)
     if (rows.length >= 3) {
@@ -200,18 +241,42 @@ function ResultsPage() {
       }
     }
     
-    // Process answer rows after the header, sorting by part
+    // Process rows and separate answers from scoring
+    const scoringLabels = ['Part 1 Correct', 'Part 2 Correct', 'Total Points'];
+    
     for (let i = questionHeaderRow + 1; i < rows.length; i++) {
       const row = rows[i].split(',');
       if (row.length > imageColumnIndex) {
         const part = row[0].trim();
         const question = row[1].trim();
-        const answer = row[imageColumnIndex].trim();
+        const value = row[imageColumnIndex].trim();
         
-        if (part && question) {
+        console.log(`Row ${i}: Part="${part}", Question="${question}", Value="${value}"`);
+        
+        // Check for scoring rows - NEW LOGIC HERE
+        if (part === 'Part 1' && question === 'Correct') {
+          console.log('Found Part 1 Correct score:', value);
+          scoring.push({
+            label: 'Part 1 Correct',
+            value: value
+          });
+        } else if (part === 'Part 2' && question === 'Correct') {
+          console.log('Found Part 2 Correct score:', value);
+          scoring.push({
+            label: 'Part 2 Correct',
+            value: value
+          });
+        } else if (part === 'Total' && question === 'Points') {
+          console.log('Found Total Points score:', value);
+          scoring.push({
+            label: 'Total Points',
+            value: value
+          });
+        } else if (part && question && !isNaN(question)) {
+          // Regular answer row
           const item = {
             question: question,
-            answer: answer
+            answer: value
           };
           
           if (part === '1') {
@@ -223,7 +288,11 @@ function ResultsPage() {
       }
     }
     
-    return { metadata, part1, part2 };
+    console.log('Final scoring array:', scoring);
+    console.log('Part 1 questions:', part1.length);
+    console.log('Part 2 questions:', part2.length);
+    
+    return { metadata, part1, part2, scoring };
   };
 
   // Render the answer with editable field
@@ -308,7 +377,7 @@ function ResultsPage() {
     };
 
     const cellProps = {};
-    if (!approved && cellId) {
+    if (cellId) {
       cellProps.id = cellId;
       cellProps.onKeyDown = onKeyDownHandler;
       cellProps.onInput = onInputHandler;
@@ -316,7 +385,7 @@ function ResultsPage() {
 
     return (
       <span
-        contentEditable={!approved}
+        contentEditable={true}
         data-placeholder="X"
         style={style}
         onBlur={(e) => handleAnswerEdit(part, questionIdx, e.target.textContent)}
@@ -472,12 +541,23 @@ function ResultsPage() {
     }
   };
 
-  const isValidMetadata = (value) => {
-    return value === /^\d+$/.test(value.toString().trim());
+  const isValidId = (value) => {
+    return /^\d*$/.test(value.toString().trim());
   };
 
   return (
     <div className="ResultsPage">
+      <CustomAlert
+        isOpen={alert.isOpen}
+        message={alert.message}
+        type={alert.type}
+        onClose={closeAlert}
+        showConfirm={alert.showConfirm}
+        onConfirm={alert.onConfirm}
+        confirmText="Clear Data"
+        cancelText="Cancel"
+      />
+
       {hasResults ? (
         <>
           {/* Header Section */}
@@ -486,8 +566,8 @@ function ResultsPage() {
               <img src={UniversityLogo} alt="HUST Logo" className="page-header-logo" draggable="false" />
             </div>
             <div className="page-header-center">
-              <h1>Grading Results</h1>
-              <p>Review and edit your graded exam results</p>
+              <h1>Student Exam Detail</h1>
+              <p>Review and edit your graded exams one by one</p>
             </div>
             <div className="page-header-right">
               <div className="header-buttons">
@@ -512,12 +592,7 @@ function ResultsPage() {
                 </button>
                 <button
                   className="header-btn header-btn-danger"
-                  onClick={() => {
-                    localStorage.removeItem('examarkJobId');
-                    localStorage.removeItem('examarkCsvData');
-                    localStorage.removeItem('examarkImages');
-                    setHasResults(false);
-                  }}
+                  onClick={handleClearResults}
                 >
                   Clear Results
                   <img src={DeleteIcon} alt="Delete" className="header-btn-icon" draggable="false" />
@@ -567,41 +642,61 @@ function ResultsPage() {
               const results = getCurrentImageResults();
               return (
                 <>
-                  {/* Metadata and Action buttons in one row */}
-                  <div className="metadata-action-row">
-                    <div className="metadata-inline">
+                  {/* Combined Metadata and Scoring Section */}
+                  <div className="scoring-section">
+                    <div className="scoring-header">
+                      <strong>Exam Summary</strong>
+                    </div>
+                    <div className="scoring-items">
+                      {/* Student ID and Exam ID */}
                       {results.metadata.map((item, index) => (
-                        <div className="metadata-item-inline" key={`meta-${index}`}>
-                          <strong>{item.label}:</strong>{" "}
+                        <div className="scoring-item" key={`meta-${index}`}>
+                          <span className="scoring-label">{item.label}</span>
                           {(item.label === "Student ID" || item.label === "Exam ID") ? (
                             <span
+                              className="scoring-value editable"
                               contentEditable
                               suppressContentEditableWarning
+                              style={{
+                                backgroundColor: !isValidId((editedMetadata[currentImageIndex] && editedMetadata[currentImageIndex][item.label]) || item.value) ? '#ffeb3b' : 'white'
+                              }}
+                              onInput={(e) => {
+                                // Only allow numbers
+                                const value = e.target.textContent.replace(/\D/g, '');
+                                if (value !== e.target.textContent) {
+                                  e.target.textContent = value;
+                                  // Move cursor to end
+                                  const range = document.createRange();
+                                  const sel = window.getSelection();
+                                  range.selectNodeContents(e.target);
+                                  range.collapse(false);
+                                  sel.removeAllRanges();
+                                  sel.addRange(range);
+                                }
+                              }}
                               onBlur={(e) => handleMetadataEdit(item.label, e.target.textContent.trim())}
                             >
                               {(editedMetadata[currentImageIndex] && editedMetadata[currentImageIndex][item.label]) || item.value}
                             </span>
                           ) : (
-                            item.value
+                            <span className="scoring-value">{item.value}</span>
                           )}
                         </div>
                       ))}
-                    </div>
-                    <div className="action-buttons-inline">
-                      {!approved ? (
-                        <button className="approve-button" onClick={() => setApproved(true)}>
-                          Approve Result
-                        </button>
-                      ) : (
-                        <button className="edit-button" onClick={() => setApproved(false)}>
-                          Edit Result
-                        </button>
-                      )}
+                      
+                      {/* Scoring Information */}
+                      {results.scoring.map((item, index) => (
+                        <div className="scoring-item" key={`score-${index}`}>
+                          <span className="scoring-label">{item.label}</span>
+                          <span className="scoring-value">{item.value}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
+
                   {/* Part 1 */}
                   <div className="part-label">
-                    <strong>Part 1</strong>
+                    <strong> Content Part 1</strong>
                   </div>
                   <div className="part1-grid">
                     {[0, 1, 2, 3].map((colIndex) => (
@@ -620,7 +715,7 @@ function ResultsPage() {
                   </div>
                   {/* Part 2 */}
                   <div className="part-label">
-                    <strong>Part 2</strong>
+                    <strong>Content Part 2</strong>
                   </div>
                   <div className="part2-table">
                     <table>
@@ -651,12 +746,6 @@ function ResultsPage() {
                       </tbody>
                     </table>
                   </div>
-                  {approved && (
-                    <div className="approval-status">
-                      <strong>Approved</strong>
-                      <img src={CheckIcon} alt="Checked" className="check-icon" draggable="false" />
-                    </div>
-                  )}
                 </>
               );
             })()}
