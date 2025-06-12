@@ -5,12 +5,20 @@
 #include <opencv2/opencv.hpp>
 #include <nlohmann/json.hpp>
 #include <functional>
+#include "utils/Logger.h"
 #include "services/Service.h"
 #include "utils/ImageProcessor.h"
 #include "utils/ExamGrader.h"
 #include "utils/ExamConfig.h"
+#include "utils/MinIOHTTPClient.h"
 
 using json = nlohmann::json;
+
+// Add MinIO configuration
+const std::string MINIO_ENDPOINT = "127.0.0.1:9000";
+const std::string MINIO_ACCESS_KEY = "minioadmin";
+const std::string MINIO_SECRET_KEY = "minioadmin123";
+const std::string MINIO_BUCKET = "examark-images";
 
 // Function to update job progress
 extern void updateJobProgress(
@@ -34,6 +42,25 @@ const std::vector<std::string> HEADER_2 = {
   "Correct", "Correct", "Points"
 };
 
+// Helper function to generate CSV string
+std::string generateCSVString(const std::vector<std::vector<std::string>>& results) {
+  std::ostringstream csvStream;
+  size_t numOriginalRows = results.size();    
+  size_t numOriginalCols = results[0].size(); 
+  
+  for (size_t i = 0; i < numOriginalCols; ++i) {
+    for (size_t j = 0; j < numOriginalRows; ++j) {
+      csvStream << results[j][i];
+      if (j < numOriginalRows - 1) {
+        csvStream << ",";
+      }
+    }
+    csvStream << "\n";
+  }
+  
+  return csvStream.str();
+}
+
 bool grading(const std::string& pdfFileName, const std::string& pdfData, 
              const std::string& answerKeyCSV, const std::string& outputDir, 
              TritonClient* tritonClient, const std::string& jobId) {
@@ -41,6 +68,9 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
     /* ============================================== */
     /* ===== Stage 1: Reading Answer Key (0-5%) ===== */
     /* ============================================== */
+    // Initialize MinIO client
+    MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
+    
     updateJobProgress(jobId, "reading_key", "Initializing grading process...", 0, 0, 0.0);
     if (!std::filesystem::exists(outputDir)) {
       std::filesystem::create_directory(outputDir);
@@ -117,22 +147,31 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
       }
     }
 
-    // Save answer key for reference in JSON format
-    std::string answerKeyPath = outputDir + "/answer_key.json";
-    std::ofstream answerKeyFile(answerKeyPath);
-    if (!answerKeyFile.is_open()) {
-      updateJobProgress(jobId, "reading_key", "Error: Failed to save answer key", 0, 0, 0.0, true, "Failed to save answer key JSON");
-      return false;
-    }
-    
-    json answerKeyJson;
+    // Create JSON content
+    nlohmann::json answerKeyJson;
     answerKeyJson["exam_answer_keys"] = json::object();
     for (const auto& [examId, answers] : examAnswerKeys) {
       answerKeyJson["exam_answer_keys"][examId] = answers;
     }
+    std::string answerKeyJsonStr = answerKeyJson.dump(2);
 
-    answerKeyFile << answerKeyJson.dump(2); 
+    // Save answer key locally (for regrade compatibility)
+    std::string answerKeyPath = outputDir + "/answer_key.json";
+    std::ofstream answerKeyFile(answerKeyPath);
+    if (!answerKeyFile.is_open()) {
+      updateJobProgress(jobId, "reading_key", "Error: Failed to save local answer key", 0, 0, 0.0, true, "Failed to save answer key JSON locally");
+      return false;
+    }
+    answerKeyFile << answerKeyJsonStr;
     answerKeyFile.close();
+
+    // Upload answer key JSON to MinIO
+    std::string jsonObjectName = jobId + "/answer_key.json";
+    if (!minioClient.uploadJSON(jsonObjectName, answerKeyJsonStr)) {
+      updateJobProgress(jobId, "reading_key", "Error: Failed to upload answer key to storage", 0, 0, 0.0, true, "Failed to save answer key JSON to MinIO");
+      return false;
+    }
+    
     updateJobProgress(jobId, "reading_key", "Answer key saved successfully", 0, 0, 5.0);
     
     /* ============================================= */
@@ -161,12 +200,41 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
     
     updateJobProgress(jobId, "rendering_images", "PDF converted successfully - " + std::to_string(images.size()) + " pages rendered", images.size(), images.size(), 75.0);
     
-    /* =========================================== */
-    /* ===== Stage 3: Grading Exams (75-95%) ===== */
-    /* =========================================== */
-    updateJobProgress(jobId, "grading_exams", "Grading exams...", 0, images.size(), 75.0);
+    /* ================================================ */
+    /* ===== Stage 3: Upload Images to MinIO (75-80%) ===== */
+    /* ================================================ */
+    updateJobProgress(jobId, "uploading_images", "Uploading images to storage...", 0, images.size(), 75.0);
     
-    // Process images
+    std::vector<std::string> uploadedImageNames;
+    for (size_t i = 0; i < images.size(); ++i) {
+      std::string imageBasename = "page_" + std::to_string(i + 1);
+      std::string minioObjectName = jobId + "/" + imageBasename + ".jpg";
+      
+      // Also save locally for potential debugging/regrade
+      std::string localImagePath = outputDir + "/" + imageBasename + ".jpg";
+      cv::imwrite(localImagePath, images[i]);
+      
+      // Upload image to MinIO
+      if (!minioClient.uploadImage(minioObjectName, images[i])) {
+        updateJobProgress(jobId, "uploading_images", "Failed to upload image " + std::to_string(i + 1), 
+                         i + 1, images.size(), 0.0, true, "Failed to upload image to storage");
+        return false;
+      }
+      
+      uploadedImageNames.push_back(minioObjectName);
+      
+      // Update upload progress (75% to 80%)
+      double uploadProgress = 75.0 + (double(i + 1) / images.size()) * 5.0;
+      updateJobProgress(jobId, "uploading_images", "Uploaded " + std::to_string(i + 1) + " of " + std::to_string(images.size()) + " images", 
+                       i + 1, images.size(), uploadProgress);
+    }
+    
+    /* =========================================== */
+    /* ===== Stage 4: Grading Exams (80-95%) ===== */
+    /* =========================================== */
+    updateJobProgress(jobId, "grading_exams", "Starting YOLO detection and grading...", 0, images.size(), 80.0);
+    
+    // Process images for grading
     std::vector<std::vector<std::string>> results;
     results.push_back(HEADER_1);
     results.push_back(HEADER_2);
@@ -175,24 +243,23 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
     int numImages = images.size();
     for (int i = 0; i < numImages; ++i) {
       std::string imageBasename = "page_" + std::to_string(i + 1);
-      std::string outputFilepath = outputDir + "/" + imageBasename + ".jpg";
-      cv::imwrite(outputFilepath, images[i]);
 
       std::vector<cv::Mat> metadataImages, contentImages;
       if (!imgProc.splitImage(images[i], metadataImages, contentImages)) {
-        double currentProgress = 75.0 + (double(i + 1) / numImages) * 20.0; 
+        double currentProgress = 80.0 + (double(i + 1) / numImages) * 15.0; 
         updateJobProgress(jobId, "grading_exams", "Error: Failed to split image page " + std::to_string(i + 1), i + 1, images.size(), currentProgress, true, "Failed to split image page " + std::to_string(i + 1));
         continue;
       }
     
-      // Grading the exam
+      // Grading the exam with YOLO detection
       std::vector<std::vector<Detection>> metadataDetections = tritonClient->inference(metadataImages, "metadata_model");
       std::vector<std::vector<Detection>> contentDetections = tritonClient->inference(contentImages, "content_model");
       std::vector<std::string> result = grader.extractAnswersAndGradeExam(imageBasename, metadataDetections, contentDetections, examAnswerKeys);
       results.push_back(result);
 
+      // Update grading progress (80% to 95%)
       if ((i + 1) % 5 == 0 || i == numImages - 1) {
-        double currentProgress = 75.0 + (double(i + 1) / numImages) * 20.0; 
+        double currentProgress = 80.0 + (double(i + 1) / numImages) * 15.0; 
         std::string message = "Graded " + std::to_string(i + 1) + " of " + std::to_string(numImages) + " pages";
         updateJobProgress(jobId, "grading_exams", message, i + 1, numImages, currentProgress);
       }
@@ -200,31 +267,32 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
     updateJobProgress(jobId, "grading_exams", "All exams graded successfully", numImages, numImages, 95.0);
     
     /* ================================================= */
-    /* ===== Step 4: Save results to CSV (95-100%) ===== */
+    /* ===== Stage 5: Save Results to Storage (95-100%) ===== */
     /* ================================================= */
-    updateJobProgress(jobId, "saving_results", "Saving results to system...", 0, images.size(), 97.0);
-    size_t numOriginalRows = results.size();    
-    size_t numOriginalCols = results[0].size(); 
+    updateJobProgress(jobId, "saving_results", "Saving results to storage...", 0, images.size(), 95.0);
     
-    std::string csvFilePath = outputDir + "/" + pdfFileName.substr(0, pdfFileName.find_last_of('.')) + ".csv";
+    // Generate CSV content
+    std::string csvContent = generateCSVString(results);
+    
+    // Save CSV locally (for regrade function)
+    std::string csvBasename = pdfFileName.substr(0, pdfFileName.find_last_of('.'));
+    std::string csvFilePath = outputDir + "/" + csvBasename + ".csv";
     std::ofstream csvFile(csvFilePath);
     if (!csvFile.is_open()) {
-      updateJobProgress(jobId, "saving_results", "Error: Failed to save results", 0, 0, 0.0, true, "Failed to save results to system");
+      updateJobProgress(jobId, "saving_results", "Error: Failed to save local CSV", 0, 0, 0.0, true, "Failed to save results locally");
+      return false;
+    }
+    csvFile << csvContent;
+    csvFile.close();
+    
+    // Upload CSV to MinIO
+    std::string csvObjectName = jobId + "/" + csvBasename + ".csv";
+    if (!minioClient.uploadCSV(csvObjectName, csvContent)) {
+      updateJobProgress(jobId, "saving_results", "Error: Failed to upload results to storage", 0, 0, 0.0, true, "Failed to upload CSV to storage");
       return false;
     }
     
-    for (size_t i = 0; i < numOriginalCols; ++i) {
-      for (size_t j = 0; j < numOriginalRows; ++j) {
-        csvFile << results[j][i];
-        if (j < numOriginalRows - 1) {
-          csvFile << ",";
-        }
-      }
-      csvFile << "\n";
-    }
-    csvFile.close();
-    
-    updateJobProgress(jobId, "saving_results", "Saved all exams to system", numImages, numImages, 100.0);
+    updateJobProgress(jobId, "completed", "All processing completed successfully", numImages, numImages, 100.0);
     return true;
     
   } catch (const std::exception& e) {
@@ -237,41 +305,166 @@ bool regradeExam(const std::string& outputDir, const std::string& csvData,
                  const std::string& answerKeyData, const std::string& regradeJobId, 
                  const std::string& originalJobId) {
   try {
-    // Load answer key from JSON file
-    std::string answerKeyPath = outputDir + "/answer_key.json";
-    if (!std::filesystem::exists(answerKeyPath)) {
-      return false;
-    }
+    // Initialize MinIO client
+    MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
     
-    std::ifstream answerKeyFile(answerKeyPath);
-    if (!answerKeyFile.is_open()) {
-      return false;
-    }
-    
-    nlohmann::json answerKeyJson;
-    answerKeyFile >> answerKeyJson;
-    answerKeyFile.close();
-    
-    // Convert JSON back to map format
+    // Parse the NEW answer key from the uploaded CSV file
     std::map<std::string, std::vector<std::string>> examAnswerKeys;
-    if (answerKeyJson.contains("exam_answer_keys")) {
-      for (const auto& [examId, answers] : answerKeyJson["exam_answer_keys"].items()) {
-        examAnswerKeys[examId] = answers.get<std::vector<std::string>>();
+    
+    if (!answerKeyData.empty()) {
+      // Parse the new answer key CSV
+      std::vector<std::vector<std::string>> answerKeyRows;
+      std::stringstream answerKeyStream(answerKeyData);
+      std::string line;
+      
+      while (std::getline(answerKeyStream, line)) {
+        std::vector<std::string> row;
+        std::stringstream ss(line);
+        std::string cell;
+        
+        while (std::getline(ss, cell, ',')) {
+          if (!cell.empty() && cell.front() == '"' && cell.back() == '"') {
+            cell = cell.substr(1, cell.length() - 2);
+          }
+          cell.erase(cell.begin(), std::find_if(cell.begin(), cell.end(), [](unsigned char ch) {
+            return !std::isspace(ch);
+          }));
+          cell.erase(std::find_if(cell.rbegin(), cell.rend(), [](unsigned char ch) {
+            return !std::isspace(ch);
+          }).base(), cell.end());
+          
+          row.push_back(cell);
+        }
+        answerKeyRows.push_back(row);
+      }
+      
+      // Process the answer key (same logic as in grading function)
+      if (answerKeyRows.size() > ANSWER_KEY_START_COLUMN) {
+        std::vector<std::string> examIds;
+        for (int col = ANSWER_KEY_START_COLUMN; col < answerKeyRows[0].size(); col++) {
+          std::string examId = answerKeyRows[0][col];
+          if (!examId.empty()) {
+            examIds.push_back(examId);
+          }
+        }
+        
+        // Extract answers for each ExamID
+        for (int i = 0; i < examIds.size(); i++) {
+          std::vector<std::string> answers;
+          int columnIndex = ANSWER_KEY_START_COLUMN + i;
+          
+          for (int row = ANSWER_KEY_START_INDEX; row < answerKeyRows.size() && answers.size() < TOTAL_QUESTIONS; row++) {
+            if (answerKeyRows[row].size() > columnIndex) {
+              std::string answer = answerKeyRows[row][columnIndex];
+              if (answers.size() >= PART_1_NUM_QUESTIONS) { 
+                // Part 2
+                std::string convertedAnswer = "SSSSSS"; 
+                for (char c : answer) {
+                  if (c >= 'A' && c <= 'F') {
+                    int position = c - 'A'; 
+                    if (position < PART_2_STRING_SIZE) {
+                      convertedAnswer[position] = 'D';
+                    }
+                  }
+                }
+                answers.push_back(convertedAnswer);
+              } else {
+                // Part 1
+                answers.push_back(answer);
+              }
+            }
+          }
+          if (answers.size() == TOTAL_QUESTIONS) {
+            examAnswerKeys[examIds[i]] = answers;
+          }
+        }
+        
+        // Save the NEW answer key to JSON and upload to MinIO
+        nlohmann::json newAnswerKeyJson;
+        newAnswerKeyJson["exam_answer_keys"] = json::object();
+        for (const auto& [examId, answers] : examAnswerKeys) {
+          newAnswerKeyJson["exam_answer_keys"][examId] = answers;
+        }
+        std::string newAnswerKeyJsonStr = newAnswerKeyJson.dump(2);
+        
+        // Update local JSON file
+        std::string answerKeyPath = outputDir + "/answer_key.json";
+        std::ofstream answerKeyFile(answerKeyPath);
+        if (answerKeyFile.is_open()) {
+          answerKeyFile << newAnswerKeyJsonStr;
+          answerKeyFile.close();
+        }
+        
+        // Upload updated JSON to MinIO
+        std::string jsonObjectName = originalJobId + "/answer_key.json";
+        if (!minioClient.uploadJSON(jsonObjectName, newAnswerKeyJsonStr)) {
+          Logger::error("REGRADE", "Failed to upload new answer key JSON to MinIO for job: " + originalJobId);
+        }
+      }
+    }
+    
+    // Fallback to existing answer key if new one failed to parse
+    if (examAnswerKeys.empty()) {
+      Logger::info("REGRADE", "Failed to parse new answer key, falling back to existing for job: " + originalJobId);
+      
+      // Try to load from MinIO first
+      std::string jsonObjectName = originalJobId + "/answer_key.json";
+      std::string answerKeyJsonStr = minioClient.downloadJSON(jsonObjectName);
+      
+      if (!answerKeyJsonStr.empty()) {
+        try {
+          nlohmann::json answerKeyJson = nlohmann::json::parse(answerKeyJsonStr);
+          if (answerKeyJson.contains("exam_answer_keys")) {
+            for (const auto& [examId, answers] : answerKeyJson["exam_answer_keys"].items()) {
+              examAnswerKeys[examId] = answers.get<std::vector<std::string>>();
+            }
+          }
+        } catch (const std::exception& e) {
+          Logger::error("REGRADE", "Failed to parse JSON from MinIO: " + std::string(e.what()) + " for job: " + originalJobId);
+        }
+      }
+      
+      // Fallback to local file if MinIO failed
+      if (examAnswerKeys.empty()) {
+        std::string answerKeyPath = outputDir + "/answer_key.json";
+        if (std::filesystem::exists(answerKeyPath)) {
+          std::ifstream answerKeyFile(answerKeyPath);
+          if (answerKeyFile.is_open()) {
+            try {
+              nlohmann::json answerKeyJson;
+              answerKeyFile >> answerKeyJson;
+              answerKeyFile.close();
+              
+              if (answerKeyJson.contains("exam_answer_keys")) {
+                for (const auto& [examId, answers] : answerKeyJson["exam_answer_keys"].items()) {
+                  examAnswerKeys[examId] = answers.get<std::vector<std::string>>();
+                }
+              }
+            } catch (const std::exception& e) {
+              Logger::error("REGRADE", "Failed to parse local answer key JSON: " + std::string(e.what()) + " for job: " + originalJobId);
+            }
+          } else {
+            Logger::error("REGRADE", "Failed to open local answer key file: " + answerKeyPath);
+          }
+        } else {
+          Logger::error("REGRADE", "Local answer key file does not exist: " + answerKeyPath);
+        }
       }
     }
     
     if (examAnswerKeys.empty()) {
+      Logger::error("REGRADE", "No answer keys available for regrading job: " + originalJobId);
       return false;
     }
     
     // Parse the CSV data
     std::vector<std::vector<std::string>> csvRows;
     std::stringstream csvStream(csvData);
-    std::string line;
+    std::string csvLine;
     
-    while (std::getline(csvStream, line)) {
+    while (std::getline(csvStream, csvLine)) {
       std::vector<std::string> row;
-      std::stringstream ss(line);
+      std::stringstream ss(csvLine);
       std::string cell;
       
       while (std::getline(ss, cell, ',')) {
@@ -292,57 +485,52 @@ bool regradeExam(const std::string& outputDir, const std::string& csvData,
     }
     
     if (csvRows.size() < 4) {
+      Logger::error("REGRADE", "CSV data has insufficient rows (" + std::to_string(csvRows.size()) + ") for job: " + originalJobId);
       return false;
     }
     
-    // Re-grade each exam (each column starting from column 2)
+    // Re-grade each exam
     ExamGrader grader;
     
-    // Process each student (each column from index 2 onwards)
     for (size_t col = 2; col < csvRows[0].size(); col++) {
-      // Extract student data for this column
       std::vector<std::string> studentData;
       
-      // Get image name (row 0), student ID (row 1), exam ID (row 2)
+      // Get image name, student ID, exam ID
       if (col < csvRows[0].size()) {
-        studentData.push_back(csvRows[0][col]);  // Image name
+        studentData.push_back(csvRows[0][col]);
       } else {
         studentData.push_back("page_" + std::to_string(col - 1));
       }
       
       if (csvRows.size() > 1 && col < csvRows[1].size()) {
-        studentData.push_back(csvRows[1][col]);  // Student ID
+        studentData.push_back(csvRows[1][col]);
       } else {
         studentData.push_back("");
       }
       
       if (csvRows.size() > 2 && col < csvRows[2].size()) {
-        studentData.push_back(csvRows[2][col]);  // Exam ID
+        studentData.push_back(csvRows[2][col]);
       } else {
         studentData.push_back("");
       }
       
-      // Add "Answers" label
       studentData.push_back("Answers");
       
-      // Extract answers from rows 4 onwards
-      // Part 1 answers (16 questions) - rows where column 0 is "1"
+      // Extract answers
       std::vector<std::string> part1Answers;
       std::vector<std::string> part2Answers;
       
       for (size_t row = 4; row < csvRows.size(); row++) {
         if (csvRows[row].size() > 1) {
-          std::string partNumber = csvRows[row][0];  // Part number (1 or 2)
+          std::string partNumber = csvRows[row][0];
           
           if (partNumber == "1" && part1Answers.size() < 16) {
-            // Part 1 question
             if (col < csvRows[row].size()) {
               part1Answers.push_back(csvRows[row][col]);
             } else {
               part1Answers.push_back("_");
             }
           } else if (partNumber == "2" && part2Answers.size() < 8) {
-            // Part 2 question
             if (col < csvRows[row].size()) {
               part2Answers.push_back(csvRows[row][col]);
             } else {
@@ -352,7 +540,6 @@ bool regradeExam(const std::string& outputDir, const std::string& csvData,
         }
       }
       
-      // Ensure we have the right number of answers
       while (part1Answers.size() < 16) {
         part1Answers.push_back("_");
       }
@@ -360,20 +547,18 @@ bool regradeExam(const std::string& outputDir, const std::string& csvData,
         part2Answers.push_back("_");
       }
       
-      // Add answers to student data (Part 1 first, then Part 2)
       studentData.insert(studentData.end(), part1Answers.begin(), part1Answers.end());
       studentData.insert(studentData.end(), part2Answers.begin(), part2Answers.end());
       
-      // Re-grade using the CSV data (which includes user edits)
+      // Re-grade using the NEW answer key
       std::string imageBasename = studentData[0];
       std::vector<std::string> regradedResult = grader.regradeExamFromCsv(imageBasename, studentData, examAnswerKeys);
       
-      // Update ONLY the score rows with new grades (keep existing answers)
+      // Update scores
       if (!regradedResult.empty() && regradedResult.size() >= 3) {
-        // Find the score rows (last 3 rows that contain "Part 1", "Part 2", "Total")
         for (int row = csvRows.size() - 3; row < csvRows.size(); row++) {
           if (row >= 0 && col < csvRows[row].size()) {
-            int scoreIndex = row - (csvRows.size() - 3); // 0, 1, or 2
+            int scoreIndex = row - (csvRows.size() - 3);
             if (scoreIndex < 3) {
               size_t resultIndex = regradedResult.size() - 3 + scoreIndex;
               if (resultIndex < regradedResult.size()) {
@@ -385,7 +570,7 @@ bool regradeExam(const std::string& outputDir, const std::string& csvData,
       }
     }
     
-    // Find the original CSV file in the output directory
+    // Save updated CSV locally
     std::string csvFilePath;
     for (const auto& entry : std::filesystem::directory_iterator(outputDir)) {
       if (entry.path().extension() == ".csv" && entry.path().filename() != "answer_key.json") {
@@ -394,17 +579,17 @@ bool regradeExam(const std::string& outputDir, const std::string& csvData,
       }
     }
     
-    // If no CSV found, create one with a default name
     if (csvFilePath.empty()) {
       csvFilePath = outputDir + "/results.csv";
     }
     
     std::ofstream csvFile(csvFilePath);
     if (!csvFile.is_open()) {
+      Logger::error("REGRADE", "Failed to open CSV file for writing: " + csvFilePath);
       return false;
     }
     
-    // Write CSV data back in original format
+    // Write CSV data back
     for (size_t row = 0; row < csvRows.size(); ++row) {
       for (size_t col = 0; col < csvRows[row].size(); ++col) {
         csvFile << csvRows[row][col];
@@ -416,9 +601,40 @@ bool regradeExam(const std::string& outputDir, const std::string& csvData,
     }
     csvFile.close();
     
+    // Upload updated CSV back to MinIO
+    std::ostringstream updatedCsvStream;
+    for (size_t row = 0; row < csvRows.size(); ++row) {
+      for (size_t col = 0; col < csvRows[row].size(); ++col) {
+        updatedCsvStream << csvRows[row][col];
+        if (col < csvRows[row].size() - 1) {
+          updatedCsvStream << ",";
+        }
+      }
+      updatedCsvStream << "\n";
+    }
+    
+    // Update both the original CSV and create a timestamped version
+    std::string originalCsvBasename;
+    for (const auto& entry : std::filesystem::directory_iterator(outputDir)) {
+      if (entry.path().extension() == ".csv") {
+        originalCsvBasename = entry.path().stem().string();
+        break;
+      }
+    }
+    
+    if (originalCsvBasename.empty()) {
+      originalCsvBasename = "results";
+    }
+    
+    std::string updatedCsvObjectName = originalJobId + "/" + originalCsvBasename + ".csv";
+    if (!minioClient.uploadCSV(updatedCsvObjectName, updatedCsvStream.str())) {
+      Logger::error("REGRADE", "Failed to upload updated CSV to MinIO: " + updatedCsvObjectName);
+    }
+    
     return true;
     
   } catch (const std::exception& e) {
+    Logger::error("REGRADE", "Exception in regrade process: " + std::string(e.what()) + " for job: " + originalJobId);
     return false;
   }
 }

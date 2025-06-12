@@ -415,6 +415,7 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /usr/include/nlohmann/ordered_map.hpp \
  /usr/include/nlohmann/detail/macro_unscope.hpp \
  /usr/include/nlohmann/thirdparty/hedley/hedley_undef.hpp \
+ /home/hunglt31/examark/backend/includes/utils/Logger.h \
  /home/hunglt31/examark/backend/includes/services/Service.h \
  /usr/include/pwd.h \
  /home/hunglt31/examark/backend/includes/models/TritonClient.h \
@@ -631,8 +632,32 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /home/hunglt31/Downloads/TritonClientSDK/include/ipc.h \
  /home/hunglt31/examark/backend/includes/utils/Detection.h \
  /home/hunglt31/examark/backend/includes/models/ModelConfig.h \
- /home/hunglt31/examark/backend/includes/utils/Logger.h \
  /home/hunglt31/examark/backend/includes/utils/ImageProcessor.h \
  /home/hunglt31/examark/backend/includes/utils/ExamGrader.h \
  /home/hunglt31/examark/backend/includes/utils/Detection.h \
- /home/hunglt31/examark/backend/includes/utils/ExamConfig.h
+ /home/hunglt31/examark/backend/includes/utils/ExamConfig.h \
+ /home/hunglt31/examark/backend/includes/utils/MinIOHTTPClient.h \
+ /usr/include/x86_64-linux-gnu/curl/curl.h \
+ /usr/include/x86_64-linux-gnu/curl/curlver.h \
+ /usr/include/x86_64-linux-gnu/curl/system.h \
+ /usr/include/x86_64-linux-gnu/sys/socket.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
+ /usr/include/x86_64-linux-gnu/bits/socket.h \
+ /usr/include/x86_64-linux-gnu/bits/socket_type.h \
+ /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
+ /usr/include/x86_64-linux-gnu/asm/socket.h \
+ /usr/include/asm-generic/socket.h /usr/include/linux/posix_types.h \
+ /usr/include/linux/stddef.h \
+ /usr/include/x86_64-linux-gnu/asm/posix_types.h \
+ /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
+ /usr/include/asm-generic/posix_types.h \
+ /usr/include/x86_64-linux-gnu/asm/bitsperlong.h \
+ /usr/include/asm-generic/bitsperlong.h \
+ /usr/include/x86_64-linux-gnu/asm/sockios.h \
+ /usr/include/asm-generic/sockios.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
+ /usr/include/x86_64-linux-gnu/curl/easy.h \
+ /usr/include/x86_64-linux-gnu/curl/multi.h \
+ /usr/include/x86_64-linux-gnu/curl/curl.h \
+ /usr/include/x86_64-linux-gnu/curl/urlapi.h \
+ /usr/include/x86_64-linux-gnu/curl/options.h

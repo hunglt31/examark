@@ -361,6 +361,30 @@ src/utils/Logger.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/engine-builder.dir/build.make CMakeFiles/engine-builder.dir/src/utils/Logger.cpp.s
 .PHONY : src/utils/Logger.cpp.s
 
+src/utils/MinIOHTTPClient.o: src/utils/MinIOHTTPClient.cpp.o
+.PHONY : src/utils/MinIOHTTPClient.o
+
+# target to build an object file
+src/utils/MinIOHTTPClient.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o
+.PHONY : src/utils/MinIOHTTPClient.cpp.o
+
+src/utils/MinIOHTTPClient.i: src/utils/MinIOHTTPClient.cpp.i
+.PHONY : src/utils/MinIOHTTPClient.i
+
+# target to preprocess a source file
+src/utils/MinIOHTTPClient.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.i
+.PHONY : src/utils/MinIOHTTPClient.cpp.i
+
+src/utils/MinIOHTTPClient.s: src/utils/MinIOHTTPClient.cpp.s
+.PHONY : src/utils/MinIOHTTPClient.s
+
+# target to generate assembly for a file
+src/utils/MinIOHTTPClient.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.s
+.PHONY : src/utils/MinIOHTTPClient.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -398,6 +422,9 @@ help:
 	@echo "... src/utils/Logger.o"
 	@echo "... src/utils/Logger.i"
 	@echo "... src/utils/Logger.s"
+	@echo "... src/utils/MinIOHTTPClient.o"
+	@echo "... src/utils/MinIOHTTPClient.i"
+	@echo "... src/utils/MinIOHTTPClient.s"
 .PHONY : help
 
 

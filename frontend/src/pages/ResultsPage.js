@@ -70,47 +70,100 @@ function ResultsPage() {
     );
   };
   
-  useEffect(() => {
-    // Get URL parameters to check if we should force refresh
-    const queryParams = new URLSearchParams(window.location.search);
-    const shouldRefresh = queryParams.get('refresh');
+  // useEffect(() => {
+  //   // Get URL parameters to check if we should force refresh
+  //   const queryParams = new URLSearchParams(window.location.search);
+  //   const shouldRefresh = queryParams.get('refresh');
     
-    // Load data from localStorage
-    const savedJobId = localStorage.getItem('examarkJobId');
+  //   // Load data from localStorage
+  //   const savedJobId = localStorage.getItem('examarkJobId');
+  //   const savedCsvData = localStorage.getItem('examarkCsvData');
+  //   const savedImages = localStorage.getItem('examarkImages');
+  //   const savedEdits = localStorage.getItem('examarkEdits');
+    
+  //   if (savedJobId && savedCsvData && savedImages) {
+  //     setJobId(savedJobId);
+  //     setCsvData(savedCsvData);
+
+  //     const parsedImages = JSON.parse(savedImages);
+  //     const sortedImages = parsedImages.sort((a, b) => {
+  //       // Extract page numbers (e.g., from "page_1.jpg" extract 1)
+  //       const pageNumA = parseInt(a.match(/page_(\d+)/)?.[1] || '0', 10);
+  //       const pageNumB = parseInt(b.match(/page_(\d+)/)?.[1] || '0', 10);
+  //       return pageNumA - pageNumB;
+  //     });
+
+  //     setImages(sortedImages);
+  //     setHasResults(true);
+
+  //     // Load any saved edits from localStorage
+  //     if (savedEdits) {
+  //       const edits = JSON.parse(savedEdits);
+  //       if (edits.metadata) setEditedMetadata(edits.metadata);
+  //       if (edits.answers) setEditedAnswers(edits.answers);
+  //     }
+      
+  //     // Reset editing state when data is refreshed
+  //     if (shouldRefresh) {
+  //       // Remove the refresh parameter from URL without page reload
+  //       const newUrl = window.location.pathname;
+  //       window.history.replaceState({}, document.title, newUrl);
+  //     }
+  //   }
+  // }, [window.location.search]);
+
+  // [MinIO] Use effect to load data from localStorage or URL parameters
+  useEffect(() => {
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlJobId = urlParams.get('jobId');
+    
+    // Get data from localStorage
+    const savedJobId = localStorage.getItem('examarkJobId') || urlJobId;
     const savedCsvData = localStorage.getItem('examarkCsvData');
     const savedImages = localStorage.getItem('examarkImages');
-    const savedEdits = localStorage.getItem('examarkEdits');
     
     if (savedJobId && savedCsvData && savedImages) {
       setJobId(savedJobId);
       setCsvData(savedCsvData);
 
       const parsedImages = JSON.parse(savedImages);
-      const sortedImages = parsedImages.sort((a, b) => {
-        // Extract page numbers (e.g., from "page_1.jpg" extract 1)
-        const pageNumA = parseInt(a.match(/page_(\d+)/)?.[1] || '0', 10);
-        const pageNumB = parseInt(b.match(/page_(\d+)/)?.[1] || '0', 10);
+      
+      // Images should already have MinIO URLs from the backend
+      const processedImages = parsedImages.map(img => {
+        if (typeof img === 'string') {
+          // Old format - shouldn't happen with MinIO but keep for safety
+          console.warn("Old image format detected, this shouldn't happen with MinIO");
+          return {
+            name: img,
+            url: `http://localhost:8080/results/${savedJobId}/images/${img}`
+          };
+        } else {
+          // New format from MinIO - use direct URL
+          return {
+            name: img.name,
+            url: img.url  // Direct MinIO URL
+          };
+        }
+      });
+      
+      // Sort images by page number
+      const sortedImages = processedImages.sort((a, b) => {
+        const pageNumA = parseInt(a.name.match(/page_(\d+)/)?.[1] || '0', 10);
+        const pageNumB = parseInt(b.name.match(/page_(\d+)/)?.[1] || '0', 10);
         return pageNumA - pageNumB;
       });
 
       setImages(sortedImages);
       setHasResults(true);
 
-      // Load any saved edits from localStorage
+      // Load any saved edits
+      const savedEdits = localStorage.getItem('examarkEdits');
       if (savedEdits) {
-        const edits = JSON.parse(savedEdits);
-        if (edits.metadata) setEditedMetadata(edits.metadata);
-        if (edits.answers) setEditedAnswers(edits.answers);
-      }
-      
-      // Reset editing state when data is refreshed
-      if (shouldRefresh) {
-        // Remove the refresh parameter from URL without page reload
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
+        setEditedMetadata(JSON.parse(savedEdits));
       }
     }
-  }, [window.location.search]);
+  }, []);
 
   // Handle metadata edit using the current image index 
   const handleMetadataEdit = (label, newValue) => {
@@ -168,7 +221,7 @@ function ResultsPage() {
       setCurrentImageIndex(currentImageIndex - 1);
     }
   };
-  
+
   // Parse CSV to get results for current image
   const getCurrentImageResults = () => {
     if (!csvData || images.length === 0) return { metadata: [], part1: [], part2: [], scoring: [] };
@@ -177,8 +230,21 @@ function ResultsPage() {
     const rows = csvData.split('\n');
     if (rows.length < 4) return { metadata: [], part1: [], part2: [], scoring: [] };
     
-    // Get the current image filename (e.g., "page_0.jpg")
-    const currentImageName = images[currentImageIndex]; 
+    // Get the current image filename - NOW HANDLING OBJECT FORMAT
+    const currentImageObj = images[currentImageIndex];
+    let currentImageName;
+    
+    if (typeof currentImageObj === 'string') {
+      // Old format - just a filename string
+      currentImageName = currentImageObj;
+    } else {
+      // New format - object with name and url properties
+      currentImageName = currentImageObj.name;
+    }
+    
+    console.log('Current image name:', currentImageName);
+    console.log('Current image object:', currentImageObj);
+    
     const baseImageName = currentImageName.split('.')[0]; // Remove extension (page_0)
     
     // Find which column corresponds to our current image
@@ -199,8 +265,13 @@ function ResultsPage() {
       imageColumnIndex = pageNum + 2; // Assuming page_0 is at column index 2
     }
     
+    console.log('Base image name:', baseImageName);
+    console.log('Image column index:', imageColumnIndex);
+    console.log('Header row:', headerRow);
+    
     // If still not found, return empty
     if (imageColumnIndex === -1 || imageColumnIndex >= headerRow.length) {
+      console.warn('Could not find column for image:', baseImageName);
       return { metadata: [], part1: [], part2: [], scoring: [] };
     }
     
@@ -607,9 +678,14 @@ function ResultsPage() {
             {images.length > 0 ? (
               <>
                 <img 
-                  src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`} 
+                  //src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`} 
+                  src={images[currentImageIndex].url} 
                   alt={`Graded exam page ${currentImageIndex + 1}`}
                   className="result-image"
+                  onError={(e) => {
+                    console.error("Failed to load image from MinIO:", e.target.src);
+                    e.target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y4ZjlmYSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2Yzc1N2QiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBub3QgYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==";
+                  }}
                 />
                 <div className="results-image-navigation">
                   <div className="results-image-navigation-buttons">

@@ -18,7 +18,6 @@ bool grading(const std::string &pdfFileName,
              TritonClient *tritonClient,
              const std::string &jobId);
 
-
 bool regradeExam(const std::string& outputDir, const std::string& csvData, 
                  const std::string& answerKeyData, const std::string& regradeJobId, 
                  const std::string& originalJobId);

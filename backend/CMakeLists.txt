@@ -59,6 +59,8 @@ find_library(GPR_LIBRARY gpr)
 find_package(OpenCV REQUIRED)
 find_package(PkgConfig REQUIRED) 
 find_package(CUDAToolkit REQUIRED)
+find_package(CURL REQUIRED)
+find_package(OpenSSL REQUIRED) 
 pkg_check_modules(POPPLERCPP REQUIRED poppler-cpp)
 
 # Include CUDA and TensorRT
@@ -82,6 +84,7 @@ set(SOURCES
     src/utils/ImageProcessor.cpp
     src/utils/ExamGrader.cpp
     src/utils/Logger.cpp
+    src/utils/MinIOHTTPClient.cpp
 
     src/models/TritonClient.cpp
     src/services/Service.cpp
@@ -100,6 +103,12 @@ target_link_libraries(server PRIVATE
     ${PROTOBUF_LIBRARIES}
     ${GRPC_LIBRARY}
     ${GPR_LIBRARY}
+    ${CURL_LIBRARIES}
+    OpenSSL::SSL OpenSSL::Crypto 
+)
+
+target_include_directories(server PRIVATE 
+    ${CURL_INCLUDE_DIRS}
 )
 
 # Builder executable

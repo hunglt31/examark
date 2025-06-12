@@ -13,6 +13,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o.d"
   "CMakeFiles/server.dir/src/utils/Logger.cpp.o"
   "CMakeFiles/server.dir/src/utils/Logger.cpp.o.d"
+  "CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o"
+  "CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o.d"
   "server"
   "server.pdb"
 )

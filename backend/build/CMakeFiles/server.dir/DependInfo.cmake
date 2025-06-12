@@ -15,6 +15,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/hunglt31/examark/backend/src/utils/ExamGrader.cpp" "CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o" "gcc" "CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o.d"
   "/home/hunglt31/examark/backend/src/utils/ImageProcessor.cpp" "CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o" "gcc" "CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o.d"
   "/home/hunglt31/examark/backend/src/utils/Logger.cpp" "CMakeFiles/server.dir/src/utils/Logger.cpp.o" "gcc" "CMakeFiles/server.dir/src/utils/Logger.cpp.o.d"
+  "/home/hunglt31/examark/backend/src/utils/MinIOHTTPClient.cpp" "CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o" "gcc" "CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o.d"
   )
 
 # Targets to which this target links.

@@ -125,10 +125,24 @@ CMakeFiles/server.dir/src/utils/Logger.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/utils/Logger.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hunglt31/examark/backend/src/utils/Logger.cpp -o CMakeFiles/server.dir/src/utils/Logger.cpp.s
 
+CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPClient.cpp
+CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o -MF CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o.d -o CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o -c /home/hunglt31/examark/backend/src/utils/MinIOHTTPClient.cpp
+
+CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hunglt31/examark/backend/src/utils/MinIOHTTPClient.cpp > CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.i
+
+CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hunglt31/examark/backend/src/utils/MinIOHTTPClient.cpp -o CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.s
+
 CMakeFiles/server.dir/src/models/TritonClient.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/models/TritonClient.cpp.o: ../src/models/TritonClient.cpp
 CMakeFiles/server.dir/src/models/TritonClient.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/server.dir/src/models/TritonClient.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/server.dir/src/models/TritonClient.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/models/TritonClient.cpp.o -MF CMakeFiles/server.dir/src/models/TritonClient.cpp.o.d -o CMakeFiles/server.dir/src/models/TritonClient.cpp.o -c /home/hunglt31/examark/backend/src/models/TritonClient.cpp
 
 CMakeFiles/server.dir/src/models/TritonClient.cpp.i: cmake_force
@@ -142,7 +156,7 @@ CMakeFiles/server.dir/src/models/TritonClient.cpp.s: cmake_force
 CMakeFiles/server.dir/src/services/Service.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp
 CMakeFiles/server.dir/src/services/Service.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/server.dir/src/services/Service.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/server.dir/src/services/Service.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/services/Service.cpp.o -MF CMakeFiles/server.dir/src/services/Service.cpp.o.d -o CMakeFiles/server.dir/src/services/Service.cpp.o -c /home/hunglt31/examark/backend/src/services/Service.cpp
 
 CMakeFiles/server.dir/src/services/Service.cpp.i: cmake_force
@@ -156,7 +170,7 @@ CMakeFiles/server.dir/src/services/Service.cpp.s: cmake_force
 CMakeFiles/server.dir/src/controllers/Controller.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/controllers/Controller.cpp.o: ../src/controllers/Controller.cpp
 CMakeFiles/server.dir/src/controllers/Controller.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/server.dir/src/controllers/Controller.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/server.dir/src/controllers/Controller.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/controllers/Controller.cpp.o -MF CMakeFiles/server.dir/src/controllers/Controller.cpp.o.d -o CMakeFiles/server.dir/src/controllers/Controller.cpp.o -c /home/hunglt31/examark/backend/src/controllers/Controller.cpp
 
 CMakeFiles/server.dir/src/controllers/Controller.cpp.i: cmake_force
@@ -173,6 +187,7 @@ server_OBJECTS = \
 "CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o" \
 "CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o" \
 "CMakeFiles/server.dir/src/utils/Logger.cpp.o" \
+"CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o" \
 "CMakeFiles/server.dir/src/models/TritonClient.cpp.o" \
 "CMakeFiles/server.dir/src/services/Service.cpp.o" \
 "CMakeFiles/server.dir/src/controllers/Controller.cpp.o"
@@ -184,6 +199,7 @@ server: CMakeFiles/server.dir/src/MainServer.cpp.o
 server: CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o
 server: CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o
 server: CMakeFiles/server.dir/src/utils/Logger.cpp.o
+server: CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o
 server: CMakeFiles/server.dir/src/models/TritonClient.cpp.o
 server: CMakeFiles/server.dir/src/services/Service.cpp.o
 server: CMakeFiles/server.dir/src/controllers/Controller.cpp.o
@@ -223,11 +239,14 @@ server: /usr/lib/x86_64-linux-gnu/libopencv_viz.so.4.5.4d
 server: /usr/lib/x86_64-linux-gnu/libopencv_wechat_qrcode.so.4.5.4d
 server: /usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.4.5.4d
 server: /usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libcudart_static.a
+server: /usr/local/cuda-12.4/lib64/libcudart_static.a
 server: /usr/lib/x86_64-linux-gnu/librt.a
 server: /home/hunglt31/Downloads/TritonClientSDK/lib/libgrpcclient.so
 server: /usr/lib/x86_64-linux-gnu/libgrpc++.so
 server: /usr/lib/x86_64-linux-gnu/libgpr.so
+server: /usr/lib/x86_64-linux-gnu/libcurl.so
+server: /usr/lib/x86_64-linux-gnu/libssl.so
+server: /usr/lib/x86_64-linux-gnu/libcrypto.so
 server: /usr/lib/x86_64-linux-gnu/libopencv_highgui.so.4.5.4d
 server: /usr/lib/x86_64-linux-gnu/libopencv_datasets.so.4.5.4d
 server: /usr/lib/x86_64-linux-gnu/libopencv_plot.so.4.5.4d
@@ -248,7 +267,7 @@ server: /usr/lib/x86_64-linux-gnu/libopencv_photo.so.4.5.4d
 server: /usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.5.4d
 server: /usr/lib/x86_64-linux-gnu/libopencv_core.so.4.5.4d
 server: CMakeFiles/server.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/server.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

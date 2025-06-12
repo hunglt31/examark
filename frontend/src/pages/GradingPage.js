@@ -101,6 +101,15 @@ Part,Question,Key,Key
     if (file) {
       setCsvFile(file);
       setGradingMessage(pdfFile ? `PDF: ${pdfFile.name}, CSV: ${file.name}` : `CSV selected: ${file.name}`);
+      
+      // Read and save the CSV content to localStorage for future use
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const csvContent = e.target.result;
+        localStorage.setItem('examarkAnswerKey', csvContent);
+        localStorage.setItem('examarkAnswerKeyFileName', file.name);
+      };
+      reader.readAsText(file);
     } else {
       setCsvFile(null);
       setGradingMessage(pdfFile ? `PDF selected: ${pdfFile.name}` : '');
@@ -145,7 +154,7 @@ Part,Question,Key,Key
       const result = await response.json();
       const newJobId = result.jobId;
       setJobId(newJobId);
-      
+      localStorage.setItem('examarkAnswerKeyJobId', newJobId);
       setGradingMessage(`Grading job started with ID: ${newJobId}. Processing...`);
       
       // Start polling for status immediately and more frequently
@@ -237,11 +246,11 @@ Part,Question,Key,Key
       });
     }
   };
-  
-  // Fetch results once grading is complete
+
+  // [MinIO] Fetch results once grading is complete
   const fetchResults = async (id) => {
     try {
-      // Fetch CSV data
+      // Fetch CSV data from MinIO via backend
       const csvResponse = await fetch(`http://localhost:8080/results/${id}/csv`);
       if (!csvResponse.ok) {
         throw new Error(`Failed to fetch CSV: ${csvResponse.status}`);
@@ -250,14 +259,21 @@ Part,Question,Key,Key
       const csvText = await csvResponse.text();
       setCsvData(csvText);
       
-      // Fetch image list
+      // Fetch image list from MinIO via backend - returns MinIO URLs
       const imagesResponse = await fetch(`http://localhost:8080/results/${id}/images`);
       if (!imagesResponse.ok) {
         throw new Error(`Failed to fetch image list: ${imagesResponse.status}`);
       }
       
       const imagesData = await imagesResponse.json();
-      setImages(imagesData.images || []);
+      
+      // Images now come with MinIO URLs directly
+      const imageUrls = imagesData.images.map(img => ({
+        name: img.name,
+        url: img.url  // Direct MinIO URL
+      }));
+      
+      setImages(imageUrls);
       
       // Clear any previous edits
       localStorage.removeItem('examarkEdits');
@@ -265,7 +281,7 @@ Part,Question,Key,Key
       // Save results to localStorage for other pages
       localStorage.setItem('examarkJobId', id);
       localStorage.setItem('examarkCsvData', csvText);
-      localStorage.setItem('examarkImages', JSON.stringify(imagesData.images || []));
+      localStorage.setItem('examarkImages', JSON.stringify(imageUrls));
       
       setGradingMessage("Grading request completed successfully!");
       setIsGrading(false);

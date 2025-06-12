@@ -282,6 +282,7 @@ CMakeFiles/server.dir/src/controllers/Controller.cpp.o: \
  /usr/include/nlohmann/ordered_map.hpp \
  /usr/include/nlohmann/detail/macro_unscope.hpp \
  /usr/include/nlohmann/thirdparty/hedley/hedley_undef.hpp \
+ /usr/include/pwd.h \
  /home/hunglt31/examark/backend/includes/utils/httplib.h \
  /usr/include/arpa/inet.h /usr/include/netinet/in.h \
  /usr/include/x86_64-linux-gnu/sys/socket.h \
@@ -389,7 +390,6 @@ CMakeFiles/server.dir/src/controllers/Controller.cpp.o: \
  /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h \
  /home/hunglt31/examark/backend/includes/controllers/Controller.h \
- /usr/include/pwd.h \
  /home/hunglt31/examark/backend/includes/models/TritonClient.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpc_client.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/grpcpp.h \
@@ -715,4 +715,13 @@ CMakeFiles/server.dir/src/controllers/Controller.cpp.o: \
  /home/hunglt31/examark/backend/includes/utils/Logger.h \
  /home/hunglt31/examark/backend/includes/services/Service.h \
  /home/hunglt31/examark/backend/includes/utils/ExamGrader.h \
- /home/hunglt31/examark/backend/includes/utils/Detection.h
+ /home/hunglt31/examark/backend/includes/utils/Detection.h \
+ /home/hunglt31/examark/backend/includes/utils/MinIOHTTPClient.h \
+ /usr/include/x86_64-linux-gnu/curl/curl.h \
+ /usr/include/x86_64-linux-gnu/curl/curlver.h \
+ /usr/include/x86_64-linux-gnu/curl/system.h \
+ /usr/include/x86_64-linux-gnu/curl/easy.h \
+ /usr/include/x86_64-linux-gnu/curl/multi.h \
+ /usr/include/x86_64-linux-gnu/curl/curl.h \
+ /usr/include/x86_64-linux-gnu/curl/urlapi.h \
+ /usr/include/x86_64-linux-gnu/curl/options.h

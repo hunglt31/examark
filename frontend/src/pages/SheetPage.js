@@ -42,6 +42,10 @@ function SheetPage() {
 
   const answerKeyInputRef = useRef(null);
 
+  const [hasPreviousAnswerKey, setHasPreviousAnswerKey] = useState(false);
+  const [previousAnswerKeyFileName, setPreviousAnswerKeyFileName] = useState('');
+  const [showRegradeOptions, setShowRegradeOptions] = useState(false);
+
   // Add alert state
   const [alert, setAlert] = useState({
     isOpen: false,
@@ -89,73 +93,83 @@ function SheetPage() {
     );
   };
 
-  // Load data on component mount
+  // [MinIO] Load data on component mount
   useEffect(() => {
-    // Get URL parameters to check if we should force refresh
-    const queryParams = new URLSearchParams(window.location.search);
-    const shouldRefresh = queryParams.get('refresh');
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlJobId = urlParams.get('jobId');
     
-    // Load data from localStorage
-    const savedJobId = localStorage.getItem('examarkJobId');
+    // Get data from localStorage
+    const savedJobId = localStorage.getItem('examarkJobId') || urlJobId;
     const savedCsvData = localStorage.getItem('examarkCsvData');
     const savedImages = localStorage.getItem('examarkImages');
-    const savedEdits = localStorage.getItem('examarkEdits');
     
+    const savedAnswerKey = localStorage.getItem('examarkAnswerKey');
+    const savedFileName = localStorage.getItem('examarkAnswerKeyFileName');
+    
+    if (savedAnswerKey) {
+      setHasPreviousAnswerKey(true);
+      setPreviousAnswerKeyFileName(savedFileName || 'Previous answer key');
+    }
+
     if (savedJobId && savedCsvData && savedImages) {
       setJobId(savedJobId);
       
       // Parse CSV data
-      let csvDataToUse = savedCsvData;
-      let parsedRows = csvDataToUse.split('\n').map(line => 
-        line.split(',').map(cell => cell.trim())
-      );
-
-      if (savedEdits) {
-        const edits = JSON.parse(savedEdits);
-        parsedRows = applyEditsToRows(parsedRows, edits);
+      const rows = savedCsvData.split('\n').map(row => {
+        const cells = [];
+        let current = '';
+        let inQuotes = false;
         
-        // Update CSV data with applied edits
-        csvDataToUse = parsedRows.map(row => row.join(',')).join('\n');
-        
-        // Save the updated CSV back to localStorage
-        localStorage.setItem('examarkCsvData', csvDataToUse);
-        
-        // Load edits into state for compatibility
-        if (edits.metadata) setEditedMetadata(edits.metadata);
-        if (edits.answers) setEditedAnswers(edits.answers);
-      }
+        for (let i = 0; i < row.length; i++) {
+          const char = row[i];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            cells.push(current.trim());
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        cells.push(current.trim());
+        return cells;
+      });
       
-      setCsvData(csvDataToUse);
-      setCsvRows(parsedRows);
+      setCsvData(savedCsvData);
+      setCsvRows(rows);
 
       const parsedImages = JSON.parse(savedImages);
-      const sortedImages = parsedImages.sort((a, b) => {
-        // Extract page numbers (e.g., from "page_1.jpg" extract 1)
-        const pageNumA = parseInt(a.match(/page_(\d+)/)?.[1] || '0', 10);
-        const pageNumB = parseInt(b.match(/page_(\d+)/)?.[1] || '0', 10);
+      
+      // Images should already have MinIO URLs from the backend
+      const processedImages = parsedImages.map(img => {
+        if (typeof img === 'string') {
+          // Old format - shouldn't happen with MinIO but keep for safety
+          console.warn("Old image format detected, this shouldn't happen with MinIO");
+          return {
+            name: img,
+            url: `http://localhost:8080/results/${savedJobId}/images/${img}`
+          };
+        } else {
+          // New format from MinIO - use direct URL
+          return {
+            name: img.name,
+            url: img.url  // Direct MinIO URL
+          };
+        }
+      });
+      
+      // Sort images by page number
+      const sortedImages = processedImages.sort((a, b) => {
+        const pageNumA = parseInt(a.name.match(/page_(\d+)/)?.[1] || '0', 10);
+        const pageNumB = parseInt(b.name.match(/page_(\d+)/)?.[1] || '0', 10);
         return pageNumA - pageNumB;
       });
 
       setImages(sortedImages);
       setHasResults(true);
-
-      // Load any saved edits from localStorage
-      if (savedEdits) {
-        const edits = JSON.parse(savedEdits);
-        if (edits.metadata) setEditedMetadata(edits.metadata);
-        if (edits.answers) setEditedAnswers(edits.answers);
-      }
-      
-      // Reset editing state when data is refreshed
-      if (shouldRefresh) {
-        setApproved(false);
-        
-        // Remove the refresh parameter from URL without page reload
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-      }
     }
-  }, [window.location.search]);
+  }, []);
 
   // New helper function to apply edits to CSV rows
   const applyEditsToRows = (rows, edits) => {
@@ -776,41 +790,17 @@ function SheetPage() {
   };
 
   // Handle answer key file selection
-  const handleAnswerKeyFileChange = (event) => {
+  const handleAnswerKeyFileChange = async (event) => {
     const file = event.target.files[0];
-    if (file) {
-      if (file.type !== 'text/csv' && !file.name.toLowerCase().endsWith('.csv')) {
-        showAlert('Please select a CSV file for the answer key.', 'error');
-        return;
-      }
-      setAnswerKeyFile(file);
-    }
-  };
+    if (!file) return;
 
-  // Handle re-grade button click
-  const handleRegradeClick = () => {
-    if (!jobId) {
-      showAlert('No job ID found. Cannot perform re-grading.', 'error');
-      return;
-    }
-    setShowRegradeModal(true);
-  };
-
-  // Handle re-grade submission
-  const handleRegradeSubmit = async () => {
-    if (!answerKeyFile) {
-      showAlert('Please select an answer key CSV file.', 'error');
-      return;
-    }
-
-    if (!jobId) {
-      showAlert('No job ID found. Cannot perform re-grading.', 'error');
+    if (file.type !== 'text/csv' && !file.name.toLowerCase().endsWith('.csv')) {
+      showAlert('Please select a CSV file for the answer key.', 'error');
       return;
     }
 
     try {
       setIsRegrade(true);
-      setShowRegradeModal(false);
       
       // Get current CSV data with any edits applied
       const currentCsvData = updateCsvFromRows();
@@ -821,61 +811,216 @@ function SheetPage() {
         return;
       }
 
-      // Create FormData for file upload
-      const formData = new FormData();
-      formData.append('jobId', jobId);
-      formData.append('answerKey', answerKeyFile);
+      // Read the answer key file content as text
+      const answerKeyContent = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsText(file);
+      });
+
+      // Save the new answer key to localStorage for future use
+      localStorage.setItem('examarkAnswerKey', answerKeyContent);
+      localStorage.setItem('examarkAnswerKeyFileName', file.name);
+      setHasPreviousAnswerKey(true);
+      setPreviousAnswerKeyFileName(file.name);
+
+      // Prepare JSON payload
+      const regradePayload = {
+        jobId: jobId,
+        csvData: currentCsvData,
+        answerKey: answerKeyContent
+      };
+
+      console.log('Sending regrade request with new key:', regradePayload);
+
+      // Send re-grade request with JSON headers
+      const response = await fetch('http://127.0.0.1:8080/regrade', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(regradePayload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Regrade failed:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Regrade response:', result);
       
-      // Create a blob from CSV data and append as file
-      const csvBlob = new Blob([currentCsvData], { type: 'text/csv' });
-      formData.append('csvFile', csvBlob, 'current_results.csv');
+      if (result.regrade_job_id) {
+        await pollRegradeStatus(result.regrade_job_id);
+      } else {
+        throw new Error('No regrade job ID returned');
+      }
+      
+    } catch (error) {
+      console.error('Regrade error:', error);
+      setIsRegrade(false);
+      showAlert(`Re-grading failed: ${error.message}`, 'error');
+    } finally {
+      // Clear the file input for next use
+      if (answerKeyInputRef.current) {
+        answerKeyInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Handle re-grade button click
+  const handleRegradeClick = () => {
+    if (!jobId) {
+      showAlert('No job ID found. Cannot perform re-grading.', 'error');
+      return;
+    }
+
+    if (hasPreviousAnswerKey) {
+      setShowRegradeOptions(true);
+    } else {
+      setShowRegradeModal(true);
+    }
+  };
+
+  // Handle regrade with new answer key
+  const handleRegradeWithNewKey = () => {
+    setShowRegradeOptions(false);
+    if (answerKeyInputRef.current) {
+      answerKeyInputRef.current.click();
+    }
+  };
+
+  const handleRegradeWithExistingKey = async () => {
+    setShowRegradeOptions(false);
+    
+    const savedAnswerKey = localStorage.getItem('examarkAnswerKey');
+    if (!savedAnswerKey) {
+      showAlert('No previous answer key found. Please upload a new one.', 'error');
+      setShowRegradeModal(true);
+      return;
+    }
+
+    try {
+      setIsRegrade(true);
+      
+      // Get current CSV data with any edits applied
+      const currentCsvData = updateCsvFromRows();
+      
+      if (!currentCsvData) {
+        showAlert('No CSV data available for re-grading.', 'error');
+        setIsRegrade(false);
+        return;
+      }
+
+      // Prepare JSON payload with existing answer key
+      const regradePayload = {
+        jobId: jobId,
+        csvData: currentCsvData,
+        answerKey: savedAnswerKey
+      };
+
+      console.log('Sending regrade request with existing key:', regradePayload);
 
       // Send re-grade request
       const response = await fetch('http://127.0.0.1:8080/regrade', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(regradePayload)
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Regrade failed:', errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
+      console.log('Regrade response:', result);
       
-      if (result.status === 'success') {
-        setIsRegrade(false);
-        showAlert('Re-grading completed successfully! Fetching updated results...', 'success');
-        
-        try {
-          // Fetch the updated CSV data from the server
-          const updatedCsvResponse = await fetch(`http://127.0.0.1:8080/results/${jobId}/csv`);
-          if (updatedCsvResponse.ok) {
-            const updatedCsvData = await updatedCsvResponse.text();
-            
-            // Update the state with new data
-            setCsvData(updatedCsvData);
-            const newRows = updatedCsvData.split('\n').map(line => 
-              line.split(',').map(cell => cell.trim())
-            );
-            setCsvRows(newRows);
-            
-            // Update localStorage with new data
-            localStorage.setItem('examarkCsvData', updatedCsvData);
-            
-            showAlert('Results updated successfully!', 'success');
-          } else {
-            throw new Error('Failed to fetch updated results');
-          }
-        } catch (error) {
-          console.error('Error fetching updated results:', error);
-          showAlert('Re-grading completed but failed to fetch updated results. Please refresh the page.', 'warning');
-        }
+      if (result.regrade_job_id) {
+        await pollRegradeStatus(result.regrade_job_id);
+      } else {
+        throw new Error('No regrade job ID returned');
       }
+      
     } catch (error) {
+      console.error('Regrade error:', error);
       setIsRegrade(false);
       showAlert(`Re-grading failed: ${error.message}`, 'error');
     }
+  };
+
+  const handleRegradeOptionsCancel = () => {
+    setShowRegradeOptions(false);
+  };
+
+  // Add the polling function if not already present:
+  const pollRegradeStatus = async (regradeJobId) => {
+    const maxAttempts = 30; // 30 seconds timeout
+    let attempts = 0;
+    
+    while (attempts < maxAttempts) {
+      try {
+        const statusResponse = await fetch(`http://127.0.0.1:8080/status/${regradeJobId}`);
+        if (!statusResponse.ok) {
+          throw new Error('Failed to check regrade status');
+        }
+        
+        const statusData = await statusResponse.json();
+        console.log('Regrade status:', statusData);
+        
+        if (statusData.status === 'completed') {
+          setIsRegrade(false);
+          showAlert('Re-grading completed successfully! Fetching updated results...', 'success');
+          
+          // Fetch updated results
+          try {
+            const updatedCsvResponse = await fetch(`http://127.0.0.1:8080/results/${jobId}/csv`);
+            if (updatedCsvResponse.ok) {
+              const updatedCsvData = await updatedCsvResponse.text();
+              
+              // Update the state with new data
+              setCsvData(updatedCsvData);
+              const newRows = updatedCsvData.split('\n').map(line => 
+                line.split(',').map(cell => cell.trim())
+              );
+              setCsvRows(newRows);
+              
+              // Update localStorage with new data
+              localStorage.setItem('examarkCsvData', updatedCsvData);
+              
+              showAlert('Results updated successfully!', 'success');
+            } else {
+              throw new Error('Failed to fetch updated results');
+            }
+          } catch (error) {
+            console.error('Error fetching updated results:', error);
+            showAlert('Re-grading completed but failed to fetch updated results. Please refresh the page.', 'warning');
+          }
+          return;
+        } else if (statusData.status === 'error') {
+          throw new Error(statusData.error || 'Regrade failed');
+        }
+        
+        // Wait 1 second before next check
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        attempts++;
+        
+      } catch (error) {
+        console.error('Status check error:', error);
+        setIsRegrade(false);
+        throw error;
+      }
+    }
+    
+    setIsRegrade(false);
+    throw new Error('Regrade timeout - process took too long');
   };
 
   // Cancel re-grade modal
@@ -953,9 +1098,14 @@ function SheetPage() {
             {images.length > 0 ? (
               <>
                 <img 
-                  src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`} 
+                  //src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`} 
+                  src={images[currentImageIndex].url} 
                   alt={`Exam page ${currentImageIndex + 1}`}
                   className="result-image"
+                  onError={(e) => {
+                    console.error("Failed to load image from MinIO:", e.target.src);
+                    e.target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y4ZjlmYSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2Yzc1N2QiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBub3QgYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==";
+                  }}
                 />
                 <div className="sheet-image-navigation">
                   <div className="sheet-image-navigation-buttons">
@@ -1017,44 +1167,46 @@ function SheetPage() {
                 </div>
               </div>
 
-              {/* Re-grade Modal */}
-              {showRegradeModal && (
+              {/* Hidden file input for answer key */}
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleAnswerKeyFileChange}
+                ref={answerKeyInputRef}
+                style={{ display: 'none' }}
+              />
+              
+              {/* Regrade Options Modal */} 
+              {showRegradeOptions && (
                 <div className="modal-overlay">
                   <div className="modal-content">
-                    <h3>Regrade Exams</h3>
-                    <p>Upload a new answer key CSV file to regrade the current exam results.</p>
+                    <h3>Regrade Options</h3>
+                    <p>You have uploaded an answer key before. How would you like to proceed?</p>
                     
-                    <div className="file-upload-section">
-                      <div className="file-upload-area">
-                        <button
-                          type="button"
-                          onClick={() => answerKeyInputRef.current && answerKeyInputRef.current.click()}
-                          className="btn btn-info btn-large"
-                        >
-                          <i className="fas fa-file-csv"></i> Upload Answer Key CSV
-                        </button>
-                        <input
-                          type="file"
-                          accept=".csv"
-                          onChange={handleAnswerKeyFileChange}
-                          ref={answerKeyInputRef}
-                          style={{ display: 'none' }}
-                        />
-                        {answerKeyFile && <span className="file-name">CSV: {answerKeyFile.name}</span>}
-                      </div>
+                    <div className="regrade-options">
+                      <button
+                        className="btn btn-primary btn-large"
+                        onClick={handleRegradeWithExistingKey}
+                      >
+                        <i className="fas fa-recycle"></i>
+                        Use Previous Answer Key
+                        <small>Continue with: {previousAnswerKeyFileName}</small>
+                      </button>
+                      
+                      <button
+                        className="btn btn-info btn-large"
+                        onClick={handleRegradeWithNewKey}
+                      >
+                        <i className="fas fa-upload"></i>
+                        Upload New Answer Key
+                        <small>Upload a different CSV answer key file</small>
+                      </button>
                     </div>
 
                     <div className="modal-buttons">
                       <button
-                        className="btn btn-success"
-                        onClick={handleRegradeSubmit}
-                        disabled={!answerKeyFile}
-                      >
-                        Start Regrading
-                      </button>
-                      <button
                         className="btn btn-secondary"
-                        onClick={handleRegradeCancel}
+                        onClick={handleRegradeOptionsCancel}
                       >
                         Cancel
                       </button>
