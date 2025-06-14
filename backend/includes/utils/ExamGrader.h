@@ -68,13 +68,11 @@ public:
    * the answer key. This is used for re-grading functionality where answers
    * have already been extracted and potentially modified.
    * 
-   * @param imageBasename The base name of the image being re-graded
    * @param studentAnswers Vector containing the student's answers from CSV
    * @param examAnswerKeys Map of exam IDs to their corresponding answer keys
    * @return Vector of strings containing the re-graded results
    */
   std::vector<std::string> regradeExamFromCsv(
-    const std::string& imageBasename,
     const std::vector<std::string>& studentAnswers,
     const std::map<std::string, std::vector<std::string>>& examAnswerKeys
   );

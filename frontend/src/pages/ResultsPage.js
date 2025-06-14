@@ -70,47 +70,6 @@ function ResultsPage() {
     );
   };
   
-  // useEffect(() => {
-  //   // Get URL parameters to check if we should force refresh
-  //   const queryParams = new URLSearchParams(window.location.search);
-  //   const shouldRefresh = queryParams.get('refresh');
-    
-  //   // Load data from localStorage
-  //   const savedJobId = localStorage.getItem('examarkJobId');
-  //   const savedCsvData = localStorage.getItem('examarkCsvData');
-  //   const savedImages = localStorage.getItem('examarkImages');
-  //   const savedEdits = localStorage.getItem('examarkEdits');
-    
-  //   if (savedJobId && savedCsvData && savedImages) {
-  //     setJobId(savedJobId);
-  //     setCsvData(savedCsvData);
-
-  //     const parsedImages = JSON.parse(savedImages);
-  //     const sortedImages = parsedImages.sort((a, b) => {
-  //       // Extract page numbers (e.g., from "page_1.jpg" extract 1)
-  //       const pageNumA = parseInt(a.match(/page_(\d+)/)?.[1] || '0', 10);
-  //       const pageNumB = parseInt(b.match(/page_(\d+)/)?.[1] || '0', 10);
-  //       return pageNumA - pageNumB;
-  //     });
-
-  //     setImages(sortedImages);
-  //     setHasResults(true);
-
-  //     // Load any saved edits from localStorage
-  //     if (savedEdits) {
-  //       const edits = JSON.parse(savedEdits);
-  //       if (edits.metadata) setEditedMetadata(edits.metadata);
-  //       if (edits.answers) setEditedAnswers(edits.answers);
-  //     }
-      
-  //     // Reset editing state when data is refreshed
-  //     if (shouldRefresh) {
-  //       // Remove the refresh parameter from URL without page reload
-  //       const newUrl = window.location.pathname;
-  //       window.history.replaceState({}, document.title, newUrl);
-  //     }
-  //   }
-  // }, [window.location.search]);
 
   // [MinIO] Use effect to load data from localStorage or URL parameters
   useEffect(() => {
@@ -160,10 +119,104 @@ function ResultsPage() {
       // Load any saved edits
       const savedEdits = localStorage.getItem('examarkEdits');
       if (savedEdits) {
-        setEditedMetadata(JSON.parse(savedEdits));
+        const edits = JSON.parse(savedEdits);
+        if (edits.metadata) {
+          setEditedMetadata(edits.metadata);
+        }
+        if (edits.answers) {
+          setEditedAnswers(edits.answers);
+        }
       }
     }
   }, []);
+
+  // Cập nhật function prepareEditedCsvData để return CSV thay vì chỉ prepare
+  const updateCsvDataFromEdits = () => {
+    if (!csvData) return null;
+    
+    const rows = csvData.split('\n');
+    const updatedRows = [...rows];
+    
+    // Update metadata rows
+    Object.keys(editedMetadata).forEach(imageIndex => {
+      const metadata = editedMetadata[imageIndex];
+      const imageColumnIndex = parseInt(imageIndex) + 2;
+      
+      if (metadata['Student ID'] && updatedRows[1]) {
+        const studentIdRow = updatedRows[1].split(',');
+        if (studentIdRow.length > imageColumnIndex) {
+          studentIdRow[imageColumnIndex] = metadata['Student ID'];
+          updatedRows[1] = studentIdRow.join(',');
+        }
+      }
+      
+      if (metadata['Exam ID'] && updatedRows[2]) {
+        const examIdRow = updatedRows[2].split(',');
+        if (examIdRow.length > imageColumnIndex) {
+          examIdRow[imageColumnIndex] = metadata['Exam ID'];
+          updatedRows[2] = examIdRow.join(',');
+        }
+      }
+    });
+    
+    // Update answer rows
+    Object.keys(editedAnswers).forEach(key => {
+      const [imageIndex, part, questionInfo] = key.split('-');
+      const imageColumnIndex = parseInt(imageIndex) + 2;
+      const newValue = editedAnswers[key];
+      
+      let questionHeaderRow = 3;
+      for (let i = 3; i < updatedRows.length; i++) {
+        const cells = updatedRows[i].split(',');
+        if (cells.length > 1 && cells[0].trim() === 'Part' && cells[1].trim() === 'Question') {
+          questionHeaderRow = i;
+          break;
+        }
+      }
+      
+      for (let i = questionHeaderRow + 1; i < updatedRows.length; i++) {
+        const row = updatedRows[i].split(',');
+        if (row.length > imageColumnIndex) {
+          const rowPart = row[0].trim();
+          const rowQuestion = row[1].trim();
+          
+          if (part === '1' && rowPart === '1') {
+            const flatIndex = parseInt(questionInfo);
+            const expectedQuestion = (flatIndex + 1).toString();
+            if (rowQuestion === expectedQuestion) {
+              row[imageColumnIndex] = newValue;
+              updatedRows[i] = row.join(',');
+              break;
+            }
+          } else if (part === '2' && rowPart === '2') {
+            const [qIndex, rowIndex] = questionInfo.split('-');
+            const questionNum = parseInt(qIndex) + 1;
+            if (rowQuestion === questionNum.toString()) {
+              let currentAnswer = row[imageColumnIndex] || '';
+              const charIndex = parseInt(rowIndex);
+              
+              while (currentAnswer.length <= charIndex) {
+                currentAnswer += 'X';
+              }
+              
+              const answerArray = currentAnswer.split('');
+              answerArray[charIndex] = newValue;
+              row[imageColumnIndex] = answerArray.join('');
+              updatedRows[i] = row.join(',');
+              break;
+            }
+          }
+        }
+      }
+    });
+    
+    const newCsvData = updatedRows.join('\n');
+    
+    localStorage.setItem('examarkCsvData', newCsvData);
+    setCsvData(newCsvData);
+    
+    return newCsvData;
+  };
 
   // Handle metadata edit using the current image index 
   const handleMetadataEdit = (label, newValue) => {
@@ -183,6 +236,7 @@ function ResultsPage() {
       answers: editedAnswers
     };
     localStorage.setItem('examarkEdits', JSON.stringify(editsToSave));
+    updateCsvDataFromEdits();
   };
 
   // Modify handleAnswerEdit to save to localStorage
@@ -201,6 +255,7 @@ function ResultsPage() {
       answers: updatedAnswers
     };
     localStorage.setItem('examarkEdits', JSON.stringify(editsToSave));
+    updateCsvDataFromEdits();
   };
 
   // Get the current answer value (either edited or original)

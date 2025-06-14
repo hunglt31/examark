@@ -129,7 +129,7 @@ cv::Mat ExamGrader::createMetadataMatrix(const std::vector<Detection>& detection
           matrix.at<uchar>(selected.first, col) = 1;
         } else {
           for (const auto &cand : filtered) {
-            matrix.at<uchar>(col, cand.first) = 2;
+            matrix.at<uchar>(cand.firstcol, col) = 2;
           }
         } 
       }
@@ -533,7 +533,6 @@ std::vector<std::string> ExamGrader::extractAnswersAndGradeExam(
 }
 
 std::vector<std::string> ExamGrader::regradeExamFromCsv(
-  const std::string& imageBasename,
   const std::vector<std::string>& studentAnswers,
   const std::map<std::string, std::vector<std::string>>& examAnswerKeys) 
 {

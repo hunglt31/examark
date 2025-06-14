@@ -551,8 +551,7 @@ bool regradeExam(const std::string& outputDir, const std::string& csvData,
       studentData.insert(studentData.end(), part2Answers.begin(), part2Answers.end());
       
       // Re-grade using the NEW answer key
-      std::string imageBasename = studentData[0];
-      std::vector<std::string> regradedResult = grader.regradeExamFromCsv(imageBasename, studentData, examAnswerKeys);
+      std::vector<std::string> regradedResult = grader.regradeExamFromCsv(studentData, examAnswerKeys);
       
       // Update scores
       if (!regradedResult.empty() && regradedResult.size() >= 3) {

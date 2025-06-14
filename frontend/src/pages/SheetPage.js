@@ -169,7 +169,57 @@ function SheetPage() {
       setImages(sortedImages);
       setHasResults(true);
     }
-  }, []);
+
+    // *** THÊM: Reload data khi page được focus lại ***
+    const handlePageFocus = () => {
+      console.log('Page focused, reloading data...');
+      const savedCsvData = localStorage.getItem('examarkCsvData');
+      if (savedCsvData && savedCsvData !== csvData) {
+        setCsvData(savedCsvData);
+        // Parse lại CSV rows
+        const newRows = savedCsvData.split('\n').map(row => {
+          const cells = [];
+          let current = '';
+          let inQuotes = false;
+          
+          for (let i = 0; i < row.length; i++) {
+            const char = row[i];
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              cells.push(current.trim());
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          cells.push(current.trim());
+          return cells;
+        });
+        setCsvRows(newRows);
+        console.log('CSV data updated from localStorage');
+      }
+    };
+
+    // *** THÊM: Listen for storage changes from other tabs/pages ***
+    const handleStorageChange = (e) => {
+      if (e.key === 'examarkCsvData' && e.newValue) {
+        setCsvData(e.newValue);
+        console.log('CSV data updated from another page');
+      } else if (e.key === 'examarkEdits' && e.newValue) {
+        const edits = JSON.parse(e.newValue);
+        if (edits.metadata) setEditedMetadata(edits.metadata);
+        if (edits.answers) setEditedAnswers(edits.answers);
+        console.log('Edits updated from another page');
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [csvData]);
 
   // New helper function to apply edits to CSV rows
   const applyEditsToRows = (rows, edits) => {
@@ -338,13 +388,21 @@ function SheetPage() {
       });
     });
     
-    // Save the edits to localStorage
     localStorage.setItem('examarkEdits', JSON.stringify(editsToSave));
+
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'examarkCsvData',
+      newValue: updatedCsv,
+      oldValue: csvData
+    }));
     
-    // Update the csvData state with the updated CSV
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'examarkEdits', 
+      newValue: JSON.stringify(editsToSave),
+      oldValue: localStorage.getItem('examarkEdits')
+    }));
+    
     setCsvData(updatedCsv);
-    
-    // Update UI
     setIsEditing(false);
     showAlert('CSV data saved successfully!', 'success');
   };
@@ -1148,7 +1206,7 @@ function SheetPage() {
                         onClick={handleRegradeClick}
                         disabled={isRegrade}
                       >
-                        {isRegrade ? 'RE-GRADING...' : 'RE-GRADE EXAMS'}
+                        {isRegrade ? 'REGRADING...' : 'REGRADE EXAMS'}
                       </button>
                     </>
                   ) : (
