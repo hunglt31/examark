@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Examark",
+  "name": "Auto Grade MCQ Tests Applicaton",
   "icons": [
     {
       "src": "favicon.ico",

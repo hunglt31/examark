@@ -6,11 +6,11 @@ Hệ thống chấm trắc nghiệm tự động sử dụng AI để phân tíc
 
 ### Phần cứng
 - GPU NVIDIA với CUDA Compute Capability ≥ 7.5 (RTX 20xx, RTX 30xx, RTX 40xx, Tesla T4, A100)
-- RAM: Tối thiểu 8GB, khuyến nghị 16GB+
-- Ổ cứng: Tối thiểu 20GB dung lượng trống
+- RAM: Tối thiểu 16GB, khuyến nghị 32GB+
+- Ổ cứng: Tối thiểu 50GB dung lượng trống
 
 ### Phần mềm
-- Ubuntu 20.04/22.04 LTS
+- Ubuntu 22.04.5 LTS
 - NVIDIA Driver (≥ 470.x)
 - CUDA Toolkit 12.4
 - Docker & Docker Compose
@@ -23,17 +23,24 @@ Hệ thống chấm trắc nghiệm tự động sử dụng AI để phân tíc
 ### 1. Cài đặt NVIDIA Driver và CUDA
 
 ```bash
-# Cài đặt NVIDIA Driver
+# Cài đặt NVIDIA driver
+# Check danh sách driver bằng 2 lệnh sau
 sudo apt update
-sudo apt install nvidia-driver-470
+sudo ubuntu-drivers devices
 
-# Tải và cài đặt CUDA Toolkit 12.4
-wget https://developer.download.nvidia.com/compute/cuda/12.4.0/local_installers/cuda_12.4.0_550.54.14_linux.run
-sudo sh cuda_12.4.0_550.54.14_linux.run
+# Cài phiên bản được đề xuất cho máy (có chữ recommend)
+sudo apt install nvidia-driver-5xx
 
-# Thêm vào ~/.bashrc
-echo 'export PATH=/usr/local/cuda-12.4/bin${PATH:+:${PATH}}' >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' >> ~/.bashrc
+# Tải và cài đặt CUDA Toolkit 12.4: Vào trang chủ của CUDA và tải về phiên bản phù hợp với OS máy, sau đó cài CUDA driver như hướng dẫn trên trang
+# https://developer.nvidia.com/cuda-12-4-0-download-archive?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_local
+
+# Thêm CUDA 12.4 vào ~/.bashrc
+export PATH=/usr/local/cuda-12.4/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64:$LD_LIBRARY_PATH
+echo 'export PATH=/usr/local/cuda-12.4/bin:$PATH' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
+
+# Kiểm tra kết quả
 source ~/.bashrc
 ```
 
@@ -41,17 +48,10 @@ source ~/.bashrc
 
 ```bash
 # Cài đặt Docker
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-sudo usermod -aG docker $USER
+# https://docs.docker.com/engine/install/ubuntu/
 
 # Cài đặt NVIDIA Container Toolkit
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-
-sudo apt-get update && sudo apt-get install -y nvidia-docker2
-sudo systemctl restart docker
+# https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 ```
 
 ### 3. Cài đặt dependencies cho Backend
@@ -70,55 +70,25 @@ sudo apt install -y libpoppler-cpp-dev
 sudo apt install -y libnvinfer8 libnvinfer-plugin8 libnvinfer-dev libnvinfer-plugin-dev libnvonnxparsers8 libnvonnxparsers-dev
 
 # Cài đặt các thư viện khác
-sudo apt install -y libcurl4-openssl-dev libssl-dev
+sudo apt install -y libcurl4-openssl-dev libssl-dev // Để custom MinIO Client
+sudo apt install nlohmann-json3-dev // Đê đọc viết JSON
 ```
 
 ### 4. Tải Triton Client SDK
 
 ```bash
-# Tạo thư mục Downloads nếu chưa có
-mkdir -p ~/Downloads
 cd ~/Downloads
-
-# Tải Triton Client SDK
-wget https://github.com/triton-inference-server/client/releases/download/v2.41.0/tritonserver2.41.0-clientsdk.tar.gz
-tar -xzf tritonserver2.41.0-clientsdk.tar.gz
-mv tritonserver2.41.0-clientsdk TritonClientSDK
+mkdir TritonClientSDK && cd TritonClientSDK
+wget https://github.com/triton-inference-server/server/releases/download/v2.49.0_ubuntu2204.clients.tar.gz
+tar -xzvf v2.49.0_ubuntu2204.clients.tar.gz .
 ```
 
-### 5. Clone và build Backend
+### 5. Clone repository
 
 ```bash
 # Clone repository
-git clone <repository-url> examark
-cd examark/backend
-
-# Tạo thư mục build
-mkdir build && cd build
-
-# Configure với CMake (điều chỉnh CUDA architecture nếu cần)
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CUDA_ARCHITECTURES=89 ..
-
-# Build
-make -j$(nproc)
+git clone https://github.com/hunglt31/examark
 ```
-
-### 6. Cài đặt Frontend
-
-```bash
-# Chuyển đến thư mục frontend
-cd ../../frontend
-
-# Cài đặt dependencies
-npm install
-
-# Build production (tùy chọn)
-npm run build
-```
-
-## Cấu hình
-
-### Backend Configuration
 
 Cập nhật các đường dẫn trong CMakeLists.txt nếu cần:
 
@@ -131,112 +101,120 @@ set(TARGET_ARCH 89) # RTX 4090
 # Hoặc: 86 (RTX 30xx), 75 (RTX 20xx), 80 (A100)
 ```
 
-### Setup Triton Server
+### 6. Cài đặt Backend
 
 ```bash
-# Tạo thư mục cho models
-mkdir -p ~/triton-models
+# Clone repository
+git clone https://github.com/hunglt31/examark
+cd examark/backend
 
-# Chạy Triton Server với Docker
-docker run --gpus=all -it --rm \
-  -p 8000:8000 -p 8001:8001 -p 8002:8002 \
-  -v ~/triton-models:/models \
-  nvcr.io/nvidia/tritonserver:23.10-py3 \
-  tritonserver --model-repository=/models --strict-model-config=false
+# Tạo thư mục build
+mkdir build && cd build
+
+# Configure với CMake (điều chỉnh CUDA architecture, ở đây 89 - RTX 4060)
+cmake -DCMAKE_CUDA_ARCHITECTURES=89 ..
+
+# Build
+make -j$(nproc)
 ```
+
+### 7. Cài đặt Frontend
+
+```bash
+# Chuyển đến thư mục frontend
+cd ../../frontend
+
+# Cài đặt dependencies
+npm install
+
+# Build production (tùy chọn)
+npm run build
+```
+
 
 ## Chạy hệ thống
 
 ### 1. Khởi động Triton Server
 
 ```bash
-docker run --gpus=all -it --rm \
-  -p 8000:8000 -p 8001:8001 -p 8002:8002 \
-  -v ~/triton-models:/models \
-  nvcr.io/nvidia/tritonserver:23.10-py3 \
-  tritonserver --model-repository=/models
+# Tạo và chạy Triton container
+# Đổi tên đường dẫn đến model repository Triton, ở đây là '/home/hunglt31/examark/models'
+docker run --gpus=all -d --name triton -p 8001:8001 \
+    -v /home/hunglt31/examark/models:/models \
+    nvcr.io/nvidia/tritonserver:24.08-py3 \
+    tritonserver --model-repository=/models \
+                 --allow-http=false \
+                 --allow-metrics=false
+
+# Dừng Triton
+docker stop triton
+
+# Chạy lại Triton
+docker start triton
+
+# Xóa Triton
+docker rm -f triton
 ```
 
-### 2. Chạy Backend
+### 2. Chạy MinIO
+```bash
+# Tạo và chạy MinIO container
+docker run -d --name minio -p 9000:9000 -p 9001:9001 \
+  -v /home/hunglt31/examark-data:/data \
+  -e "MINIO_ROOT_USER=minioadmin" \
+  -e "MINIO_ROOT_PASSWORD=minioadmin123" \
+  minio/minio server /data --console-address ":9001"
+
+# Dừng MinIO
+docker stop minio
+
+# Chạy lại MinIO
+docker start minio
+
+# Xóa MinIO
+docker rm -f minio
+```
+
+### 3. Chạy Backend
 
 ```bash
 cd examark/backend/build
+# Đã có engine
+./server
+
+# Chưa có engine
+./engine-builder
 ./server
 ```
 
-### 3. Chạy Frontend
+### 4. Chạy Frontend
 
 ```bash
-# Development mode
 cd examark/frontend
+
+# Development mode
 npm start
 
 # Production mode (sau khi build)
-npx serve -s build -p 3000
-```
-
-## API Endpoints
-
-Backend server chạy trên port 8080:
-
-- `POST /upload` - Upload file PDF
-- `POST /process` - Xử lý và chấm điểm
-- `GET /results` - Lấy kết quả
-- `GET /export` - Export kết quả ra CSV
-
-## Troubleshooting
-
-### Lỗi CUDA
-
-```bash
-# Kiểm tra CUDA
-nvidia-smi
-nvcc --version
-```
-
-### Lỗi TensorRT
-
-```bash
-# Kiểm tra TensorRT libraries
-ldconfig -p | grep nvinfer
-```
-
-### Lỗi Triton Client
-
-```bash
-# Kiểm tra Triton server status
-curl -X GET http://localhost:8000/v2/health/ready
-
-# Kiểm tra models
-curl -X GET http://localhost:8000/v2/models
-```
-
-### Lỗi Build
-
-```bash
-# Xóa build cache và rebuild
-rm -rf build/
-mkdir build && cd build
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CUDA_ARCHITECTURES=89 ..
-make VERBOSE=1
+serve -s build
 ```
 
 ## Kiến trúc hệ thống
 
 ```
-ExamArk/
-├── backend/           # C++ Backend with CUDA
-│   ├── src/          # Source code
-│   ├── includes/     # Header files
+Examark/
+├── backend/            # C++ Backend with CUDA
+|   ├── assets/         # Reference image
+│   ├── src/            # Source code
+│   ├── includes/       # Header files
 │   └── CMakeLists.txt
-├── frontend/         # React.js Frontend
-├── models/           # AI Models
-└── docs/            # Documentation
+├── frontend/           # React.js Frontend
+|   ├── node_modules/   # Thư viện
+│   ├── src/            # Source code
+│   ├── public/         # Header files
+│   └── CMakeLists.txt
+└── nodels/             # Triton model repository
 ```
-
-## License
-
-[Thông tin license]
 
 ## Liên hệ
 
@@ -245,4 +223,3 @@ ExamArk/
 
 ---
 
-**Lưu ý**: Đảm bảo GPU có đủ VRAM (tối thiểu 6GB) để chạy các models AI.

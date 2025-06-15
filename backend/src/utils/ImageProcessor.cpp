@@ -21,7 +21,7 @@
 
 // Constants for image processor
 // --- 1. Align image ---
-const std::string REF_IMG_PATH = "../assets/references/reference.png";
+const std::string REF_IMG_PATH = "../assets/reference.png";
 const cv::Mat REF_IMG_ORI = cv::imread(REF_IMG_PATH, cv::IMREAD_GRAYSCALE);
 cv::Mat REF_IMG_GRAY = [] {
     cv::Mat tmp;

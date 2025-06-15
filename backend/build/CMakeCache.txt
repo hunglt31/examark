@@ -72,32 +72,6 @@ CMAKE_CXX_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
 //Flags used by the CXX compiler during RELWITHDEBINFO builds.
 CMAKE_CXX_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
 
-//C compiler
-CMAKE_C_COMPILER:FILEPATH=/usr/bin/cc
-
-//A wrapper around 'ar' adding the appropriate '--plugin' option
-// for the GCC compiler
-CMAKE_C_COMPILER_AR:FILEPATH=/usr/bin/gcc-ar-11
-
-//A wrapper around 'ranlib' adding the appropriate '--plugin' option
-// for the GCC compiler
-CMAKE_C_COMPILER_RANLIB:FILEPATH=/usr/bin/gcc-ranlib-11
-
-//Flags used by the C compiler during all build types.
-CMAKE_C_FLAGS:STRING=
-
-//Flags used by the C compiler during DEBUG builds.
-CMAKE_C_FLAGS_DEBUG:STRING=-g
-
-//Flags used by the C compiler during MINSIZEREL builds.
-CMAKE_C_FLAGS_MINSIZEREL:STRING=-Os -DNDEBUG
-
-//Flags used by the C compiler during RELEASE builds.
-CMAKE_C_FLAGS_RELEASE:STRING=-O3 -DNDEBUG
-
-//Flags used by the C compiler during RELWITHDEBINFO builds.
-CMAKE_C_FLAGS_RELWITHDEBINFO:STRING=-O2 -g -DNDEBUG
-
 //Path to a program.
 CMAKE_DLLTOOL:FILEPATH=CMAKE_DLLTOOL-NOTFOUND
 
@@ -119,56 +93,8 @@ CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=
 //Enable/Disable output of compile commands during generation.
 CMAKE_EXPORT_COMPILE_COMMANDS:BOOL=
 
-//User executables (bin)
-CMAKE_INSTALL_BINDIR:PATH=bin
-
-//Read-only architecture-independent data (DATAROOTDIR)
-CMAKE_INSTALL_DATADIR:PATH=
-
-//Read-only architecture-independent data root (share)
-CMAKE_INSTALL_DATAROOTDIR:PATH=share
-
-//Documentation root (DATAROOTDIR/doc/PROJECT_NAME)
-CMAKE_INSTALL_DOCDIR:PATH=
-
-//C header files (include)
-CMAKE_INSTALL_INCLUDEDIR:PATH=include
-
-//Info documentation (DATAROOTDIR/info)
-CMAKE_INSTALL_INFODIR:PATH=
-
-//Object code libraries (lib)
-CMAKE_INSTALL_LIBDIR:PATH=lib
-
-//Program executables (libexec)
-CMAKE_INSTALL_LIBEXECDIR:PATH=libexec
-
-//Locale-dependent data (DATAROOTDIR/locale)
-CMAKE_INSTALL_LOCALEDIR:PATH=
-
-//Modifiable single-machine data (var)
-CMAKE_INSTALL_LOCALSTATEDIR:PATH=var
-
-//Man documentation (DATAROOTDIR/man)
-CMAKE_INSTALL_MANDIR:PATH=
-
-//C header files for non-gcc (/usr/include)
-CMAKE_INSTALL_OLDINCLUDEDIR:PATH=/usr/include
-
 //Install path prefix, prepended onto install directories.
 CMAKE_INSTALL_PREFIX:PATH=/usr/local
-
-//Run-time variable data (LOCALSTATEDIR/run)
-CMAKE_INSTALL_RUNSTATEDIR:PATH=
-
-//System admin executables (sbin)
-CMAKE_INSTALL_SBINDIR:PATH=sbin
-
-//Modifiable architecture-independent data (com)
-CMAKE_INSTALL_SHAREDSTATEDIR:PATH=com
-
-//Read-only single-machine data (etc)
-CMAKE_INSTALL_SYSCONFDIR:PATH=etc
 
 //Path to a program.
 CMAKE_LINKER:FILEPATH=/usr/bin/ld
@@ -213,21 +139,6 @@ CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
 CMAKE_PROJECT_NAME:STATIC=examark
-
-//Value Computed by CMake
-CMAKE_PROJECT_VERSION:STATIC=0.3.0
-
-//Value Computed by CMake
-CMAKE_PROJECT_VERSION_MAJOR:STATIC=0
-
-//Value Computed by CMake
-CMAKE_PROJECT_VERSION_MINOR:STATIC=3
-
-//Value Computed by CMake
-CMAKE_PROJECT_VERSION_PATCH:STATIC=0
-
-//Value Computed by CMake
-CMAKE_PROJECT_VERSION_TWEAK:STATIC=
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -345,8 +256,8 @@ CUDA_NVCC_FLAGS_RELEASE:STRING=
 // builds.
 CUDA_NVCC_FLAGS_RELWITHDEBINFO:STRING=
 
-//"OpenCL" library
-CUDA_OpenCL_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libOpenCL.so
+//Path to a library.
+CUDA_OpenCL_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libOpenCL.so
 
 //Propagate C/CXX_FLAGS and friends to the host compiler via -Xcompile
 CUDA_PROPAGATE_HOST_FLAGS:BOOL=ON
@@ -382,8 +293,8 @@ CUDA_cublasLt_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcublasLt.so
 //Path to a library.
 CUDA_cublasLt_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcublasLt_static.a
 
-//"cublas" library
-CUDA_cublas_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcublas.so
+//Path to a library.
+CUDA_cublas_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcublas.so
 
 //Path to a library.
 CUDA_cublas_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcublas_static.a
@@ -397,11 +308,11 @@ CUDA_cudadevrt_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcudadevrt.a
 //Path to a library.
 CUDA_cudart_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcudart.so
 
-//static CUDA runtime library
-CUDA_cudart_static_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcudart_static.a
+//Path to a library.
+CUDA_cudart_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcudart_static.a
 
-//"cufft" library
-CUDA_cufft_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcufft.so
+//Path to a library.
+CUDA_cufft_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcufft.so
 
 //Path to a library.
 CUDA_cufft_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcufft_static.a
@@ -412,32 +323,32 @@ CUDA_cufftw_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcufftw.so
 //Path to a library.
 CUDA_culibos_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libculibos.a
 
-//"cupti" library
+//Path to a library.
 CUDA_cupti_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcupti.so
 
 //Path to a library.
 CUDA_cupti_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcupti_static.a
 
-//"curand" library
-CUDA_curand_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcurand.so
+//Path to a library.
+CUDA_curand_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcurand.so
 
 //Path to a library.
 CUDA_curand_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcurand_static.a
 
-//"cusolver" library
-CUDA_cusolver_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcusolver.so
+//Path to a library.
+CUDA_cusolver_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcusolver.so
 
 //Path to a library.
 CUDA_cusolver_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcusolver_static.a
 
-//"cusparse" library
-CUDA_cusparse_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcusparse.so
+//Path to a library.
+CUDA_cusparse_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcusparse.so
 
 //Path to a library.
 CUDA_cusparse_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcusparse_static.a
 
-//"nppc" library
-CUDA_nppc_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppc.so
+//Path to a library.
+CUDA_nppc_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppc.so
 
 //Path to a library.
 CUDA_nppc_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppc_static.a
@@ -502,14 +413,14 @@ CUDA_nppitc_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppitc.so
 //Path to a library.
 CUDA_nppitc_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppitc_static.a
 
-//"npps" library
-CUDA_npps_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnpps.so
+//Path to a library.
+CUDA_npps_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnpps.so
 
 //Path to a library.
 CUDA_npps_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnpps_static.a
 
-//"nvToolsExt" library
-CUDA_nvToolsExt_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnvToolsExt.so
+//Path to a library.
+CUDA_nvToolsExt_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnvToolsExt.so
 
 //Path to a library.
 CUDA_nvgraph_LIBRARY:FILEPATH=CUDA_nvgraph_LIBRARY-NOTFOUND
@@ -544,40 +455,11 @@ CURL_LIBRARY_DEBUG:FILEPATH=CURL_LIBRARY_DEBUG-NOTFOUND
 //Path to a library.
 CURL_LIBRARY_RELEASE:FILEPATH=/usr/lib/x86_64-linux-gnu/libcurl.so
 
-//Directory under which to collect all populated content
-FETCHCONTENT_BASE_DIR:PATH=/home/hunglt31/examark/backend/build/_deps
-
-//Disables all attempts to download or update content and assumes
-// source dirs already exist
-FETCHCONTENT_FULLY_DISCONNECTED:BOOL=OFF
-
-//Enables QUIET option for all content population
-FETCHCONTENT_QUIET:BOOL=ON
-
-//When not empty, overrides where to find pre-populated content
-// for minio-cpp
-FETCHCONTENT_SOURCE_DIR_MINIO-CPP:PATH=
-
-//Enables UPDATE_DISCONNECTED behavior for all content population
-FETCHCONTENT_UPDATES_DISCONNECTED:BOOL=OFF
-
-//Enables UPDATE_DISCONNECTED behavior just for population of minio-cpp
-FETCHCONTENT_UPDATES_DISCONNECTED_MINIO-CPP:BOOL=OFF
-
-//Git command line client
-GIT_EXECUTABLE:FILEPATH=/usr/bin/git
-
 //Path to a library.
 GPR_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libgpr.so
 
 //Path to a library.
 GRPC_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libgrpc++.so
-
-//Build documentation
-MINIO_CPP_MAKE_DOC:BOOL=OFF
-
-//Build tests
-MINIO_CPP_TEST:BOOL=OFF
 
 //Path to a library.
 OPENSSL_CRYPTO_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcrypto.so
@@ -606,15 +488,6 @@ examark_IS_TOP_LEVEL:STATIC=ON
 //Value Computed by CMake
 examark_SOURCE_DIR:STATIC=/home/hunglt31/examark/backend
 
-//Value Computed by CMake
-miniocpp_BINARY_DIR:STATIC=/home/hunglt31/examark/backend/build/_deps/minio-cpp-build
-
-//Value Computed by CMake
-miniocpp_IS_TOP_LEVEL:STATIC=OFF
-
-//Value Computed by CMake
-miniocpp_SOURCE_DIR:STATIC=/home/hunglt31/examark/backend/build/_deps/minio-cpp-src
-
 //Path to a library.
 pkgcfg_lib_PC_CURL_curl:FILEPATH=/usr/lib/x86_64-linux-gnu/libcurl.so
 
@@ -626,9 +499,6 @@ pkgcfg_lib__OPENSSL_crypto:FILEPATH=/usr/lib/x86_64-linux-gnu/libcrypto.so
 
 //Path to a library.
 pkgcfg_lib__OPENSSL_ssl:FILEPATH=/usr/lib/x86_64-linux-gnu/libssl.so
-
-//The directory containing a CMake configuration file for unofficial-curlpp.
-unofficial-curlpp_DIR:PATH=unofficial-curlpp_DIR-NOTFOUND
 
 
 ########################
@@ -683,22 +553,6 @@ CMAKE_CXX_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
 CMAKE_CXX_FLAGS_RELEASE-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_CXX_FLAGS_RELWITHDEBINFO
 CMAKE_CXX_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_C_COMPILER
-CMAKE_C_COMPILER-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_C_COMPILER_AR
-CMAKE_C_COMPILER_AR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_C_COMPILER_RANLIB
-CMAKE_C_COMPILER_RANLIB-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_C_FLAGS
-CMAKE_C_FLAGS-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_C_FLAGS_DEBUG
-CMAKE_C_FLAGS_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_C_FLAGS_MINSIZEREL
-CMAKE_C_FLAGS_MINSIZEREL-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_C_FLAGS_RELEASE
-CMAKE_C_FLAGS_RELEASE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_C_FLAGS_RELWITHDEBINFO
-CMAKE_C_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_DLLTOOL
 CMAKE_DLLTOOL-ADVANCED:INTERNAL=1
 //Executable file format
@@ -732,40 +586,8 @@ CMAKE_HAVE_PTHREAD_H:INTERNAL=1
 //Source directory with the top level CMakeLists.txt file for this
 // project
 CMAKE_HOME_DIRECTORY:INTERNAL=/home/hunglt31/examark/backend
-//ADVANCED property for variable: CMAKE_INSTALL_BINDIR
-CMAKE_INSTALL_BINDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_DATADIR
-CMAKE_INSTALL_DATADIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_DATAROOTDIR
-CMAKE_INSTALL_DATAROOTDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_DOCDIR
-CMAKE_INSTALL_DOCDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_INCLUDEDIR
-CMAKE_INSTALL_INCLUDEDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_INFODIR
-CMAKE_INSTALL_INFODIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_LIBDIR
-CMAKE_INSTALL_LIBDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_LIBEXECDIR
-CMAKE_INSTALL_LIBEXECDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_LOCALEDIR
-CMAKE_INSTALL_LOCALEDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_LOCALSTATEDIR
-CMAKE_INSTALL_LOCALSTATEDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_MANDIR
-CMAKE_INSTALL_MANDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_OLDINCLUDEDIR
-CMAKE_INSTALL_OLDINCLUDEDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_RUNSTATEDIR
-CMAKE_INSTALL_RUNSTATEDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_SBINDIR
-CMAKE_INSTALL_SBINDIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_SHAREDSTATEDIR
-CMAKE_INSTALL_SHAREDSTATEDIR-ADVANCED:INTERNAL=1
 //Install .so files without execute permission.
 CMAKE_INSTALL_SO_NO_EXE:INTERNAL=1
-//ADVANCED property for variable: CMAKE_INSTALL_SYSCONFDIR
-CMAKE_INSTALL_SYSCONFDIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_LINKER
 CMAKE_LINKER-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_MAKE_PROGRAM
@@ -996,7 +818,7 @@ CURL_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CURL_LIBRARY_RELEASE
 CURL_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //Details about finding CUDA
-FIND_PACKAGE_MESSAGE_DETAILS_CUDA:INTERNAL=[/usr/local/cuda-12.4][/usr/local/cuda-12.4/bin/nvcc][/usr/local/cuda-12.4/include][/usr/local/cuda-12.4/lib64/libcudart_static.a][v12.4()]
+FIND_PACKAGE_MESSAGE_DETAILS_CUDA:INTERNAL=[/usr/local/cuda-12.4][/usr/local/cuda-12.4/bin/nvcc][/usr/local/cuda-12.4/include][/usr/lib/x86_64-linux-gnu/libcudart_static.a][v12.4()]
 //Details about finding CUDAToolkit
 FIND_PACKAGE_MESSAGE_DETAILS_CUDAToolkit:INTERNAL=[/usr/include][/usr/lib/x86_64-linux-gnu/libcudart.so][/usr/bin][v11.5.119()]
 //Details about finding CURL
@@ -1009,33 +831,6 @@ FIND_PACKAGE_MESSAGE_DETAILS_OpenSSL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libcryp
 FIND_PACKAGE_MESSAGE_DETAILS_PkgConfig:INTERNAL=[/usr/bin/pkg-config][v0.29.2()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
-//ADVANCED property for variable: GIT_EXECUTABLE
-GIT_EXECUTABLE-ADVANCED:INTERNAL=1
-MINIO_CFLAGS:INTERNAL=
-MINIO_CFLAGS_I:INTERNAL=
-MINIO_CFLAGS_OTHER:INTERNAL=
-MINIO_FOUND:INTERNAL=
-MINIO_INCLUDEDIR:INTERNAL=
-MINIO_LIBDIR:INTERNAL=
-MINIO_LIBS:INTERNAL=
-MINIO_LIBS_L:INTERNAL=
-MINIO_LIBS_OTHER:INTERNAL=
-MINIO_LIBS_PATHS:INTERNAL=
-MINIO_MODULE_NAME:INTERNAL=
-MINIO_PREFIX:INTERNAL=
-MINIO_STATIC_CFLAGS:INTERNAL=
-MINIO_STATIC_CFLAGS_I:INTERNAL=
-MINIO_STATIC_CFLAGS_OTHER:INTERNAL=
-MINIO_STATIC_LIBDIR:INTERNAL=
-MINIO_STATIC_LIBS:INTERNAL=
-MINIO_STATIC_LIBS_L:INTERNAL=
-MINIO_STATIC_LIBS_OTHER:INTERNAL=
-MINIO_STATIC_LIBS_PATHS:INTERNAL=
-MINIO_VERSION:INTERNAL=
-MINIO_minio-cpp_INCLUDEDIR:INTERNAL=
-MINIO_minio-cpp_LIBDIR:INTERNAL=
-MINIO_minio-cpp_PREFIX:INTERNAL=
-MINIO_minio-cpp_VERSION:INTERNAL=
 //ADVANCED property for variable: OPENSSL_CRYPTO_LIBRARY
 OPENSSL_CRYPTO_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: OPENSSL_INCLUDE_DIR
@@ -1116,8 +911,6 @@ POPPLERCPP_poppler-cpp_INCLUDEDIR:INTERNAL=
 POPPLERCPP_poppler-cpp_LIBDIR:INTERNAL=
 POPPLERCPP_poppler-cpp_PREFIX:INTERNAL=
 POPPLERCPP_poppler-cpp_VERSION:INTERNAL=
-//CMAKE_INSTALL_PREFIX during last run
-_GNUInstallDirs_LAST_CMAKE_INSTALL_PREFIX:INTERNAL=/usr/local
 _OPENSSL_CFLAGS:INTERNAL=
 _OPENSSL_CFLAGS_I:INTERNAL=
 _OPENSSL_CFLAGS_OTHER:INTERNAL=
@@ -1167,5 +960,5 @@ pkgcfg_lib_POPPLERCPP_poppler-cpp-ADVANCED:INTERNAL=1
 pkgcfg_lib__OPENSSL_crypto-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: pkgcfg_lib__OPENSSL_ssl
 pkgcfg_lib__OPENSSL_ssl-ADVANCED:INTERNAL=1
-prefix_result:INTERNAL=AsynchDNS;GSS-API;HSTS;HTTP2;HTTPS-proxy;IDN;IPv6;Kerberos;Largefile;NTLM;NTLM_WB;PSL;SPNEGO;SSL;TLS-SRP;UnixSockets;alt-svc;brotli;libz;zstd
+prefix_result:INTERNAL=/usr/lib/x86_64-linux-gnu
 

@@ -129,7 +129,7 @@ cv::Mat ExamGrader::createMetadataMatrix(const std::vector<Detection>& detection
           matrix.at<uchar>(selected.first, col) = 1;
         } else {
           for (const auto &cand : filtered) {
-            matrix.at<uchar>(cand.firstcol, col) = 2;
+            matrix.at<uchar>(cand.first, col) = 2;
           }
         } 
       }
