@@ -72,7 +72,7 @@ public:
    * @param examAnswerKeys Map of exam IDs to their corresponding answer keys
    * @return Vector of strings containing the re-graded results
    */
-  std::vector<std::string> regradeExamFromCsv(
+  std::vector<std::string> extractAnswersAndRegradeExam(
     const std::vector<std::string>& studentAnswers,
     const std::map<std::string, std::vector<std::string>>& examAnswerKeys
   );

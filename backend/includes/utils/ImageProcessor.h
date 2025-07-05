@@ -64,18 +64,18 @@ public:
   bool getRequestImagesWithProgress(const char* pdfData, int dataSize, std::vector<cv::Mat> &images, 
                                     ProgressCallback progressCallback, double dpi = 300.0);
 
-  /**
-   * @brief Reads PDF data and extracts images from it.
-   *
-   * This function reads PDF raw data and extracts images from each page. 
-   * The extracted images are aligned and saved in the provided vector.
-   *
-   * @param pdfData The data of the PDF file.
-   * @param images Vector to store the extracted images.
-   * @param dpi The DPI for the conversion (default is 300).
-   * @return true if the extraction is successful, false otherwise.
-   */
-  bool getRequestImages(const char* pdfData, int dataSize, std::vector<cv::Mat> &images, double dpi=300);
+  // /**
+  //  * @brief Reads PDF data and extracts images from it.
+  //  *
+  //  * This function reads PDF raw data and extracts images from each page. 
+  //  * The extracted images are aligned and saved in the provided vector.
+  //  *
+  //  * @param pdfData The data of the PDF file.
+  //  * @param images Vector to store the extracted images.
+  //  * @param dpi The DPI for the conversion (default is 300).
+  //  * @return true if the extraction is successful, false otherwise.
+  //  */
+  // bool getRequestImages(const char* pdfData, int dataSize, std::vector<cv::Mat> &images, double dpi=300);
   
   /**
    * @brief Splits the scanned image into metadata and content regions.

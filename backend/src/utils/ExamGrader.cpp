@@ -1,5 +1,3 @@
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -7,6 +5,10 @@
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+
 #include "utils/ExamGrader.h"
 #include "utils/Detection.h"
 #include "utils/ExamConfig.h"
@@ -26,8 +28,11 @@ const int NUM_SUBMATRICES_PART_2 = 8;
 const int NUM_SUBMATRICES_ON_IMG = 2;
 const int NUM_SUBMATRIX_COLS = 2;
 
-cv::Mat ExamGrader::createMetadataMatrix(const std::vector<Detection>& detections,
-                                         int numRows, int numCols) {
+cv::Mat ExamGrader::createMetadataMatrix(
+  const std::vector<Detection>& detections,
+  int numRows, 
+  int numCols
+) {
   cv::Mat matrix = cv::Mat::zeros(numRows, numCols, CV_8UC1);
   
   if (detections.empty()) {
@@ -138,8 +143,11 @@ cv::Mat ExamGrader::createMetadataMatrix(const std::vector<Detection>& detection
   return matrix;
 }
 
-cv::Mat ExamGrader::createPart1Matrix(const std::vector<Detection>& detections,
-                                      int numRows, int numCols) {  
+cv::Mat ExamGrader::createPart1Matrix(
+  const std::vector<Detection>& detections,
+  int numRows, 
+  int numCols
+) {  
   cv::Mat matrix = cv::Mat::zeros(numRows, numCols, CV_8UC1);
   
   if (detections.empty()) {
@@ -230,8 +238,11 @@ cv::Mat ExamGrader::createPart1Matrix(const std::vector<Detection>& detections,
   return matrix;
 }
 
-cv::Mat ExamGrader::createPart2Matrix(const std::vector<Detection>& detections,
-                                      int numRows, int numCols) {       
+cv::Mat ExamGrader::createPart2Matrix(
+  const std::vector<Detection>& detections,
+  int numRows, 
+  int numCols
+) {       
   cv::Mat matrix = cv::Mat::zeros(numRows, numCols, CV_8UC1);
   
   if (detections.empty()) {
@@ -532,10 +543,10 @@ std::vector<std::string> ExamGrader::extractAnswersAndGradeExam(
   }
 }
 
-std::vector<std::string> ExamGrader::regradeExamFromCsv(
+std::vector<std::string> ExamGrader::extractAnswersAndRegradeExam(
   const std::vector<std::string>& studentAnswers,
-  const std::map<std::string, std::vector<std::string>>& examAnswerKeys) 
-{
+  const std::map<std::string, std::vector<std::string>>& examAnswerKeys
+) {
   try {
     // Extract exam ID from student answers (should be at index 2)
     if (studentAnswers.size() < 3) {
@@ -587,8 +598,8 @@ std::vector<std::string> ExamGrader::regradeExamFromCsv(
 
 ExamGrader::ExamGradingResult ExamGrader::gradeStudentExam(
   const std::vector<std::string>& studentAnswers,
-  const std::vector<std::string>& correctAnswers) 
-{
+  const std::vector<std::string>& correctAnswers
+) {
   ExamGradingResult result;
   result.part1CorrectCount = 0;
   result.part2CorrectCount = 0;

@@ -22,9 +22,15 @@ const std::string MINIO_BUCKET = "grading-jobs";
 
 // Function to update job progress
 extern void updateJobProgress(
-  const std::string& jobId, const std::string& stage, 
-  const std::string& step, int currentPage = 0, int totalPages = 0, 
-  double progressPercent = 0.0, bool isError = false, const std::string& errorMsg = "");
+  const std::string& jobId, 
+  const std::string& stage, 
+  const std::string& step, 
+  int currentPage = 0, 
+  int totalPages = 0, 
+  double progressPercent = 0.0, 
+  bool isError = false, 
+  const std::string& errorMsg = ""
+);
 
 // Constants for CSV header
 const std::vector<std::string> HEADER_1 = {
@@ -34,6 +40,7 @@ const std::vector<std::string> HEADER_1 = {
   "2", "2", "2", "2", "2", "2", "2", "2",
   "Part 1", "Part 2", "Total"
 };
+
 const std::vector<std::string> HEADER_2 = {
   "Image name", "Student ID", "Exam ID", "Question",
   "1", "2", "3", "4", "5", "6", "7", "8",
@@ -61,16 +68,19 @@ std::string generateCSVString(const std::vector<std::vector<std::string>>& resul
   return csvStream.str();
 }
 
-bool grading(const std::string& pdfFileName, const std::string& pdfData, 
-             const std::string& answerKeyCSV, const std::string& outputDir, 
-             TritonClient* tritonClient, const std::string& jobId) {
+bool examark::services::grade(
+  const std::string& pdfFileName, 
+  const std::string& pdfData, 
+  const std::string& answerKeyCSV, 
+  const std::string& outputDir, 
+  TritonClient* tritonClient, 
+  const std::string& jobId
+) {
   try {
     /* ============================================== */
     /* ===== Stage 1: Reading Answer Key (0-5%) ===== */
     /* ============================================== */
-    // Initialize MinIO client
-    MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
-    
+
     updateJobProgress(jobId, "reading_key", "Initializing grading process...", 0, 0, 0.0);
     if (!std::filesystem::exists(outputDir)) {
       std::filesystem::create_directory(outputDir);
@@ -166,6 +176,7 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
     answerKeyFile.close();
 
     // Upload answer key JSON to MinIO
+    MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
     std::string jsonObjectName = jobId + "/answer_key.json";
     if (!minioClient.uploadJSON(jsonObjectName, answerKeyJsonStr)) {
       updateJobProgress(jobId, "reading_key", "Error: Failed to upload answer key to storage", 0, 0, 0.0, true, "Failed to save answer key JSON to MinIO");
@@ -177,6 +188,7 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
     /* ============================================= */
     /* ===== Stage 2: Rendering Images (5-75%) ===== */
     /* ============================================= */
+
     updateJobProgress(jobId, "rendering_images", "Starting PDF conversion...", 0, 0, 5.0);
     ImageProcessor imgProc;
     std::vector<cv::Mat> images;
@@ -203,6 +215,7 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
     /* ================================================ */
     /* ===== Stage 3: Upload Images to MinIO (75-80%) ===== */
     /* ================================================ */
+
     updateJobProgress(jobId, "uploading_images", "Uploading images to storage...", 0, images.size(), 75.0);
     
     std::vector<std::string> uploadedImageNames;
@@ -210,11 +223,9 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
       std::string imageBasename = "page_" + std::to_string(i + 1);
       std::string minioObjectName = jobId + "/" + imageBasename + ".jpg";
       
-      // Also save locally for potential debugging/regrade
       std::string localImagePath = outputDir + "/" + imageBasename + ".jpg";
       cv::imwrite(localImagePath, images[i]);
       
-      // Upload image to MinIO
       if (!minioClient.uploadImage(minioObjectName, images[i])) {
         updateJobProgress(jobId, "uploading_images", "Failed to upload image " + std::to_string(i + 1), 
                          i + 1, images.size(), 0.0, true, "Failed to upload image to storage");
@@ -232,6 +243,7 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
     /* =========================================== */
     /* ===== Stage 4: Grading Exams (80-95%) ===== */
     /* =========================================== */
+
     updateJobProgress(jobId, "grading_exams", "Starting YOLO detection and grading...", 0, images.size(), 80.0);
     
     // Process images for grading
@@ -301,9 +313,13 @@ bool grading(const std::string& pdfFileName, const std::string& pdfData,
   }
 }
 
-bool regradeExam(const std::string& outputDir, const std::string& csvData, 
-                 const std::string& answerKeyData, const std::string& regradeJobId, 
-                 const std::string& originalJobId) {
+bool examark::services::regrade(
+  const std::string& outputDir, 
+  const std::string& csvData, 
+  const std::string& answerKeyData, 
+  const std::string& regradeJobId, 
+  const std::string& originalJobId
+) {
   try {
     // Initialize MinIO client
     MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
@@ -551,7 +567,7 @@ bool regradeExam(const std::string& outputDir, const std::string& csvData,
       studentData.insert(studentData.end(), part2Answers.begin(), part2Answers.end());
       
       // Re-grade using the NEW answer key
-      std::vector<std::string> regradedResult = grader.regradeExamFromCsv(studentData, examAnswerKeys);
+      std::vector<std::string> regradedResult = grader.extractAnswersAndRegradeExam(studentData, examAnswerKeys);
       
       // Update scores
       if (!regradedResult.empty() && regradedResult.size() >= 3) {

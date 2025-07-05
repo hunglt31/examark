@@ -44,37 +44,69 @@ echo 'export LD_LIBRARY_PATH=/usr/local/cuda-12.4/lib64:$LD_LIBRARY_PATH' >> ~/.
 source ~/.bashrc
 ```
 
-### 2. Cài đặt Docker và NVIDIA Container Toolkit
+### 2. Cài đặt OpenCV sử dụng GPU
+
+```bash
+# Build from source vì opencv mặc định chỉ hỗ trợ CPU
+cd Downloads
+git clone -b 4.10.0 https://github.com/opencv/opencv.git
+
+cd opencv/opencv_contrib-4.10.0
+
+cmake -D CMAKE_BUILD_TYPE=Release \
+      -D CMAKE_INSTALL_PREFIX=/usr/local \
+      -D OPENCV_EXTRA_MODULES_PATH=~/Downloads/opencv/opencv_contrib-4.10.0/modules \
+      -D WITH_CUDA=ON \
+      -D WITH_CUDNN=ON \
+      -D OPENCV_DNN_CUDA=ON \
+      -D ENABLE_FAST_MATH=ON \
+      -D CUDA_FAST_MATH=ON \
+      -D WITH_CUBLAS=ON \
+      -D BUILD_opencv_python3=OFF \
+      -D BUILD_opencv_python2=OFF \
+      ../opencv-4.10.0
+```
+
+### 3. Cài đặt TensorRT (nếu build engine, tạm thời có thể bỏ qua vì engine đã có trên git)
+ ```bash
+# Vào đây và tải về phiên bản TensorRT phù hợp với may (tạo tài khoản NVIDIA)
+# TensorRT có thể không hỗ trợ một số tính năng trên Windows
+# Ở đây sử dụng: TensorRT 10.3 GA for Ubuntu 22.04 and CUDA 12.0 to 12.5 DEB local repo Package
+# https://developer.nvidia.com/tensorrt/download/10x
+
+# Cài repo và key
+sudo dpkg -i nv-tensorrt-local-repo-*.deb
+sudo cp /var/nv-tensorrt-local-repo-*/.*.gpg /usr/share/keyrings/
+sudo apt-get update
+
+# Cài TensorRT
+sudo apt-get install tensorrt libnvinfer-dev=10.3.0.26-1+cuda12.4 \
+  libnvonnxparsers-dev=10.3.0.26-1+cuda12.4
+```
+
+### 4. Cài đặt Docker và NVIDIA Container Toolkit
 
 ```bash
 # Cài đặt Docker
+# Triton Inference Server cài đặt native rất phức tạp và được khuyên khích chạy trên Docker
 # https://docs.docker.com/engine/install/ubuntu/
 
 # Cài đặt NVIDIA Container Toolkit
 # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 ```
 
-### 3. Cài đặt dependencies cho Backend
+### 5. Cài Triton Inference Server và MinIO bằng Docker
 
 ```bash
-# Cài đặt build tools
-sudo apt install -y cmake build-essential pkg-config
+# Cài Triton
+docker pull nvcr.io/nvidia/tritonserver:24.08-py3
 
-# Cài đặt OpenCV
-sudo apt install -y libopencv-dev libopencv-contrib-dev
-
-# Cài đặt Poppler (PDF processing)
-sudo apt install -y libpoppler-cpp-dev
-
-# Cài đặt TensorRT
-sudo apt install -y libnvinfer8 libnvinfer-plugin8 libnvinfer-dev libnvinfer-plugin-dev libnvonnxparsers8 libnvonnxparsers-dev
-
-# Cài đặt các thư viện khác
-sudo apt install -y libcurl4-openssl-dev libssl-dev // Để custom MinIO Client
-sudo apt install nlohmann-json3-dev // Đê đọc viết JSON
+# Cài MinIO
+docker pull quay.io/minio/minio
 ```
 
-### 4. Tải Triton Client SDK
+
+### 6. Tải Triton Client SDK
 
 ```bash
 cd ~/Downloads
@@ -83,7 +115,21 @@ wget https://github.com/triton-inference-server/server/releases/download/v2.49.0
 tar -xzvf v2.49.0_ubuntu2204.clients.tar.gz .
 ```
 
-### 5. Clone repository
+### 7. Cài đặt dependencies cho Backend
+
+```bash
+# Cài đặt build tools
+sudo apt install -y cmake build-essential pkg-config
+
+# Cài đặt Poppler (PDF processing)
+sudo apt install -y libpoppler-cpp-dev
+
+# Cài đặt các thư viện khác
+sudo apt install -y libcurl4-openssl-dev libssl-dev // Cho backend API và MinIO Client
+sudo apt install nlohmann-json3-dev // Đê đọc viết JSON
+```
+
+### 8. Clone repository
 
 ```bash
 # Clone repository
@@ -101,7 +147,7 @@ set(TARGET_ARCH 89) # RTX 4090
 # Hoặc: 86 (RTX 30xx), 75 (RTX 20xx), 80 (A100)
 ```
 
-### 6. Cài đặt Backend
+### 9. Cài đặt Backend
 
 ```bash
 # Clone repository
@@ -118,7 +164,7 @@ cmake -DCMAKE_CUDA_ARCHITECTURES=89 ..
 make -j$(nproc)
 ```
 
-### 7. Cài đặt Frontend
+### 10. Cài đặt Frontend
 
 ```bash
 # Chuyển đến thư mục frontend

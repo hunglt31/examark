@@ -1,22 +1,24 @@
 #include <filesystem>
 #include <iostream>
-#include <opencv2/calib3d.hpp>
-#include <opencv2/features2d.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/opencv.hpp>
+#include <memory>
+#include <cmath>
 #include <stdexcept>
 #include <tuple>
 #include <vector>
 #include <cstdlib> 
 #include <cstdio>
+
+#include <opencv2/calib3d.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <poppler/cpp/poppler-document.h>
 #include <poppler/cpp/poppler-page.h>
 #include <poppler/cpp/poppler-image.h>
 #include <poppler/cpp/poppler-page-renderer.h>
-#include <memory>
-#include <cmath>
-#include <opencv2/opencv.hpp>
+
 #include "utils/ImageProcessor.h"
 
 // Constants for image processor
@@ -101,9 +103,12 @@ const int CONTENT_24_CONTOUR_2_COORD_X = 2270;
 const int CONTENT_24_CONTOUR_2_COORD_Y = 2180;
 
 bool ImageProcessor::getRequestImagesWithProgress(
-  const char* pdfData, int dataSize, std::vector<cv::Mat> &images, 
-  ProgressCallback progressCallback, double dpi) 
-{
+  const char* pdfData, 
+  int dataSize, 
+  std::vector<cv::Mat> &images, 
+  ProgressCallback progressCallback, 
+  double dpi
+) {
   images.clear();
   
   // Load PDF document
@@ -161,49 +166,52 @@ bool ImageProcessor::getRequestImagesWithProgress(
   return !images.empty();
 }
 
-bool ImageProcessor::getRequestImages(const char* pdfData, int dataSize, std::vector<cv::Mat> &images, double dpi) {
-  images.clear();
-  // Load PDF document
-  std::unique_ptr<poppler::document> doc(poppler::document::load_from_raw_data(pdfData, dataSize));
-  if (!doc) {
-    Logger::error("IMAGE PROCESSOR", "Failed to load PDF document from raw data.");
-    return false;
-  }
+// bool ImageProcessor::getRequestImages(const char* pdfData, int dataSize, std::vector<cv::Mat> &images, double dpi) {
+//   images.clear();
+//   // Load PDF document
+//   std::unique_ptr<poppler::document> doc(poppler::document::load_from_raw_data(pdfData, dataSize));
+//   if (!doc) {
+//     Logger::error("IMAGE PROCESSOR", "Failed to load PDF document from raw data.");
+//     return false;
+//   }
   
-  int numPages = doc->pages();
-  if (numPages == 0) {
-    Logger::error("IMAGE PROCESSOR", "No pages found in the PDF document.");
-    return false;
-  }
+//   int numPages = doc->pages();
+//   if (numPages == 0) {
+//     Logger::error("IMAGE PROCESSOR", "No pages found in the PDF document.");
+//     return false;
+//   }
 
-  // Render pages to images
-  poppler::page_renderer renderer;
-  images.reserve(numPages);
-  for (int i = 0; i < numPages; ++i) {
-    std::unique_ptr<poppler::page> page(doc->create_page(i));
-    if (!page) {
-      continue;
-    }
+//   // Render pages to images
+//   poppler::page_renderer renderer;
+//   images.reserve(numPages);
+//   for (int i = 0; i < numPages; ++i) {
+//     std::unique_ptr<poppler::page> page(doc->create_page(i));
+//     if (!page) {
+//       continue;
+//     }
 
-    poppler::image popImg = renderer.render_page(page.get(), dpi, dpi); 
-    if (!popImg.is_valid()) {
-      continue;
-    }
+//     poppler::image popImg = renderer.render_page(page.get(), dpi, dpi); 
+//     if (!popImg.is_valid()) {
+//       continue;
+//     }
     
-    cv::Mat img(popImg.height(), popImg.width(), CV_8UC4, (void*)popImg.data(), popImg.bytes_per_row());
-    cv::Mat imgBGR;
-    cv::cvtColor(img, imgBGR, cv::COLOR_BGRA2BGR);
+//     cv::Mat img(popImg.height(), popImg.width(), CV_8UC4, (void*)popImg.data(), popImg.bytes_per_row());
+//     cv::Mat imgBGR;
+//     cv::cvtColor(img, imgBGR, cv::COLOR_BGRA2BGR);
 
-    cv::Mat imgAligned = alignImage(imgBGR);
+//     cv::Mat imgAligned = alignImage(imgBGR);
     
-    cv::Mat corrected;
-    cv::LUT(imgAligned, GAMMA_LUT, corrected);
-    images.emplace_back(corrected);
-  }
-  return !images.empty();
-}
+//     cv::Mat corrected;
+//     cv::LUT(imgAligned, GAMMA_LUT, corrected);
+//     images.emplace_back(corrected);
+//   }
+//   return !images.empty();
+// }
 
-cv::Mat ImageProcessor::alignImage(const cv::Mat &imgScan, cv::Size imgSize) {
+cv::Mat ImageProcessor::alignImage(
+  const cv::Mat &imgScan, 
+  cv::Size imgSize
+) {
   cv::Mat imgScanGray;
   cv::cvtColor(imgScan, imgScanGray, cv::COLOR_BGR2GRAY);
 
@@ -248,7 +256,10 @@ cv::Mat ImageProcessor::alignImage(const cv::Mat &imgScan, cv::Size imgSize) {
   return imgAligned;
 }
 
-cv::Mat ImageProcessor::paddingImage(cv::Mat &image, cv::Size paddingSize) {
+cv::Mat ImageProcessor::paddingImage(
+  cv::Mat &image, 
+  cv::Size paddingSize
+) {
   int height = image.rows, width = image.cols;
   float scale = static_cast<float>(paddingSize.width) / std::max(height, width);
   int newW = static_cast<int>(width * scale), newH = static_cast<int>(height * scale);
@@ -267,8 +278,8 @@ cv::Mat ImageProcessor::paddingImage(cv::Mat &image, cv::Size paddingSize) {
 bool ImageProcessor::splitImage(
   const cv::Mat &image,
   std::vector<cv::Mat>& metadataImages,
-  std::vector<cv::Mat>& contentImages) 
-{   
+  std::vector<cv::Mat>& contentImages
+) {   
   try {
     // Extract regions for metadata
     cv::Mat studentId = image(

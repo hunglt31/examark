@@ -163,7 +163,7 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
 
             // Queue the grading task
             grading_thread_pool.enqueue([=]() {
-                bool success = grading(pdf_file.filename, pdf_file.content, csv_file.content, outputDir, tritonClient, jobId);
+                bool success = examark::services::grade(pdf_file.filename, pdf_file.content, csv_file.content, outputDir, tritonClient, jobId);
                 if (!success) {
                     updateJobProgress(jobId, "error", "Grading process failed", 0, 0, 0.0, true, "Failed to complete grading");
                 }
@@ -451,7 +451,7 @@ void registerGradingRoute(httplib::Server& server, TritonClient* tritonClient) {
             grading_thread_pool.enqueue([=]() {
                 updateJobProgress(regradeJobId, "regrading", "Reprocessing grades with updated data...", 0, 0, 50.0, false, "");
                 
-                bool success = regradeExam(outputDir, csvData, answerKeyData, regradeJobId, originalJobId);
+                bool success = examark::services::regrade(outputDir, csvData, answerKeyData, regradeJobId, originalJobId);
                 
                 if (success) {
                     updateJobProgress(regradeJobId, "completed", "Regrade completed successfully", 0, 0, 100.0, false, "");
