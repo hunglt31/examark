@@ -259,7 +259,7 @@ Examark/
 │   ├── src/            # Source code
 │   ├── public/         # Header files
 │   └── CMakeLists.txt
-└── nodels/             # Triton model repository
+└── models/             # Triton model repository
 ```
 
 ## Liên hệ
