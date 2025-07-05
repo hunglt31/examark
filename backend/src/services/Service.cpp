@@ -30,14 +30,14 @@ extern void updateJobProgress(const std::string &jobId,
 
 // Constants for CSV header
 const std::vector<std::string> HEADER_1 = {
-    "",  "",  "",  "Part", "1", "1", "1", "1", "1",      "1",      "1",    "1",
-    "1", "1", "2", "2",    "2", "2", "2", "2", "Part 1", "Part 2", "Total"};
+    "",  "",  "",  "Part", "1", "1", "1", "1", "1",      "1",      "1",
+    "1", "1", "1", "2",    "2", "2", "2", "2", "Part 1", "Part 2", "Total"};
 
 const std::vector<std::string> HEADER_2 = {
-    "Image name", "Student ID", "Exam ID", "Question", "1",     "2",
-    "3",          "4",          "5",       "6",        "7",     "8",
-    "9",          "10",         "1",       "2",        "3",     "4",
-    "5",          "6",          "Correct", "Correct",  "Points"};
+    "Image name", "Student ID", "Exam ID", "Question", "1",  "2",
+    "3",          "4",          "5",       "6",        "7",  "8",
+    "9",          "10",         "11",      "12",       "13", "14",
+    "15",         "Correct",    "Correct", "Points"};
 
 // Helper function to generate CSV string
 std::string

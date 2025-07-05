@@ -23,7 +23,6 @@ const int PART_1_NUM_CENTER_Y = 4;
 const int PART_2_NUM_CENTER_X = 4;
 const int PART_2_NUM_CENTER_Y = 6;
 
-const int NUM_SUBMATRICES_PART_2 = 6;
 const int NUM_SUBMATRICES_ON_IMG = 2;
 const int NUM_SUBMATRIX_COLS = 2;
 
@@ -431,15 +430,16 @@ std::vector<std::string> ExamGrader::processContentPart1(const cv::Mat &array) {
 
 std::vector<std::string> ExamGrader::processContentPart2(const cv::Mat &array) {
   std::vector<std::string> overallAnswers;
-  if (array.rows != PART_2_NUM_QUESTIONS ||
-      array.cols != (2 * PART_2_NUM_QUESTIONS) || !array.isContinuous()) {
+  int numCols = PART_2_NUM_QUESTIONS + 1;
+  if (array.rows != PART_2_NUM_CENTER_Y ||
+      array.cols != (3 * PART_2_NUM_CENTER_X) || !array.isContinuous()) {
     return overallAnswers;
   }
 
   const uchar *data = array.data;
   int step = static_cast<int>(array.step[0]);
 
-  for (int i = 0; i < NUM_SUBMATRICES_PART_2; i++) {
+  for (int i = 0; i < PART_2_NUM_QUESTIONS; i++) {
     std::string eachAnswer;
     int colStart = i * NUM_SUBMATRIX_COLS;
 

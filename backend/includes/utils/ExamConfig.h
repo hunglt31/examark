@@ -8,7 +8,7 @@ const int PART_1_START_INDEX = 4;
 const int PART_2_START_INDEX = 14;
 
 const int PART_1_NUM_QUESTIONS = 10;
-const int PART_2_NUM_QUESTIONS = 6;
+const int PART_2_NUM_QUESTIONS = 5;
 
 const int PART_2_STRING_SIZE = 6;
 

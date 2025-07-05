@@ -853,7 +853,7 @@ function ResultsPage() {
                       <thead>
                         <tr>
                           {results.part2.map((item, qIndex) => (
-                            <th key={`p2-h-${qIndex}`}>{`Q${qIndex + 1}`}</th>
+                            <th key={`p2-h-${qIndex}`}>{`Q${item.question}`}</th>
                           ))}
                         </tr>
                       </thead>
