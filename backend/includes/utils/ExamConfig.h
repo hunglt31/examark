@@ -5,10 +5,10 @@ const int ANSWER_KEY_START_COLUMN = 2;
 const int ANSWER_KEY_START_INDEX = 2;
 
 const int PART_1_START_INDEX = 4;
-const int PART_2_START_INDEX = 20;
+const int PART_2_START_INDEX = 14;
 
-const int PART_1_NUM_QUESTIONS = 16;
-const int PART_2_NUM_QUESTIONS = 8;
+const int PART_1_NUM_QUESTIONS = 10;
+const int PART_2_NUM_QUESTIONS = 6;
 
 const int PART_2_STRING_SIZE = 6;
 

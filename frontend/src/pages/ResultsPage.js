@@ -300,7 +300,7 @@ function ResultsPage() {
     console.log('Current image name:', currentImageName);
     console.log('Current image object:', currentImageObj);
     
-    const baseImageName = currentImageName.split('.')[0]; // Remove extension (page_0)
+    const baseImageName = currentImageName.split('.')[0]; 
     
     // Find which column corresponds to our current image
     const headerRow = rows[0].split(',');
@@ -457,7 +457,7 @@ function ResultsPage() {
           numCols = 4; 
           numRows = 4; 
         } else {
-          numCols = 8; 
+          numCols = 6; 
           numRows = 6; 
         }
         let nextCol = col;
@@ -830,7 +830,7 @@ function ResultsPage() {
                     <strong> Content Part 1</strong>
                   </div>
                   <div className="part1-grid">
-                    {[0, 1, 2, 3].map((colIndex) => (
+                    {[0, 1, 2].map((colIndex) => (
                       <div className="part1-column" key={`col-${colIndex}`}>
                         {results.part1.slice(colIndex * 4, colIndex * 4 + 4).map((item, rowIndex) => {
                           const flatIndex = colIndex * 4 + rowIndex;
@@ -853,7 +853,7 @@ function ResultsPage() {
                       <thead>
                         <tr>
                           {results.part2.map((item, qIndex) => (
-                            <th key={`p2-h-${qIndex}`}>{`Q${item.question}`}</th>
+                            <th key={`p2-h-${qIndex}`}>{`Q${qIndex + 1}`}</th>
                           ))}
                         </tr>
                       </thead>

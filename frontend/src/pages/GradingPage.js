@@ -58,20 +58,12 @@ Part,Question,Key,Key
 1,8,C,C
 1,9,C,C
 1,10,A,A
-1,11,C,C
-1,12,A,A
-1,13,C,C
-1,14,A,C
-1,15,B,C
-1,16,B,B
 2,1,AB,ACD
 2,2,DF,BCD
 2,3,AC,BCDE
 2,4,ACD,BCDF
 2,5,ACDE,ACD
-2,6,BCDE,ACDEF
-2,7,CEF,CEF
-2,8,ACD,ACDEF`;
+2,6,BCDE,ACDEF`;
 
     const blob = new Blob([sampleCSVContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
