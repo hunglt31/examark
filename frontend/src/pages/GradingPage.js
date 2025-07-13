@@ -81,27 +81,294 @@ Part,Question,Key,Key
     const file = event.target.files[0];
     if (file) {
       setPdfFile(file);
-      setGradingMessage(csvFile ? `PDF: ${file.name}, CSV: ${csvFile.name}` : `PDF selected: ${file.name}`);
+      setGradingMessage(csvFile ? `PDF: ${file.name}, Key: ${csvFile.name}` : `PDF selected: ${file.name}`);
     } else {
       setPdfFile(null);
       setGradingMessage(csvFile ? `CSV selected: ${csvFile.name}` : '');
     }
   };
 
-  const handleCsvFileChange = (event) => {
+  // Helper function to parse CSV content to JSON
+  const parseCsvToJson = (csvContent) => {
+    const lines = csvContent.trim().split('\n');
+    const result = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      const values = lines[i].split(',').map(cell => cell.trim().replace(/"/g, ''));
+      result.push(values);
+    }
+    
+    return result;
+  };
+
+  // Helper function to parse XLS content to JSON (simple tab-delimited parsing)
+  const parseXlsToJson = (xlsContent) => {
+    // XLS files when read as text often have tab-delimited content
+    const lines = xlsContent.trim().split('\n');
+    const result = [];
+    
+    for (let i = 0; i < lines.length; i++) {
+      // Try tab-delimited first, then comma-delimited as fallback
+      let values;
+      if (lines[i].includes('\t')) {
+        values = lines[i].split('\t').map(cell => cell.trim().replace(/"/g, ''));
+      } else {
+        values = lines[i].split(',').map(cell => cell.trim().replace(/"/g, ''));
+      }
+      result.push(values);
+    }
+    
+    return result;
+  };
+
+  // // Handle file input changes
+  // const handleCsvFileChange = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     setCsvFile(file);
+  //     setGradingMessage(pdfFile ? `PDF: ${pdfFile.name}, Key: ${file.name}` : `Key selected: ${file.name}`);
+      
+  //     try {
+  //       // Read and parse the file content to JSON
+  //       let answerKeyJson;
+        
+  //       if (file.name.toLowerCase().endsWith('.xls')) {
+  //         // For XLS files, read as text and parse XML
+  //         const xlsContent = await new Promise((resolve, reject) => {
+  //           const reader = new FileReader();
+  //           reader.onload = (e) => resolve(e.target.result);
+  //           reader.onerror = (e) => reject(e);
+  //           reader.readAsText(file);
+  //         });
+  //         answerKeyJson = parseXlsToJson(xlsContent);
+  //       } else {
+  //         // For CSV files, read as text and parse CSV
+  //         const csvContent = await new Promise((resolve, reject) => {
+  //           const reader = new FileReader();
+  //           reader.onload = (e) => resolve(e.target.result);
+  //           reader.onerror = (e) => reject(e);
+  //           reader.readAsText(file);
+  //         });
+  //         answerKeyJson = parseCsvToJson(csvContent);
+  //       }
+
+  //       // Save the parsed JSON to localStorage for future use
+  //       localStorage.setItem('examarkAnswerKey', JSON.stringify(answerKeyJson));
+  //       localStorage.setItem('examarkAnswerKeyFileName', file.name);
+        
+  //     } catch (error) {
+  //       console.error('Error parsing answer key file:', error);
+  //       setGradingMessage(`Error parsing file: ${error.message}`);
+  //     }
+  //   } else {
+  //     setCsvFile(null);
+  //     setGradingMessage(pdfFile ? `PDF selected: ${pdfFile.name}` : '');
+  //   }
+  // };
+
+  // Start grading process
+  // const handleGradeExam = async () => {
+  //   if (!pdfFile || !csvFile) {
+  //     setGradingMessage("Please upload both the exam PDF and the answer key file.");
+  //     return;
+  //   }
+
+  //   setGradingMessage(`Uploading and initiating grading for PDF: ${pdfFile.name} with answers from: ${csvFile.name}...`);
+  //   setIsGrading(true);
+  //   setIsGradingComplete(false);
+  //   setCsvData(null);
+  //   setImages([]);
+  //   setShowNavigationOptions(false);
+  //   setProgress({
+  //     stage: 'initializing',
+  //     step: 'Starting upload...',
+  //     currentPage: 0,
+  //     totalPages: 0,
+  //     progressPercent: 0.0
+  //   });
+
+  //   try {
+  //     // Get the parsed answer key JSON from localStorage
+  //     const answerKeyJson = JSON.parse(localStorage.getItem('examarkAnswerKey') || '[]');
+      
+  //     if (answerKeyJson.length === 0) {
+  //       throw new Error('Failed to parse answer key file');
+  //     }
+
+  //     // Create FormData for PDF file
+  //     const formData = new FormData();
+  //     formData.append('pdfFile', pdfFile);
+      
+  //     // Add answer key as JSON string
+  //     formData.append('answerKey', JSON.stringify(answerKeyJson));
+
+  //     const response = await fetch('http://localhost:8080/grade', {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
+
+  //     if (!response.ok) {
+  //       throw new Error(`Error: ${response.status} - ${response.statusText}`);
+  //     }
+
+  //     const result = await response.json();
+  //     const newJobId = result.jobId;
+  //     setJobId(newJobId);
+  //     localStorage.setItem('examarkAnswerKeyJobId', newJobId);
+  //     setGradingMessage(`Grading job started with ID: ${newJobId}. Processing...`);
+      
+  //     // Start polling for status immediately and more frequently
+  //     if (statusCheckInterval.current) {
+  //       clearInterval(statusCheckInterval.current);
+  //     }
+      
+  //     // Check immediately
+  //     checkGradingStatus(newJobId);
+      
+  //     // Then check every 2 seconds for better responsiveness
+  //     statusCheckInterval.current = setInterval(() => {
+  //       checkGradingStatus(newJobId);
+  //     }, 2000); 
+      
+  //   } catch (error) {
+  //     console.error("Error sending grading request:", error);
+  //     setGradingMessage("An error occurred while communicating with the server. Please try again.");
+  //     setIsGrading(false);
+  //     setProgress({
+  //       stage: 'error',
+  //       step: 'Failed to start grading',
+  //       currentPage: 0,
+  //       totalPages: 0,
+  //       progressPercent: 0.0
+  //     });
+  //   }
+  // };
+
+  const convertToSimpleJson = (csvData) => {
+    if (csvData.length < 3) {
+      throw new Error('File must have at least 3 rows');
+    }
+    
+    // Find exam IDs in first row (skip first 2 columns)
+    const examIds = [];
+    for (let i = 2; i < csvData[0].length; i++) {
+      const examId = csvData[0][i].trim();
+      if (examId && examId !== 'ExamID') {
+        examIds.push(examId);
+      }
+    }
+    
+    if (examIds.length === 0) {
+      throw new Error('No exam IDs found in header row');
+    }
+    
+    // Create simple JSON object
+    const result = {};
+    
+    examIds.forEach((examId, examIndex) => {
+      const answers = [];
+      const columnIndex = 2 + examIndex;
+      
+      // Start from row 2 (skip headers)
+      let startRow = 2;
+      if (csvData[1] && csvData[1][0] === 'Part' && csvData[1][1] === 'Question') {
+        startRow = 2;
+      } else {
+        startRow = 1;
+      }
+      
+      for (let row = startRow; row < csvData.length && answers.length < 24; row++) {
+        if (csvData[row].length > columnIndex) {
+          const answer = csvData[row][columnIndex].trim();
+          if (answer) {
+            answers.push(answer);
+          }
+        }
+      }
+      
+      result[examId] = answers;
+    });
+    
+    return result;
+  };
+
+  // Basic XLS parser (works for simple XLS files saved as "Excel 97-2003 Workbook")
+  const parseXlsToArray = async (file) => {
+    try {
+      // Try reading as text first (works for some XLS files)
+      const text = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsText(file, 'UTF-8');
+      });
+      
+      // Look for tab-separated or comma-separated data
+      const lines = text.split(/\r?\n/).filter(line => line.trim());
+      const result = [];
+      
+      for (const line of lines) {
+        let cells;
+        if (line.includes('\t')) {
+          cells = line.split('\t');
+        } else if (line.includes(',')) {
+          cells = line.split(',');
+        } else {
+          continue; // Skip lines that don't look like data
+        }
+        
+        // Clean up cells
+        cells = cells.map(cell => cell.trim().replace(/"/g, ''));
+        if (cells.length > 1) {
+          result.push(cells);
+        }
+      }
+      
+      return result;
+    } catch (error) {
+      throw new Error('Failed to parse XLS file. Please convert to CSV format.');
+    }
+  };
+
+  const handleCsvFileChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
       setCsvFile(file);
-      setGradingMessage(pdfFile ? `PDF: ${pdfFile.name}, CSV: ${file.name}` : `CSV selected: ${file.name}`);
+      setGradingMessage(pdfFile ? `PDF: ${pdfFile.name}, Key: ${file.name}` : `Key selected: ${file.name}`);
       
-      // Read and save the CSV content to localStorage for future use
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const csvContent = e.target.result;
-        localStorage.setItem('examarkAnswerKey', csvContent);
+      try {
+        let csvData;
+        
+        if (file.name.toLowerCase().endsWith('.xls')) {
+          // For XLS files, try basic parsing
+          csvData = await parseXlsToArray(file);
+          if (csvData.length === 0) {
+            throw new Error('Could not parse XLS file. Please save as CSV format instead.');
+          }
+        } else {
+          // For CSV files, read as text and parse CSV
+          const csvContent = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file);
+          });
+          csvData = parseCsvToJson(csvContent);
+        }
+
+        // Convert to simple JSON format
+        const simpleJson = convertToSimpleJson(csvData);
+        
+        console.log('Converted to simple JSON:', simpleJson);
+        
+        // Save the simple JSON
+        localStorage.setItem('examarkAnswerKey', JSON.stringify(simpleJson));
         localStorage.setItem('examarkAnswerKeyFileName', file.name);
-      };
-      reader.readAsText(file);
+        
+      } catch (error) {
+        console.error('Error parsing answer key file:', error);
+        setGradingMessage(`Error parsing file: ${error.message}`);
+      }
     } else {
       setCsvFile(null);
       setGradingMessage(pdfFile ? `PDF selected: ${pdfFile.name}` : '');
@@ -111,7 +378,7 @@ Part,Question,Key,Key
   // Start grading process
   const handleGradeExam = async () => {
     if (!pdfFile || !csvFile) {
-      setGradingMessage("Please upload both the exam PDF and the answer CSV file.");
+      setGradingMessage("Please upload both the exam PDF and the answer key file.");
       return;
     }
 
@@ -129,11 +396,18 @@ Part,Question,Key,Key
       progressPercent: 0.0
     });
 
-    const formData = new FormData();
-    formData.append('pdfFile', pdfFile);
-    formData.append('csvFile', csvFile);
-
     try {
+      // Get the parsed answer key JSON from localStorage
+      const answerKeyJson = JSON.parse(localStorage.getItem('examarkAnswerKey') || '[]');
+      if (answerKeyJson.length === 0) {
+        throw new Error('Failed to parse answer key file');
+      }
+
+      const formData = new FormData();
+      formData.append('pdfFile', pdfFile);
+      const jsonBlob = new Blob([JSON.stringify(answerKeyJson)], { type: 'application/json' });
+      formData.append('answerKey', jsonBlob, 'answer_key.json');
+
       const response = await fetch('http://localhost:8080/grade', {
         method: 'POST',
         body: formData,
@@ -360,7 +634,7 @@ Part,Question,Key,Key
         <div className="exam-content">
           {!showNavigationOptions ? (
             <>
-              <p>Upload the exam papers (PDF) and the answer key (CSV) to begin grading.</p>
+              <p>Upload the exam papers (PDF) and the answer key (XLS/CSV) to begin grading.</p>
 
               <div className="file-upload-section">
                 <div className="file-upload-area">
@@ -391,11 +665,11 @@ Part,Question,Key,Key
                     className="btn btn-info btn-large"
                     disabled={isGrading}
                   >
-                    <i className="fas fa-file-csv"></i> Upload Answer CSV
+                    <i className="fas fa-file-csv"></i> Upload Answer XLS (CSV)
                   </button>
                   <input
                     type="file"
-                    accept=".csv"
+                    accept=".csv, .xls"
                     onChange={handleCsvFileChange}
                     ref={csvInputRef}
                     style={{ display: 'none' }}

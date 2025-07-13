@@ -85,7 +85,7 @@ set(SOURCES
     src/utils/ExamGrader.cpp
     src/utils/Logger.cpp
     src/utils/MinIOHTTPClient.cpp
-
+    src/models/ModelBuilder.cpp
     src/models/TritonClient.cpp
     src/services/Service.cpp
     src/controllers/Controller.cpp
@@ -98,6 +98,7 @@ target_link_libraries(server PRIVATE
     ${OpenCV_LIBS} 
     ${CUDA_LIBRARIES} 
     ${CUDA_LIBS} 
+    ${TensorRT_LIBS} 
     ${POPPLERCPP_LIBRARIES}
     ${TRITON_CLIENT_DIR}/lib/libgrpcclient.so
     ${PROTOBUF_LIBRARIES}
@@ -105,6 +106,7 @@ target_link_libraries(server PRIVATE
     ${GPR_LIBRARY}
     ${CURL_LIBRARIES}
     OpenSSL::SSL OpenSSL::Crypto 
+    
 )
 
 target_include_directories(server PRIVATE 

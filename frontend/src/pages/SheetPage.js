@@ -847,13 +847,64 @@ function SheetPage() {
     }
   };
 
+    // Helper function to parse CSV content to JSON
+  const parseCsvToJson = (csvContent) => {
+    const lines = csvContent.trim().split('\n');
+    const headers = lines[0].split(',').map(cell => cell.trim());
+    
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i].split(',').map(cell => cell.trim());
+      const row = {};
+      headers.forEach((header, index) => {
+        row[header] = values[index] || '';
+      });
+      result.push(row);
+    }
+    
+    return result;
+  };
+
+  // Helper function to parse XLS content to JSON
+  const parseXlsToJson = (xlsContent) => {
+    // Simple XLS XML parser for our specific format
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xlsContent, 'text/xml');
+    
+    const rows = xmlDoc.querySelectorAll('Row');
+    if (rows.length === 0) {
+      throw new Error('Invalid XLS format');
+    }
+    
+    // Extract headers from first row
+    const headerCells = rows[0].querySelectorAll('Cell Data');
+    const headers = Array.from(headerCells).map(cell => cell.textContent.trim());
+    
+    const result = [];
+    for (let i = 1; i < rows.length; i++) {
+      const cells = rows[i].querySelectorAll('Cell Data');
+      const row = {};
+      headers.forEach((header, index) => {
+        const cellValue = cells[index] ? cells[index].textContent.trim() : '';
+        row[header] = cellValue;
+      });
+      result.push(row);
+    }
+    
+    return result;
+  };
+
   // Handle answer key file selection
   const handleAnswerKeyFileChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (file.type !== 'text/csv' && !file.name.toLowerCase().endsWith('.csv')) {
-      showAlert('Please select a CSV file for the answer key.', 'error');
+    // Update to accept XLS and CSV files
+    if (file.type !== 'application/vnd.ms-excel' && 
+        file.type !== 'text/csv' &&
+        !file.name.toLowerCase().endsWith('.xls') && 
+        !file.name.toLowerCase().endsWith('.csv')) {
+      showAlert('Please select an XLS or CSV file for the answer key.', 'error');
       return;
     }
 
@@ -869,16 +920,31 @@ function SheetPage() {
         return;
       }
 
-      // Read the answer key file content as text
-      const answerKeyContent = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = (e) => reject(e);
-        reader.readAsText(file);
-      });
+      // Read and parse the answer key file to JSON
+      let answerKeyJson;
+      
+      if (file.name.toLowerCase().endsWith('.xls')) {
+        // For XLS files, read as text and parse XML
+        const xlsContent = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = (e) => reject(e);
+          reader.readAsText(file);
+        });
+        answerKeyJson = parseXlsToJson(xlsContent);
+      } else {
+        // For CSV files, read as text and parse CSV
+        const csvContent = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = (e) => reject(e);
+          reader.readAsText(file);
+        });
+        answerKeyJson = parseCsvToJson(csvContent);
+      }
 
-      // Save the new answer key to localStorage for future use
-      localStorage.setItem('examarkAnswerKey', answerKeyContent);
+      // Save the parsed JSON to localStorage for future use
+      localStorage.setItem('examarkAnswerKey', JSON.stringify(answerKeyJson));
       localStorage.setItem('examarkAnswerKeyFileName', file.name);
       setHasPreviousAnswerKey(true);
       setPreviousAnswerKeyFileName(file.name);
@@ -887,10 +953,10 @@ function SheetPage() {
       const regradePayload = {
         jobId: jobId,
         csvData: currentCsvData,
-        answerKey: answerKeyContent
+        answerKey: answerKeyJson
       };
 
-      console.log('Sending regrade request with new key:', regradePayload);
+      console.log('Sending regrade request with answer key JSON:', regradePayload);
 
       // Send re-grade request with JSON headers
       const response = await fetch('http://127.0.0.1:8080/regrade', {
@@ -903,19 +969,15 @@ function SheetPage() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Regrade failed:', errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+        throw new Error(`Re-grading failed: ${response.status} - ${response.statusText}`);
       }
 
       const result = await response.json();
-      console.log('Regrade response:', result);
+      const newRegradeJobId = result.jobId;
+      setRegradeJobId(newRegradeJobId);
       
-      if (result.regrade_job_id) {
-        await pollRegradeStatus(result.regrade_job_id);
-      } else {
-        throw new Error('No regrade job ID returned');
-      }
+      // Poll for re-grade completion
+      await pollRegradeStatus(newRegradeJobId);
       
     } catch (error) {
       console.error('Regrade error:', error);
@@ -928,6 +990,151 @@ function SheetPage() {
       }
     }
   };
+
+  const handleRegradeWithExistingKey = async () => {
+    setShowRegradeOptions(false);
+    
+    const savedAnswerKey = localStorage.getItem('examarkAnswerKey');
+    
+    if (!savedAnswerKey) {
+      showAlert('No previous answer key found. Please upload a new one.', 'error');
+      setShowRegradeModal(true);
+      return;
+    }
+
+    try {
+      setIsRegrade(true);
+      
+      // Get current CSV data with any edits applied
+      const currentCsvData = updateCsvFromRows();
+      
+      if (!currentCsvData) {
+        showAlert('No CSV data available for re-grading.', 'error');
+        setIsRegrade(false);
+        return;
+      }
+
+      // Parse the saved answer key JSON
+      const answerKeyJson = JSON.parse(savedAnswerKey);
+
+      // Prepare JSON payload with existing answer key
+      const regradePayload = {
+        jobId: jobId,
+        csvData: currentCsvData,
+        answerKey: answerKeyJson
+      };
+
+      console.log('Sending regrade request with existing answer key JSON:', regradePayload);
+
+      // Send re-grade request
+      const response = await fetch('http://127.0.0.1:8080/regrade', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(regradePayload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Re-grading failed: ${response.status} - ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const newRegradeJobId = result.jobId;
+      setRegradeJobId(newRegradeJobId);
+      
+      // Poll for re-grade completion
+      await pollRegradeStatus(newRegradeJobId);
+      
+    } catch (error) {
+      console.error('Regrade error:', error);
+      setIsRegrade(false);
+      showAlert(`Re-grading failed: ${error.message}`, 'error');
+    }
+  };
+
+  // // Handle answer key file selection
+  // const handleAnswerKeyFileChange = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
+
+  //   if (file.type !== 'text/csv' && !file.name.toLowerCase().endsWith('.csv')) {
+  //     showAlert('Please select a CSV file for the answer key.', 'error');
+  //     return;
+  //   }
+
+  //   try {
+  //     setIsRegrade(true);
+      
+  //     // Get current CSV data with any edits applied
+  //     const currentCsvData = updateCsvFromRows();
+      
+  //     if (!currentCsvData) {
+  //       showAlert('No CSV data available for re-grading.', 'error');
+  //       setIsRegrade(false);
+  //       return;
+  //     }
+
+  //     // Read the answer key file content as text
+  //     const answerKeyContent = await new Promise((resolve, reject) => {
+  //       const reader = new FileReader();
+  //       reader.onload = (e) => resolve(e.target.result);
+  //       reader.onerror = (e) => reject(e);
+  //       reader.readAsText(file);
+  //     });
+
+  //     // Save the new answer key to localStorage for future use
+  //     localStorage.setItem('examarkAnswerKey', answerKeyContent);
+  //     localStorage.setItem('examarkAnswerKeyFileName', file.name);
+  //     setHasPreviousAnswerKey(true);
+  //     setPreviousAnswerKeyFileName(file.name);
+
+  //     // Prepare JSON payload
+  //     const regradePayload = {
+  //       jobId: jobId,
+  //       csvData: currentCsvData,
+  //       answerKey: answerKeyContent
+  //     };
+
+  //     console.log('Sending regrade request with new key:', regradePayload);
+
+  //     // Send re-grade request with JSON headers
+  //     const response = await fetch('http://127.0.0.1:8080/regrade', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/json'
+  //       },
+  //       body: JSON.stringify(regradePayload)
+  //     });
+
+  //     if (!response.ok) {
+  //       const errorText = await response.text();
+  //       console.error('Regrade failed:', errorText);
+  //       throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+  //     }
+
+  //     const result = await response.json();
+  //     console.log('Regrade response:', result);
+      
+  //     if (result.regrade_job_id) {
+  //       await pollRegradeStatus(result.regrade_job_id);
+  //     } else {
+  //       throw new Error('No regrade job ID returned');
+  //     }
+      
+  //   } catch (error) {
+  //     console.error('Regrade error:', error);
+  //     setIsRegrade(false);
+  //     showAlert(`Re-grading failed: ${error.message}`, 'error');
+  //   } finally {
+  //     // Clear the file input for next use
+  //     if (answerKeyInputRef.current) {
+  //       answerKeyInputRef.current.value = '';
+  //     }
+  //   }
+  // };
 
   // Handle re-grade button click
   const handleRegradeClick = () => {
@@ -951,68 +1158,68 @@ function SheetPage() {
     }
   };
 
-  const handleRegradeWithExistingKey = async () => {
-    setShowRegradeOptions(false);
+  // const handleRegradeWithExistingKey = async () => {
+  //   setShowRegradeOptions(false);
     
-    const savedAnswerKey = localStorage.getItem('examarkAnswerKey');
-    if (!savedAnswerKey) {
-      showAlert('No previous answer key found. Please upload a new one.', 'error');
-      setShowRegradeModal(true);
-      return;
-    }
+  //   const savedAnswerKey = localStorage.getItem('examarkAnswerKey');
+  //   if (!savedAnswerKey) {
+  //     showAlert('No previous answer key found. Please upload a new one.', 'error');
+  //     setShowRegradeModal(true);
+  //     return;
+  //   }
 
-    try {
-      setIsRegrade(true);
+  //   try {
+  //     setIsRegrade(true);
       
-      // Get current CSV data with any edits applied
-      const currentCsvData = updateCsvFromRows();
+  //     // Get current CSV data with any edits applied
+  //     const currentCsvData = updateCsvFromRows();
       
-      if (!currentCsvData) {
-        showAlert('No CSV data available for re-grading.', 'error');
-        setIsRegrade(false);
-        return;
-      }
+  //     if (!currentCsvData) {
+  //       showAlert('No CSV data available for re-grading.', 'error');
+  //       setIsRegrade(false);
+  //       return;
+  //     }
 
-      // Prepare JSON payload with existing answer key
-      const regradePayload = {
-        jobId: jobId,
-        csvData: currentCsvData,
-        answerKey: savedAnswerKey
-      };
+  //     // Prepare JSON payload with existing answer key
+  //     const regradePayload = {
+  //       jobId: jobId,
+  //       csvData: currentCsvData,
+  //       answerKey: savedAnswerKey
+  //     };
 
-      console.log('Sending regrade request with existing key:', regradePayload);
+  //     console.log('Sending regrade request with existing key:', regradePayload);
 
-      // Send re-grade request
-      const response = await fetch('http://127.0.0.1:8080/regrade', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(regradePayload)
-      });
+  //     // Send re-grade request
+  //     const response = await fetch('http://127.0.0.1:8080/regrade', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Accept': 'application/json'
+  //       },
+  //       body: JSON.stringify(regradePayload)
+  //     });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Regrade failed:', errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-      }
+  //     if (!response.ok) {
+  //       const errorText = await response.text();
+  //       console.error('Regrade failed:', errorText);
+  //       throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+  //     }
 
-      const result = await response.json();
-      console.log('Regrade response:', result);
+  //     const result = await response.json();
+  //     console.log('Regrade response:', result);
       
-      if (result.regrade_job_id) {
-        await pollRegradeStatus(result.regrade_job_id);
-      } else {
-        throw new Error('No regrade job ID returned');
-      }
+  //     if (result.regrade_job_id) {
+  //       await pollRegradeStatus(result.regrade_job_id);
+  //     } else {
+  //       throw new Error('No regrade job ID returned');
+  //     }
       
-    } catch (error) {
-      console.error('Regrade error:', error);
-      setIsRegrade(false);
-      showAlert(`Re-grading failed: ${error.message}`, 'error');
-    }
-  };
+  //   } catch (error) {
+  //     console.error('Regrade error:', error);
+  //     setIsRegrade(false);
+  //     showAlert(`Re-grading failed: ${error.message}`, 'error');
+  //   }
+  // };
 
   const handleRegradeOptionsCancel = () => {
     setShowRegradeOptions(false);
