@@ -683,107 +683,178 @@ parseJsonAnswerKey(const std::string &answerKeyJson) {
   try {
     nlohmann::json answerData = nlohmann::json::parse(answerKeyJson);
 
-    if (!answerData.is_array() || answerData.empty()) {
-      throw std::runtime_error("Answer key must be a non-empty array");
-    }
-
-    // Find the header row (should be the first row)
-    if (answerData.size() < 2) {
-      throw std::runtime_error(
-          "Answer key must have at least header and data rows");
-    }
-
-    // Extract exam IDs from first row
-    // Format should be: ["", "ExamID", "101", "102", ...]
-    // or: ["Part", "Question", "101", "102", ...]
-    std::vector<std::string> examIds;
-    const auto &headerRow = answerData[0];
-
-    // Look for exam IDs starting from index 2 (skip Part, Question columns)
-    for (size_t i = 2; i < headerRow.size(); i++) {
-      std::string examId;
-      if (headerRow[i].is_string()) {
-        examId = headerRow[i].get<std::string>();
-      } else if (headerRow[i].is_number()) {
-        examId = std::to_string(headerRow[i].get<int>());
-      }
-
-      if (!examId.empty() && examId != "ExamID") {
-        examIds.push_back(examId);
-      }
-    }
-
-    if (examIds.empty()) {
-      throw std::runtime_error("No exam IDs found in header row");
-    }
-
-    // Extract answers for each exam ID
-    for (size_t examIndex = 0; examIndex < examIds.size(); examIndex++) {
-      std::vector<std::string> answers;
-      size_t columnIndex = 2 + examIndex; // Skip Part and Question columns
-
-      // Process all answer rows (skip header row at index 0, and possibly row 1
-      // if it's "Part/Question")
-      size_t startRow = 1;
-
-      // Check if second row is the actual header row
-      if (answerData.size() > 1) {
-        const auto &secondRow = answerData[1];
-        if (secondRow.size() > 1) {
-          std::string firstCell =
-              secondRow[0].is_string() ? secondRow[0].get<std::string>() : "";
-          std::string secondCell =
-              secondRow[1].is_string() ? secondRow[1].get<std::string>() : "";
-
-          // If it looks like a header row, skip it
-          if (firstCell == "Part" || secondCell == "Question") {
-            startRow = 2;
-          }
+    // --- Handle object format: { "101": ["A", ...], ... } ---
+    if (answerData.is_object()) {
+      for (auto &[examId, answers] : answerData.items()) {
+        if (examId.empty()) {
+          Logger::error("SERVICE", "Skipping empty examId in answer key JSON");
+          continue;
         }
-      }
+        if (answers.is_array()) {
+          std::vector<std::string> answerList;
+          for (size_t i = 0; i < answers.size(); ++i) {
+            std::string answer;
+            if (answers[i].is_string())
+              answer = answers[i].get<std::string>();
+            else if (answers[i].is_number())
+              answer = std::to_string(answers[i].get<int>());
 
-      for (size_t row = startRow;
-           row < answerData.size() && answers.size() < TOTAL_QUESTIONS; row++) {
-        if (answerData[row].size() > columnIndex) {
-          std::string answer;
-
-          if (answerData[row][columnIndex].is_string()) {
-            answer = answerData[row][columnIndex].get<std::string>();
-          } else if (answerData[row][columnIndex].is_number()) {
-            answer = std::to_string(answerData[row][columnIndex].get<int>());
-          }
-
-          if (answers.size() >= PART_1_NUM_QUESTIONS) {
-            // Part 2 - convert to format expected by grader
-            std::string convertedAnswer = "SSSSSS";
-            for (char c : answer) {
-              if (c >= 'A' && c <= 'F') {
-                int position = c - 'A';
-                if (position < PART_2_STRING_SIZE) {
-                  convertedAnswer[position] = 'D';
+            if (i >= PART_1_NUM_QUESTIONS) {
+              // Part 2 - keep your logic
+              std::string convertedAnswer = "SSSSSS";
+              for (char c : answer) {
+                if (c >= 'A' && c <= 'F') {
+                  int position = c - 'A';
+                  if (position < PART_2_STRING_SIZE) {
+                    convertedAnswer[position] = 'D';
+                  }
                 }
               }
+              answerList.push_back(convertedAnswer);
+            } else {
+              // Part 1
+              answerList.push_back(answer);
             }
-            answers.push_back(convertedAnswer);
-          } else {
-            // Part 1
-            answers.push_back(answer);
           }
+          if (answerList.size() != TOTAL_QUESTIONS) {
+            Logger::error("SERVICE", "Skipping examId " + examId +
+                                         ": Expected " +
+                                         std::to_string(TOTAL_QUESTIONS) +
+                                         " answers, got " +
+                                         std::to_string(answerList.size()));
+            continue;
+          }
+          examAnswerKeys[examId] = answerList;
         }
       }
-
-      if (answers.size() == TOTAL_QUESTIONS) {
-        examAnswerKeys[examIds[examIndex]] = answers;
-      }
+      return examAnswerKeys;
     }
-
   } catch (const std::exception &e) {
-    throw std::runtime_error("Failed to parse JSON answer key: " +
-                             std::string(e.what()));
+    Logger::error("SERVICE",
+                  "Failed to parse JSON answer key: " + std::string(e.what()));
+    return examAnswerKeys;
   }
 
   return examAnswerKeys;
 }
+
+// std::map<std::string, std::vector<std::string>>
+// parseJsonAnswerKey(const std::string &answerKeyJson) {
+//   std::map<std::string, std::vector<std::string>> examAnswerKeys;
+
+//   try {
+//     nlohmann::json answerData = nlohmann::json::parse(answerKeyJson);
+
+//     if (answerData.empty()) {
+//       Logger::error("SERVICE", "Invalid JSON answer key format");
+//       return examAnswerKeys;
+//     }
+
+//     // Find the header row (should be the first row)
+//     if (answerData.size() < 2) {
+//       Logger::error("SERVICE",
+//                     "Answer key must have at least header and data rows");
+//       return examAnswerKeys;
+//     }
+
+//     // Extract exam IDs from first row
+//     // Format should be: ["", "ExamID", "101", "102", ...]
+//     // or: ["Part", "Question", "101", "102", ...]
+//     std::vector<std::string> examIds;
+//     const auto &headerRow = answerData[0];
+
+//     // Look for exam IDs starting from index 2 (skip Part, Question columns)
+//     for (size_t i = 2; i < headerRow.size(); i++) {
+//       std::string examId;
+//       if (headerRow[i].is_string()) {
+//         examId = headerRow[i].get<std::string>();
+//       } else if (headerRow[i].is_number()) {
+//         examId = std::to_string(headerRow[i].get<int>());
+//       }
+
+//       if (!examId.empty() && examId != "ExamID") {
+//         examIds.push_back(examId);
+//       }
+//     }
+
+//     if (examIds.empty()) {
+//       Logger::error("SERVICE", "No exam IDs found in header row");
+//       return examAnswerKeys;
+//     }
+
+//     // Extract answers for each exam ID
+//     for (size_t examIndex = 0; examIndex < examIds.size(); examIndex++) {
+//       std::vector<std::string> answers;
+//       size_t columnIndex = 2 + examIndex; // Skip Part and Question columns
+
+//       // Process all answer rows (skip header row at index 0, and possibly
+//       row 1
+//       // if it's "Part/Question")
+//       size_t startRow = 1;
+
+//       // Check if second row is the actual header row
+//       if (answerData.size() > 1) {
+//         const auto &secondRow = answerData[1];
+//         if (secondRow.size() > 1) {
+//           std::string firstCell =
+//               secondRow[0].is_string() ? secondRow[0].get<std::string>() :
+//               "";
+//           std::string secondCell =
+//               secondRow[1].is_string() ? secondRow[1].get<std::string>() :
+//               "";
+
+//           // If it looks like a header row, skip it
+//           if (firstCell == "Part" || secondCell == "Question") {
+//             startRow = 2;
+//           }
+//         }
+//       }
+
+//       for (size_t row = startRow;
+//            row < answerData.size() && answers.size() < TOTAL_QUESTIONS;
+//            row++) {
+//         if (answerData[row].size() > columnIndex) {
+//           std::string answer;
+
+//           if (answerData[row][columnIndex].is_string()) {
+//             answer = answerData[row][columnIndex].get<std::string>();
+//           } else if (answerData[row][columnIndex].is_number()) {
+//             answer = std::to_string(answerData[row][columnIndex].get<int>());
+//           }
+
+//           if (answers.size() >= PART_1_NUM_QUESTIONS) {
+//             // Part 2 - convert to format expected by grader
+//             std::string convertedAnswer = "SSSSSS";
+//             for (char c : answer) {
+//               if (c >= 'A' && c <= 'F') {
+//                 int position = c - 'A';
+//                 if (position < PART_2_STRING_SIZE) {
+//                   convertedAnswer[position] = 'D';
+//                 }
+//               }
+//             }
+//             answers.push_back(convertedAnswer);
+//           } else {
+//             // Part 1
+//             answers.push_back(answer);
+//           }
+//         }
+//       }
+
+//       if (answers.size() == TOTAL_QUESTIONS) {
+//         examAnswerKeys[examIds[examIndex]] = answers;
+//       }
+//     }
+
+//   } catch (const std::exception &e) {
+//     Logger::error("SERVICE",
+//                   "Failed to parse JSON answer key: " +
+//                   std::string(e.what()));
+//     return examAnswerKeys;
+//   }
+
+//   return examAnswerKeys;
+// }
 
 bool examark::services::gradeWithJson(const std::string &pdfFileName,
                                       const std::string &pdfData,
@@ -804,36 +875,51 @@ bool examark::services::gradeWithJson(const std::string &pdfFileName,
       std::filesystem::create_directory(outputDir);
     }
 
-    // Parse JSON answer key
-    std::map<std::string, std::vector<std::string>> examAnswerKeys;
-    try {
-      examAnswerKeys = parseJsonAnswerKey(answerKeyJson);
-    } catch (const std::exception &e) {
-      updateJobProgress(jobId, "reading_key", "Error: " + std::string(e.what()),
-                        0, 0, 0.0, true, e.what());
-      return false;
-    }
+    // // Parse JSON answer key
+    // std::map<std::string, std::vector<std::string>> examAnswerKeys;
+    // try {
+    //   examAnswerKeys = parseJsonAnswerKey(answerKeyJson);
+    //   for (const auto &[examId, answers] : examAnswerKeys) {
+    //     if (answers.size() != TOTAL_QUESTIONS) {
+    //       updateJobProgress(jobId, "reading_key",
+    //                         "Error: Invalid answer key for exam " + examId,
+    //                         0, 0, 0.0, true, "Invalid answer key for exam " +
+    //                         examId);
+    //       return false;
+    //     }
+    //   }
+    // } catch (const std::exception &e) {
+    //   updateJobProgress(jobId, "reading_key", "Error: " +
+    //   std::string(e.what()),
+    //                     0, 0, 0.0, true, e.what());
+    //   Logger::error("SERVICE", "Failed to parse JSON answer key: " +
+    //                                std::string(e.what()));
+    //   return false;
+    // }
 
-    if (examAnswerKeys.empty()) {
-      updateJobProgress(jobId, "reading_key",
-                        "Error: No valid exam answers found", 0, 0, 0.0, true,
-                        "No valid exam answers found in JSON");
-      return false;
-    }
+    // if (examAnswerKeys.empty()) {
+    //   updateJobProgress(jobId, "reading_key",
+    //                     "Error: No valid exam answers found", 0, 0, 0.0,
+    //                     true, "No valid exam answers found in JSON");
+    //   return false;
+    // }
 
-    // Upload answer key JSON to MinIO
-    MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY,
-                                MINIO_SECRET_KEY, MINIO_BUCKET);
-    std::string jsonObjectName = jobId + "/answer_key.json";
-    if (!minioClient.uploadJSON(jsonObjectName, answerKeyJson)) {
-      updateJobProgress(jobId, "reading_key",
-                        "Error: Failed to upload answer key to storage", 0, 0,
-                        0.0, true, "Failed to save answer key JSON to MinIO");
-      return false;
-    }
+    // // Upload answer key JSON to MinIO
+    // MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY,
+    //                             MINIO_SECRET_KEY, MINIO_BUCKET);
+    // std::string jsonObjectName = jobId + "/answer_key.json";
+    // if (!minioClient.uploadJSON(jsonObjectName, answerKeyJson)) {
+    //   updateJobProgress(jobId, "reading_key",
+    //                     "Error: Failed to upload answer key to storage", 0,
+    //                     0, 0.0, true, "Failed to save answer key JSON to
+    //                     MinIO");
+    //   Logger::error("SERVICE", "Failed to upload answer key JSON to MinIO");
+    //   return false;
+    // }
 
-    updateJobProgress(jobId, "reading_key", "Answer key processed successfully",
-                      0, 0, 5.0);
+    // updateJobProgress(jobId, "reading_key", "Answer key processed
+    // successfully",
+    //                   0, 0, 5.0);
 
     /* ============================================= */
     /* ===== Stage 2: Rendering Images (5-75%) ===== */
@@ -865,6 +951,7 @@ bool examark::services::gradeWithJson(const std::string &pdfFileName,
       updateJobProgress(jobId, "rendering_images",
                         "Error: Failed to convert PDF", 0, 0, 0.0, true,
                         "Failed to convert PDF to images");
+      Logger::error("SERVICE", "Failed to convert PDF to images");
       return false;
     }
 
@@ -893,6 +980,7 @@ bool examark::services::gradeWithJson(const std::string &pdfFileName,
                           "Failed to upload image " + std::to_string(i + 1),
                           i + 1, images.size(), 0.0, true,
                           "Failed to upload image to storage");
+        Logger::error("SERVICE", "Failed to upload image to MinIO.");
         return false;
       }
 
@@ -1004,6 +1092,7 @@ bool examark::services::gradeWithJson(const std::string &pdfFileName,
     updateJobProgress(jobId, "error",
                       "Grading failed: " + std::string(e.what()), 0, 0, 0.0,
                       true, e.what());
+    Logger::error("SERVICE", "Grading failed: " + std::string(e.what()));
     return false;
   }
 }

@@ -586,7 +586,6 @@ void registerGradingRouteTRT(httplib::Server &server,
 
         try {
           auto pdf_file = req.get_file_value("pdfFile");
-          // auto csv_file = req.get_file_value("csvFile");
           auto answer_key = req.get_file_value("answerKey");
 
           if (pdf_file.filename.empty() || answer_key.filename.empty()) {
@@ -631,6 +630,7 @@ void registerGradingRouteTRT(httplib::Server &server,
             if (!success) {
               updateJobProgress(jobId, "error", "Grading process failed", 0, 0,
                                 0.0, true, "Failed to complete grading");
+              Logger::error("GRADING", "Failed to complete grading");
             }
           });
 
