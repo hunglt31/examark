@@ -3,8 +3,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/server.dir/src/MainServer.cpp.o.d"
   "CMakeFiles/server.dir/src/controllers/Controller.cpp.o"
   "CMakeFiles/server.dir/src/controllers/Controller.cpp.o.d"
-  "CMakeFiles/server.dir/src/models/ModelBuilder.cpp.o"
-  "CMakeFiles/server.dir/src/models/ModelBuilder.cpp.o.d"
   "CMakeFiles/server.dir/src/models/TritonClient.cpp.o"
   "CMakeFiles/server.dir/src/models/TritonClient.cpp.o.d"
   "CMakeFiles/server.dir/src/services/Service.cpp.o"

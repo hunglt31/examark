@@ -85,7 +85,6 @@ set(SOURCES
     src/utils/ExamGrader.cpp
     src/utils/Logger.cpp
     src/utils/MinIOHTTPClient.cpp
-    src/models/ModelBuilder.cpp
     src/models/TritonClient.cpp
     src/services/Service.cpp
     src/controllers/Controller.cpp

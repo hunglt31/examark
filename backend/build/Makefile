@@ -219,7 +219,6 @@ src/models/ModelBuilder.o: src/models/ModelBuilder.cpp.o
 
 # target to build an object file
 src/models/ModelBuilder.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/models/ModelBuilder.cpp.o
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/engine-builder.dir/build.make CMakeFiles/engine-builder.dir/src/models/ModelBuilder.cpp.o
 .PHONY : src/models/ModelBuilder.cpp.o
 
@@ -228,7 +227,6 @@ src/models/ModelBuilder.i: src/models/ModelBuilder.cpp.i
 
 # target to preprocess a source file
 src/models/ModelBuilder.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/models/ModelBuilder.cpp.i
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/engine-builder.dir/build.make CMakeFiles/engine-builder.dir/src/models/ModelBuilder.cpp.i
 .PHONY : src/models/ModelBuilder.cpp.i
 
@@ -237,7 +235,6 @@ src/models/ModelBuilder.s: src/models/ModelBuilder.cpp.s
 
 # target to generate assembly for a file
 src/models/ModelBuilder.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/models/ModelBuilder.cpp.s
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/engine-builder.dir/build.make CMakeFiles/engine-builder.dir/src/models/ModelBuilder.cpp.s
 .PHONY : src/models/ModelBuilder.cpp.s
 
