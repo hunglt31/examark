@@ -642,35 +642,6 @@ CMakeFiles/server.dir/src/MainServer.cpp.o: ../src/MainServer.cpp \
   ../includes/models/ModelConfig.h \
   ../includes/utils/Logger.h \
   ../includes/services/Service.h \
-  ../includes/models/ModelBuilder.h \
-  /usr/include/x86_64-linux-gnu/NvInfer.h \
-  /usr/include/x86_64-linux-gnu/NvInferLegacyDims.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntimeBase.h \
-  /usr/include/x86_64-linux-gnu/NvInferVersion.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_runtime_api.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/crt/host_defines.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/builtin_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/device_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/driver_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/vector_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/surface_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/texture_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_device_runtime_api.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntime.h \
-  /usr/include/x86_64-linux-gnu/NvInferImpl.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntimeCommon.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntimePlugin.h \
-  /usr/include/x86_64-linux-gnu/NvInferPlugin.h \
-  /usr/include/x86_64-linux-gnu/NvInfer.h \
-  /usr/include/x86_64-linux-gnu/NvInferPluginUtils.h \
-  /usr/include/x86_64-linux-gnu/NvOnnxParser.h \
-  /usr/include/c++/11/random \
-  /usr/include/c++/11/bits/random.h \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/opt_random.h \
-  /usr/include/c++/11/bits/random.tcc \
-  /usr/include/c++/11/numeric \
-  /usr/include/c++/11/bits/stl_numeric.h \
-  /usr/include/c++/11/pstl/glue_numeric_defs.h \
   /usr/include/c++/11/filesystem \
   /usr/include/c++/11/bits/fs_fwd.h \
   /usr/include/c++/11/bits/fs_path.h \
@@ -758,6 +729,13 @@ CMakeFiles/server.dir/src/MainServer.cpp.o: ../src/MainServer.cpp \
   /usr/include/linux/falloc.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
   /usr/include/x86_64-linux-gnu/bits/struct_stat.h \
+  /usr/include/c++/11/random \
+  /usr/include/c++/11/bits/random.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/opt_random.h \
+  /usr/include/c++/11/bits/random.tcc \
+  /usr/include/c++/11/numeric \
+  /usr/include/c++/11/bits/stl_numeric.h \
+  /usr/include/c++/11/pstl/glue_numeric_defs.h \
   /usr/include/c++/11/regex \
   /usr/include/c++/11/bitset \
   /usr/include/c++/11/stack \
@@ -1426,35 +1404,6 @@ CMakeFiles/server.dir/src/controllers/Controller.cpp.o: ../src/controllers/Contr
   ../includes/models/ModelConfig.h \
   ../includes/utils/Logger.h \
   ../includes/services/Service.h \
-  ../includes/models/ModelBuilder.h \
-  /usr/include/x86_64-linux-gnu/NvInfer.h \
-  /usr/include/x86_64-linux-gnu/NvInferLegacyDims.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntimeBase.h \
-  /usr/include/x86_64-linux-gnu/NvInferVersion.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_runtime_api.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/crt/host_defines.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/builtin_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/device_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/driver_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/vector_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/surface_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/texture_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_device_runtime_api.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntime.h \
-  /usr/include/x86_64-linux-gnu/NvInferImpl.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntimeCommon.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntimePlugin.h \
-  /usr/include/x86_64-linux-gnu/NvInferPlugin.h \
-  /usr/include/x86_64-linux-gnu/NvInfer.h \
-  /usr/include/x86_64-linux-gnu/NvInferPluginUtils.h \
-  /usr/include/x86_64-linux-gnu/NvOnnxParser.h \
-  /usr/include/c++/11/random \
-  /usr/include/c++/11/bits/random.h \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/opt_random.h \
-  /usr/include/c++/11/bits/random.tcc \
-  /usr/include/c++/11/numeric \
-  /usr/include/c++/11/bits/stl_numeric.h \
-  /usr/include/c++/11/pstl/glue_numeric_defs.h \
   /usr/include/c++/11/filesystem \
   /usr/include/c++/11/bits/fs_fwd.h \
   /usr/include/c++/11/bits/fs_path.h \
@@ -1542,6 +1491,13 @@ CMakeFiles/server.dir/src/controllers/Controller.cpp.o: ../src/controllers/Contr
   /usr/include/linux/falloc.h \
   /usr/include/x86_64-linux-gnu/bits/stat.h \
   /usr/include/x86_64-linux-gnu/bits/struct_stat.h \
+  /usr/include/c++/11/random \
+  /usr/include/c++/11/bits/random.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/opt_random.h \
+  /usr/include/c++/11/bits/random.tcc \
+  /usr/include/c++/11/numeric \
+  /usr/include/c++/11/bits/stl_numeric.h \
+  /usr/include/c++/11/pstl/glue_numeric_defs.h \
   /usr/include/c++/11/regex \
   /usr/include/c++/11/bitset \
   /usr/include/c++/11/stack \
@@ -2281,8 +2237,7 @@ CMakeFiles/server.dir/src/models/TritonClient.cpp.o: ../src/models/TritonClient.
 CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /usr/include/stdc-predef.h \
   ../includes/services/Service.h \
-  ../includes/models/ModelBuilder.h \
-  ../includes/models/ModelConfig.h \
+  ../includes/models/TritonClient.h \
   /usr/include/c++/11/string \
   /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
@@ -2437,25 +2392,64 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /usr/include/c++/11/bits/stl_vector.h \
   /usr/include/c++/11/bits/stl_bvector.h \
   /usr/include/c++/11/bits/vector.tcc \
-  ../includes/utils/Detection.h \
-  /usr/include/opencv4/opencv2/opencv.hpp \
-  /usr/include/opencv4/opencv2/opencv_modules.hpp \
-  /usr/include/opencv4/opencv2/core.hpp \
-  /usr/include/opencv4/opencv2/core/cvdef.h \
-  /usr/include/opencv4/opencv2/core/version.hpp \
-  /usr/include/c++/11/limits \
-  /usr/include/opencv4/opencv2/core/hal/interface.h \
-  /usr/include/c++/11/cstddef \
-  /usr/include/opencv4/opencv2/core/cv_cpu_dispatch.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/xmmintrin.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/mmintrin.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/mm_malloc.h \
-  /usr/include/c++/11/stdlib.h \
-  /usr/include/c++/11/array \
+  /usr/include/c++/11/memory \
+  /usr/include/c++/11/bits/stl_tempbuf.h \
+  /usr/include/c++/11/bits/stl_raw_storage_iter.h \
+  /usr/include/c++/11/bits/align.h \
+  /usr/include/c++/11/bit \
+  /usr/include/c++/11/bits/uses_allocator.h \
+  /usr/include/c++/11/bits/unique_ptr.h \
   /usr/include/c++/11/utility \
   /usr/include/c++/11/bits/stl_relops.h \
-  /usr/include/opencv4/opencv2/core/base.hpp \
+  /usr/include/c++/11/tuple \
+  /usr/include/c++/11/array \
+  /usr/include/c++/11/bits/invoke.h \
+  /usr/include/c++/11/bits/shared_ptr.h \
+  /usr/include/c++/11/bits/shared_ptr_base.h \
+  /usr/include/c++/11/typeinfo \
+  /usr/include/c++/11/bits/allocated_ptr.h \
+  /usr/include/c++/11/bits/refwrap.h \
+  /usr/include/c++/11/ext/aligned_buffer.h \
+  /usr/include/c++/11/ext/concurrence.h \
+  /usr/include/c++/11/exception \
+  /usr/include/c++/11/bits/exception_ptr.h \
+  /usr/include/c++/11/bits/cxxabi_init_exception.h \
+  /usr/include/c++/11/bits/nested_exception.h \
+  /usr/include/c++/11/bits/shared_ptr_atomic.h \
+  /usr/include/c++/11/bits/atomic_base.h \
+  /usr/include/c++/11/bits/atomic_lockfree_defines.h \
+  /usr/include/c++/11/backward/auto_ptr.h \
+  /usr/include/c++/11/pstl/glue_memory_defs.h \
+  /usr/include/c++/11/pstl/execution_defs.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc_client.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/grpcpp.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/grpc.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/port_platform.h \
+  /usr/include/linux/version.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/byte_buffer.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/grpc_types.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/compression_types.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/slice.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/slice_type.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/sync.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/time.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/sync_generic.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/atm.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/atm_gcc_atomic.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/sync_abseil.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/status.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/slice_buffer.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/connectivity_state.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/propagation_bits.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/channel.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/completion_queue.h \
+  /usr/include/c++/11/list \
+  /usr/include/c++/11/bits/stl_list.h \
+  /usr/include/c++/11/bits/list.tcc \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/log.h \
+  /usr/include/c++/11/stdlib.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/rpc_service_method.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/rpc_service_method.h \
   /usr/include/c++/11/climits \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/limits.h \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/syslimits.h \
@@ -2466,33 +2460,114 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
-  /usr/include/c++/11/algorithm \
-  /usr/include/c++/11/bits/stl_algo.h \
-  /usr/include/c++/11/bits/algorithmfwd.h \
-  /usr/include/c++/11/bits/stl_heap.h \
-  /usr/include/c++/11/bits/stl_tempbuf.h \
-  /usr/include/c++/11/bits/uniform_int_dist.h \
-  /usr/include/c++/11/pstl/glue_algorithm_defs.h \
   /usr/include/c++/11/functional \
-  /usr/include/c++/11/tuple \
-  /usr/include/c++/11/bits/uses_allocator.h \
-  /usr/include/c++/11/bits/invoke.h \
-  /usr/include/c++/11/bits/refwrap.h \
   /usr/include/c++/11/bits/std_function.h \
-  /usr/include/c++/11/typeinfo \
   /usr/include/c++/11/unordered_map \
-  /usr/include/c++/11/ext/aligned_buffer.h \
   /usr/include/c++/11/bits/hashtable.h \
   /usr/include/c++/11/bits/hashtable_policy.h \
   /usr/include/c++/11/bits/enable_special_members.h \
   /usr/include/c++/11/bits/node_handle.h \
   /usr/include/c++/11/bits/unordered_map.h \
   /usr/include/c++/11/bits/erase_if.h \
-  /usr/include/c++/11/pstl/execution_defs.h \
-  /usr/include/opencv4/opencv2/core/cvstd.hpp \
-  /usr/include/c++/11/cstring \
+  /usr/include/c++/11/bits/stl_algo.h \
+  /usr/include/c++/11/bits/algorithmfwd.h \
+  /usr/include/c++/11/bits/stl_heap.h \
+  /usr/include/c++/11/bits/uniform_int_dist.h \
+  /usr/include/c++/11/map \
+  /usr/include/c++/11/bits/stl_tree.h \
+  /usr/include/c++/11/bits/stl_map.h \
+  /usr/include/c++/11/bits/stl_multimap.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/rpc_method.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/channel_interface.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/channel_interface.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/call.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/call_hook.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/status.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/status.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/config.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/status_code_enum.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/time.h \
+  /usr/include/c++/11/chrono \
+  /usr/include/c++/11/ratio \
+  /usr/include/c++/11/limits \
+  /usr/include/c++/11/ctime \
+  /usr/include/c++/11/bits/parse_numbers.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/byte_buffer.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/serialization_traits.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/slice.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/string_ref.h \
   /usr/include/string.h \
   /usr/include/strings.h \
+  /usr/include/c++/11/algorithm \
+  /usr/include/c++/11/pstl/glue_algorithm_defs.h \
+  /usr/include/c++/11/iostream \
+  /usr/include/c++/11/ostream \
+  /usr/include/c++/11/ios \
+  /usr/include/c++/11/bits/ios_base.h \
+  /usr/include/c++/11/bits/locale_classes.h \
+  /usr/include/c++/11/bits/locale_classes.tcc \
+  /usr/include/c++/11/system_error \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/error_constants.h \
+  /usr/include/c++/11/stdexcept \
+  /usr/include/c++/11/streambuf \
+  /usr/include/c++/11/bits/streambuf.tcc \
+  /usr/include/c++/11/bits/basic_ios.h \
+  /usr/include/c++/11/bits/locale_facets.h \
+  /usr/include/c++/11/cwctype \
+  /usr/include/wctype.h \
+  /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_base.h \
+  /usr/include/c++/11/bits/streambuf_iterator.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_inline.h \
+  /usr/include/c++/11/bits/locale_facets.tcc \
+  /usr/include/c++/11/bits/basic_ios.tcc \
+  /usr/include/c++/11/bits/ostream.tcc \
+  /usr/include/c++/11/istream \
+  /usr/include/c++/11/bits/istream.tcc \
+  /usr/include/c++/11/iterator \
+  /usr/include/c++/11/bits/stream_iterator.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/status.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/sync.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/sync.h \
+  /usr/include/c++/11/mutex \
+  /usr/include/c++/11/bits/std_mutex.h \
+  /usr/include/c++/11/bits/unique_lock.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/synchronization/mutex.h \
+  /usr/include/c++/11/atomic \
+  /usr/include/c++/11/cstring \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/const_init.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/config.h \
+  /usr/include/c++/11/cstddef \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/options.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/policy_checks.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/identity.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/low_level_alloc.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/attributes.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/port.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/optimization.h \
+  /usr/include/assert.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/thread_identity.h \
+  /usr/include/unistd.h \
+  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+  /usr/include/x86_64-linux-gnu/bits/environments.h \
+  /usr/include/x86_64-linux-gnu/bits/confname.h \
+  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
+  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
+  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
+  /usr/include/linux/close_range.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/per_thread_tls.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/tsan_mutex_interface.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/thread_annotations.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/thread_annotations.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/synchronization/internal/kernel_timeout.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/raw_logging.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/atomic_hook.h \
+  /usr/include/c++/11/cassert \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/log_severity.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/macros.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/time/clock.h \
+  /home/hunglt31/Downloads/TritonClientSDK/include/absl/time/time.h \
+  /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/c++/11/cmath \
   /usr/include/math.h \
   /usr/include/x86_64-linux-gnu/bits/math-vector.h \
@@ -2517,290 +2592,6 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /usr/include/c++/11/tr1/poly_hermite.tcc \
   /usr/include/c++/11/tr1/poly_laguerre.tcc \
   /usr/include/c++/11/tr1/riemann_zeta.tcc \
-  /usr/include/opencv4/opencv2/core/cvstd_wrapper.hpp \
-  /usr/include/c++/11/memory \
-  /usr/include/c++/11/bits/stl_raw_storage_iter.h \
-  /usr/include/c++/11/bits/align.h \
-  /usr/include/c++/11/bit \
-  /usr/include/c++/11/bits/unique_ptr.h \
-  /usr/include/c++/11/bits/shared_ptr.h \
-  /usr/include/c++/11/bits/shared_ptr_base.h \
-  /usr/include/c++/11/bits/allocated_ptr.h \
-  /usr/include/c++/11/ext/concurrence.h \
-  /usr/include/c++/11/exception \
-  /usr/include/c++/11/bits/exception_ptr.h \
-  /usr/include/c++/11/bits/cxxabi_init_exception.h \
-  /usr/include/c++/11/bits/nested_exception.h \
-  /usr/include/c++/11/bits/shared_ptr_atomic.h \
-  /usr/include/c++/11/bits/atomic_base.h \
-  /usr/include/c++/11/bits/atomic_lockfree_defines.h \
-  /usr/include/c++/11/backward/auto_ptr.h \
-  /usr/include/c++/11/pstl/glue_memory_defs.h \
-  /usr/include/opencv4/opencv2/core/neon_utils.hpp \
-  /usr/include/opencv4/opencv2/core/vsx_utils.hpp \
-  /usr/include/assert.h \
-  /usr/include/opencv4/opencv2/core/check.hpp \
-  /usr/include/opencv4/opencv2/core/traits.hpp \
-  /usr/include/opencv4/opencv2/core/matx.hpp \
-  /usr/include/opencv4/opencv2/core/saturate.hpp \
-  /usr/include/opencv4/opencv2/core/fast_math.hpp \
-  /usr/include/opencv4/opencv2/core/types.hpp \
-  /usr/include/c++/11/cfloat \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/float.h \
-  /usr/include/opencv4/opencv2/core/mat.hpp \
-  /usr/include/opencv4/opencv2/core/bufferpool.hpp \
-  /usr/include/opencv4/opencv2/core/mat.inl.hpp \
-  /usr/include/opencv4/opencv2/core/persistence.hpp \
-  /usr/include/opencv4/opencv2/core/operations.hpp \
-  /usr/include/opencv4/opencv2/core/cvstd.inl.hpp \
-  /usr/include/c++/11/complex \
-  /usr/include/c++/11/sstream \
-  /usr/include/c++/11/istream \
-  /usr/include/c++/11/ios \
-  /usr/include/c++/11/bits/ios_base.h \
-  /usr/include/c++/11/bits/locale_classes.h \
-  /usr/include/c++/11/bits/locale_classes.tcc \
-  /usr/include/c++/11/system_error \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/error_constants.h \
-  /usr/include/c++/11/stdexcept \
-  /usr/include/c++/11/streambuf \
-  /usr/include/c++/11/bits/streambuf.tcc \
-  /usr/include/c++/11/bits/basic_ios.h \
-  /usr/include/c++/11/bits/locale_facets.h \
-  /usr/include/c++/11/cwctype \
-  /usr/include/wctype.h \
-  /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_base.h \
-  /usr/include/c++/11/bits/streambuf_iterator.h \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_inline.h \
-  /usr/include/c++/11/bits/locale_facets.tcc \
-  /usr/include/c++/11/bits/basic_ios.tcc \
-  /usr/include/c++/11/ostream \
-  /usr/include/c++/11/bits/ostream.tcc \
-  /usr/include/c++/11/bits/istream.tcc \
-  /usr/include/c++/11/bits/sstream.tcc \
-  /usr/include/opencv4/opencv2/core/utility.hpp \
-  /usr/include/c++/11/mutex \
-  /usr/include/c++/11/chrono \
-  /usr/include/c++/11/ratio \
-  /usr/include/c++/11/ctime \
-  /usr/include/c++/11/bits/parse_numbers.h \
-  /usr/include/c++/11/bits/std_mutex.h \
-  /usr/include/c++/11/bits/unique_lock.h \
-  /usr/include/opencv4/opencv2/core/optim.hpp \
-  /usr/include/opencv4/opencv2/core/ovx.hpp \
-  /usr/include/opencv4/opencv2/core/cvdef.h \
-  /usr/include/opencv4/opencv2/calib3d.hpp \
-  /usr/include/opencv4/opencv2/features2d.hpp \
-  /usr/include/opencv4/opencv2/flann/miniflann.hpp \
-  /usr/include/opencv4/opencv2/flann/defines.h \
-  /usr/include/opencv4/opencv2/flann/config.h \
-  /usr/include/opencv4/opencv2/core/affine.hpp \
-  /usr/include/opencv4/opencv2/dnn.hpp \
-  /usr/include/opencv4/opencv2/dnn/dnn.hpp \
-  /usr/include/opencv4/opencv2/core/async.hpp \
-  /usr/include/opencv4/opencv2/dnn/version.hpp \
-  /usr/include/opencv4/opencv2/dnn/dict.hpp \
-  /usr/include/c++/11/map \
-  /usr/include/c++/11/bits/stl_tree.h \
-  /usr/include/c++/11/bits/stl_map.h \
-  /usr/include/c++/11/bits/stl_multimap.h \
-  /usr/include/opencv4/opencv2/dnn/layer.hpp \
-  /usr/include/opencv4/opencv2/dnn/dnn.inl.hpp \
-  /usr/include/opencv4/opencv2/dnn/utils/inference_engine.hpp \
-  /usr/include/opencv4/opencv2/dnn/dnn.hpp \
-  /usr/include/opencv4/opencv2/flann.hpp \
-  /usr/include/opencv4/opencv2/flann/flann_base.hpp \
-  /usr/include/opencv4/opencv2/flann/general.h \
-  /usr/include/opencv4/opencv2/flann/matrix.h \
-  /usr/include/opencv4/opencv2/flann/params.h \
-  /usr/include/opencv4/opencv2/flann/any.h \
-  /usr/include/opencv4/opencv2/flann/defines.h \
-  /usr/include/c++/11/iostream \
-  /usr/include/opencv4/opencv2/flann/saving.h \
-  /usr/include/opencv4/opencv2/flann/nn_index.h \
-  /usr/include/opencv4/opencv2/flann/result_set.h \
-  /usr/include/c++/11/set \
-  /usr/include/c++/11/bits/stl_set.h \
-  /usr/include/c++/11/bits/stl_multiset.h \
-  /usr/include/opencv4/opencv2/flann/all_indices.h \
-  /usr/include/opencv4/opencv2/flann/kdtree_index.h \
-  /usr/include/opencv4/opencv2/flann/dynamic_bitset.h \
-  /usr/include/opencv4/opencv2/flann/dist.h \
-  /usr/include/opencv4/opencv2/flann/heap.h \
-  /usr/include/opencv4/opencv2/flann/allocator.h \
-  /usr/include/opencv4/opencv2/flann/random.h \
-  /usr/include/opencv4/opencv2/flann/kdtree_single_index.h \
-  /usr/include/opencv4/opencv2/flann/kmeans_index.h \
-  /usr/include/opencv4/opencv2/flann/logger.h \
-  /usr/include/opencv4/opencv2/flann/composite_index.h \
-  /usr/include/opencv4/opencv2/flann/linear_index.h \
-  /usr/include/opencv4/opencv2/flann/hierarchical_clustering_index.h \
-  /usr/include/opencv4/opencv2/flann/lsh_index.h \
-  /usr/include/opencv4/opencv2/flann/lsh_table.h \
-  /usr/include/c++/11/iomanip \
-  /usr/include/c++/11/locale \
-  /usr/include/c++/11/bits/locale_facets_nonio.h \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
-  /usr/include/libintl.h \
-  /usr/include/c++/11/bits/codecvt.h \
-  /usr/include/c++/11/bits/locale_facets_nonio.tcc \
-  /usr/include/c++/11/bits/locale_conv.h \
-  /usr/include/c++/11/bits/quoted_string.h \
-  /usr/include/c++/11/math.h \
-  /usr/include/opencv4/opencv2/flann/autotuned_index.h \
-  /usr/include/opencv4/opencv2/flann/ground_truth.h \
-  /usr/include/opencv4/opencv2/flann/index_testing.h \
-  /usr/include/opencv4/opencv2/flann/timer.h \
-  /usr/include/opencv4/opencv2/flann/sampling.h \
-  /usr/include/opencv4/opencv2/highgui.hpp \
-  /usr/include/opencv4/opencv2/imgcodecs.hpp \
-  /usr/include/opencv4/opencv2/videoio.hpp \
-  /usr/include/opencv4/opencv2/imgproc.hpp \
-  /usr/include/opencv4/opencv2/imgproc/segmentation.hpp \
-  /usr/include/opencv4/opencv2/ml.hpp \
-  /usr/include/opencv4/opencv2/ml/ml.inl.hpp \
-  /usr/include/opencv4/opencv2/objdetect.hpp \
-  /usr/include/opencv4/opencv2/objdetect/detection_based_tracker.hpp \
-  /usr/include/opencv4/opencv2/objdetect/face.hpp \
-  /usr/include/opencv4/opencv2/photo.hpp \
-  /usr/include/opencv4/opencv2/stitching.hpp \
-  /usr/include/opencv4/opencv2/stitching/warpers.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/warpers.hpp \
-  /usr/include/opencv4/opencv2/core/cuda.hpp \
-  /usr/include/opencv4/opencv2/core/cuda_types.hpp \
-  /usr/include/opencv4/opencv2/core/cuda.inl.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/warpers_inl.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/warpers.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/matchers.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/motion_estimators.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/matchers.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/util.hpp \
-  /usr/include/c++/11/list \
-  /usr/include/c++/11/bits/stl_list.h \
-  /usr/include/c++/11/bits/list.tcc \
-  /usr/include/opencv4/opencv2/stitching/detail/util_inl.hpp \
-  /usr/include/c++/11/queue \
-  /usr/include/c++/11/deque \
-  /usr/include/c++/11/bits/stl_deque.h \
-  /usr/include/c++/11/bits/deque.tcc \
-  /usr/include/c++/11/bits/stl_queue.h \
-  /usr/include/opencv4/opencv2/stitching/detail/camera.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/exposure_compensate.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/seam_finders.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/blenders.hpp \
-  /usr/include/opencv4/opencv2/stitching/detail/camera.hpp \
-  /usr/include/opencv4/opencv2/video.hpp \
-  /usr/include/opencv4/opencv2/video/tracking.hpp \
-  /usr/include/opencv4/opencv2/video/background_segm.hpp \
-  ../includes/utils/Logger.h \
-  /usr/include/x86_64-linux-gnu/NvInfer.h \
-  /usr/include/x86_64-linux-gnu/NvInferLegacyDims.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntimeBase.h \
-  /usr/include/x86_64-linux-gnu/NvInferVersion.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_runtime_api.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/crt/host_defines.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/builtin_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/device_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/driver_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/vector_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/surface_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/texture_types.h \
-  /usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_device_runtime_api.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntime.h \
-  /usr/include/x86_64-linux-gnu/NvInferImpl.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntimeCommon.h \
-  /usr/include/x86_64-linux-gnu/NvInferRuntimePlugin.h \
-  /usr/include/x86_64-linux-gnu/NvInferPlugin.h \
-  /usr/include/x86_64-linux-gnu/NvInfer.h \
-  /usr/include/x86_64-linux-gnu/NvInferPluginUtils.h \
-  /usr/include/x86_64-linux-gnu/NvOnnxParser.h \
-  /usr/include/c++/11/random \
-  /usr/include/c++/11/bits/random.h \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/opt_random.h \
-  /usr/include/c++/11/bits/random.tcc \
-  /usr/include/c++/11/numeric \
-  /usr/include/c++/11/bits/stl_numeric.h \
-  /usr/include/c++/11/pstl/glue_numeric_defs.h \
-  /usr/include/unistd.h \
-  /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
-  /usr/include/x86_64-linux-gnu/bits/environments.h \
-  /usr/include/x86_64-linux-gnu/bits/confname.h \
-  /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
-  /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
-  /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
-  /usr/include/linux/close_range.h \
-  ../includes/models/TritonClient.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc_client.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/grpcpp.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/grpc.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/port_platform.h \
-  /usr/include/linux/version.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/byte_buffer.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/grpc_types.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/compression_types.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/slice.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/slice_type.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/sync.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/time.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/sync_generic.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/atm.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/atm_gcc_atomic.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/sync_abseil.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/status.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/slice_buffer.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/connectivity_state.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/propagation_bits.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/channel.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/completion_queue.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/support/log.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/rpc_service_method.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/rpc_service_method.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/rpc_method.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/channel_interface.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/channel_interface.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/call.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/call_hook.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/status.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/status.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/config.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/status_code_enum.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/time.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/byte_buffer.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/serialization_traits.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/slice.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/string_ref.h \
-  /usr/include/c++/11/iterator \
-  /usr/include/c++/11/bits/stream_iterator.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/status.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/sync.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/sync.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/synchronization/mutex.h \
-  /usr/include/c++/11/atomic \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/const_init.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/config.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/options.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/policy_checks.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/identity.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/low_level_alloc.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/attributes.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/port.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/optimization.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/thread_identity.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/per_thread_tls.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/tsan_mutex_interface.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/thread_annotations.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/thread_annotations.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/synchronization/internal/kernel_timeout.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/raw_logging.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/atomic_hook.h \
-  /usr/include/c++/11/cassert \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/log_severity.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/macros.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/time/clock.h \
-  /home/hunglt31/Downloads/TritonClientSDK/include/absl/time/time.h \
-  /usr/include/x86_64-linux-gnu/sys/time.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/absl/strings/string_view.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/throw_delegate.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/absl/time/civil_time.h \
@@ -2858,6 +2649,11 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/security/authorization_policy_provider.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/server_posix.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/version_info.h \
+  /usr/include/c++/11/queue \
+  /usr/include/c++/11/deque \
+  /usr/include/c++/11/bits/stl_deque.h \
+  /usr/include/c++/11/bits/deque.tcc \
+  /usr/include/c++/11/bits/stl_queue.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/common.h \
   /usr/include/c++/11/condition_variable \
   /usr/include/c++/11/thread \
@@ -2869,6 +2665,9 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/port_undef.inc \
   /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/io/coded_stream.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/stubs/common.h \
+  /usr/include/c++/11/set \
+  /usr/include/c++/11/bits/stl_set.h \
+  /usr/include/c++/11/bits/stl_multiset.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/stubs/macros.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/stubs/platform_macros.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/stubs/port.h \
@@ -2947,6 +2746,134 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/proto_buffer_writer.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/stub_options.h \
   /home/hunglt31/Downloads/TritonClientSDK/include/ipc.h \
+  /usr/include/opencv4/opencv2/core.hpp \
+  /usr/include/opencv4/opencv2/core/cvdef.h \
+  /usr/include/opencv4/opencv2/core/version.hpp \
+  /usr/include/opencv4/opencv2/core/hal/interface.h \
+  /usr/include/opencv4/opencv2/core/cv_cpu_dispatch.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/xmmintrin.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/mmintrin.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/mm_malloc.h \
+  /usr/include/opencv4/opencv2/core/base.hpp \
+  /usr/include/opencv4/opencv2/opencv_modules.hpp \
+  /usr/include/opencv4/opencv2/core/cvstd.hpp \
+  /usr/include/opencv4/opencv2/core/cvstd_wrapper.hpp \
+  /usr/include/opencv4/opencv2/core/neon_utils.hpp \
+  /usr/include/opencv4/opencv2/core/vsx_utils.hpp \
+  /usr/include/opencv4/opencv2/core/check.hpp \
+  /usr/include/opencv4/opencv2/core/traits.hpp \
+  /usr/include/opencv4/opencv2/core/matx.hpp \
+  /usr/include/opencv4/opencv2/core/saturate.hpp \
+  /usr/include/opencv4/opencv2/core/fast_math.hpp \
+  /usr/include/opencv4/opencv2/core/types.hpp \
+  /usr/include/c++/11/cfloat \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/float.h \
+  /usr/include/opencv4/opencv2/core/mat.hpp \
+  /usr/include/opencv4/opencv2/core/bufferpool.hpp \
+  /usr/include/opencv4/opencv2/core/mat.inl.hpp \
+  /usr/include/opencv4/opencv2/core/persistence.hpp \
+  /usr/include/opencv4/opencv2/core/operations.hpp \
+  /usr/include/opencv4/opencv2/core/cvstd.inl.hpp \
+  /usr/include/c++/11/complex \
+  /usr/include/c++/11/sstream \
+  /usr/include/c++/11/bits/sstream.tcc \
+  /usr/include/opencv4/opencv2/core/utility.hpp \
+  /usr/include/opencv4/opencv2/core/optim.hpp \
+  /usr/include/opencv4/opencv2/core/ovx.hpp \
+  /usr/include/opencv4/opencv2/core/cvdef.h \
+  ../includes/utils/Detection.h \
+  /usr/include/opencv4/opencv2/opencv.hpp \
+  /usr/include/opencv4/opencv2/calib3d.hpp \
+  /usr/include/opencv4/opencv2/features2d.hpp \
+  /usr/include/opencv4/opencv2/flann/miniflann.hpp \
+  /usr/include/opencv4/opencv2/flann/defines.h \
+  /usr/include/opencv4/opencv2/flann/config.h \
+  /usr/include/opencv4/opencv2/core/affine.hpp \
+  /usr/include/opencv4/opencv2/dnn.hpp \
+  /usr/include/opencv4/opencv2/dnn/dnn.hpp \
+  /usr/include/opencv4/opencv2/core/async.hpp \
+  /usr/include/opencv4/opencv2/dnn/version.hpp \
+  /usr/include/opencv4/opencv2/dnn/dict.hpp \
+  /usr/include/opencv4/opencv2/dnn/layer.hpp \
+  /usr/include/opencv4/opencv2/dnn/dnn.inl.hpp \
+  /usr/include/opencv4/opencv2/dnn/utils/inference_engine.hpp \
+  /usr/include/opencv4/opencv2/dnn/dnn.hpp \
+  /usr/include/opencv4/opencv2/flann.hpp \
+  /usr/include/opencv4/opencv2/flann/flann_base.hpp \
+  /usr/include/opencv4/opencv2/flann/general.h \
+  /usr/include/opencv4/opencv2/flann/matrix.h \
+  /usr/include/opencv4/opencv2/flann/params.h \
+  /usr/include/opencv4/opencv2/flann/any.h \
+  /usr/include/opencv4/opencv2/flann/defines.h \
+  /usr/include/opencv4/opencv2/flann/saving.h \
+  /usr/include/opencv4/opencv2/flann/nn_index.h \
+  /usr/include/opencv4/opencv2/flann/result_set.h \
+  /usr/include/opencv4/opencv2/flann/all_indices.h \
+  /usr/include/opencv4/opencv2/flann/kdtree_index.h \
+  /usr/include/opencv4/opencv2/flann/dynamic_bitset.h \
+  /usr/include/opencv4/opencv2/flann/dist.h \
+  /usr/include/opencv4/opencv2/flann/heap.h \
+  /usr/include/opencv4/opencv2/flann/allocator.h \
+  /usr/include/opencv4/opencv2/flann/random.h \
+  /usr/include/opencv4/opencv2/flann/kdtree_single_index.h \
+  /usr/include/opencv4/opencv2/flann/kmeans_index.h \
+  /usr/include/opencv4/opencv2/flann/logger.h \
+  /usr/include/opencv4/opencv2/flann/composite_index.h \
+  /usr/include/opencv4/opencv2/flann/linear_index.h \
+  /usr/include/opencv4/opencv2/flann/hierarchical_clustering_index.h \
+  /usr/include/opencv4/opencv2/flann/lsh_index.h \
+  /usr/include/opencv4/opencv2/flann/lsh_table.h \
+  /usr/include/c++/11/iomanip \
+  /usr/include/c++/11/locale \
+  /usr/include/c++/11/bits/locale_facets_nonio.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
+  /usr/include/libintl.h \
+  /usr/include/c++/11/bits/codecvt.h \
+  /usr/include/c++/11/bits/locale_facets_nonio.tcc \
+  /usr/include/c++/11/bits/locale_conv.h \
+  /usr/include/c++/11/bits/quoted_string.h \
+  /usr/include/c++/11/math.h \
+  /usr/include/opencv4/opencv2/flann/autotuned_index.h \
+  /usr/include/opencv4/opencv2/flann/ground_truth.h \
+  /usr/include/opencv4/opencv2/flann/index_testing.h \
+  /usr/include/opencv4/opencv2/flann/timer.h \
+  /usr/include/opencv4/opencv2/flann/sampling.h \
+  /usr/include/opencv4/opencv2/highgui.hpp \
+  /usr/include/opencv4/opencv2/imgcodecs.hpp \
+  /usr/include/opencv4/opencv2/videoio.hpp \
+  /usr/include/opencv4/opencv2/imgproc.hpp \
+  /usr/include/opencv4/opencv2/imgproc/segmentation.hpp \
+  /usr/include/opencv4/opencv2/ml.hpp \
+  /usr/include/opencv4/opencv2/ml/ml.inl.hpp \
+  /usr/include/opencv4/opencv2/objdetect.hpp \
+  /usr/include/opencv4/opencv2/objdetect/detection_based_tracker.hpp \
+  /usr/include/opencv4/opencv2/objdetect/face.hpp \
+  /usr/include/opencv4/opencv2/photo.hpp \
+  /usr/include/opencv4/opencv2/stitching.hpp \
+  /usr/include/opencv4/opencv2/stitching/warpers.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/warpers.hpp \
+  /usr/include/opencv4/opencv2/core/cuda.hpp \
+  /usr/include/opencv4/opencv2/core/cuda_types.hpp \
+  /usr/include/opencv4/opencv2/core/cuda.inl.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/warpers_inl.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/warpers.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/matchers.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/motion_estimators.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/matchers.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/util.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/util_inl.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/camera.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/exposure_compensate.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/seam_finders.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/blenders.hpp \
+  /usr/include/opencv4/opencv2/stitching/detail/camera.hpp \
+  /usr/include/opencv4/opencv2/video.hpp \
+  /usr/include/opencv4/opencv2/video/tracking.hpp \
+  /usr/include/opencv4/opencv2/video/background_segm.hpp \
+  ../includes/models/ModelConfig.h \
+  ../includes/utils/Logger.h \
   /usr/include/c++/11/filesystem \
   /usr/include/c++/11/bits/fs_fwd.h \
   /usr/include/c++/11/bits/fs_path.h \
@@ -2989,6 +2916,9 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /usr/include/x86_64-linux-gnu/curl/urlapi.h \
   /usr/include/x86_64-linux-gnu/curl/options.h \
   /usr/include/nlohmann/json.hpp \
+  /usr/include/c++/11/numeric \
+  /usr/include/c++/11/bits/stl_numeric.h \
+  /usr/include/c++/11/pstl/glue_numeric_defs.h \
   /usr/include/nlohmann/adl_serializer.hpp \
   /usr/include/nlohmann/detail/conversions/from_json.hpp \
   /usr/include/c++/11/forward_list \
@@ -4705,6 +4635,8 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 
 /usr/include/linux/types.h:
 
+/usr/include/x86_64-linux-gnu/bits/statx.h:
+
 /usr/include/nlohmann/detail/json_pointer.hpp:
 
 /usr/include/x86_64-linux-gnu/sys/stat.h:
@@ -4726,6 +4658,10 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 /usr/include/c++/11/bits/regex_constants.h:
 
 /usr/include/c++/11/bits/stl_stack.h:
+
+/usr/include/c++/11/bitset:
+
+/usr/include/c++/11/random:
 
 /usr/include/x86_64-linux-gnu/bits/fcntl-linux.h:
 
@@ -4789,6 +4725,10 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 
 /usr/include/ifaddrs.h:
 
+/usr/include/c++/11/numeric:
+
+/usr/include/x86_64-linux-gnu/asm/sockios.h:
+
 /usr/include/asm-generic/bitsperlong.h:
 
 /usr/include/x86_64-linux-gnu/asm/bitsperlong.h:
@@ -4822,32 +4762,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 /usr/include/c++/11/bits/fs_dir.h:
 
 /usr/include/c++/11/bits/fs_fwd.h:
-
-/usr/include/c++/11/random:
-
-/usr/include/x86_64-linux-gnu/NvInferPluginUtils.h:
-
-/usr/include/x86_64-linux-gnu/NvInferRuntimePlugin.h:
-
-/usr/include/x86_64-linux-gnu/NvInferRuntimeCommon.h:
-
-/usr/include/x86_64-linux-gnu/NvInferImpl.h:
-
-/usr/include/c++/11/bitset:
-
-/usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_device_runtime_api.h:
-
-/usr/include/x86_64-linux-gnu/asm/sockios.h:
-
-/usr/include/c++/11/numeric:
-
-/usr/local/cuda-12.4/targets/x86_64-linux/include/vector_types.h:
-
-/usr/local/cuda-12.4/targets/x86_64-linux/include/device_types.h:
-
-/usr/include/x86_64-linux-gnu/bits/statx.h:
-
-/usr/local/cuda-12.4/targets/x86_64-linux/include/crt/host_defines.h:
 
 /usr/include/x86_64-linux-gnu/asm/param.h:
 
@@ -4889,11 +4803,7 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 
 /usr/include/opencv4/opencv2/imgproc/segmentation.hpp:
 
-/usr/local/cuda-12.4/targets/x86_64-linux/include/driver_types.h:
-
 /usr/include/opencv4/opencv2/videoio.hpp:
-
-/usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_runtime_api.h:
 
 /usr/include/opencv4/opencv2/highgui.hpp:
 
@@ -4944,8 +4854,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 /usr/include/opencv4/opencv2/flann/saving.h:
 
 /usr/include/opencv4/opencv2/flann/any.h:
-
-/usr/local/cuda-12.4/targets/x86_64-linux/include/builtin_types.h:
 
 /usr/include/opencv4/opencv2/flann/matrix.h:
 
@@ -5178,8 +5086,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 /usr/include/c++/11/cerrno:
 
 /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
-
-/usr/include/x86_64-linux-gnu/NvOnnxParser.h:
 
 /usr/include/stdio.h:
 
@@ -5465,8 +5371,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 
 /usr/include/c++/11/unordered_set:
 
-/usr/include/x86_64-linux-gnu/NvInferLegacyDims.h:
-
 /usr/include/c++/11/bits/memoryfwd.h:
 
 /usr/include/c++/11/bits/stl_function.h:
@@ -5510,8 +5414,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h:
 
 /usr/include/x86_64-linux-gnu/bits/socket_type.h:
-
-/usr/local/cuda-12.4/targets/x86_64-linux/include/surface_types.h:
 
 /usr/include/c++/11/bits/exception_defines.h:
 
@@ -5560,8 +5462,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 /usr/include/x86_64-linux-gnu/c++/11/bits/c++locale.h:
 
 /home/hunglt31/Downloads/TritonClientSDK/include/grpc/grpc.h:
-
-/usr/include/x86_64-linux-gnu/NvInferRuntimeBase.h:
 
 /usr/include/c++/11/bits/list.tcc:
 
@@ -5645,8 +5545,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 
 /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/stubs/strutil.h:
 
-/usr/include/x86_64-linux-gnu/NvInferVersion.h:
-
 /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/channel_argument_option.h:
 
 /usr/include/c++/11/bits/stl_deque.h:
@@ -5660,8 +5558,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/type.pb.h:
 
 /usr/include/nlohmann/detail/conversions/to_json.hpp:
-
-/usr/local/cuda-12.4/targets/x86_64-linux/include/texture_types.h:
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/gthr-default.h:
 
@@ -5917,8 +5813,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 
 /usr/include/c++/11/bits/regex_compiler.tcc:
 
-/usr/include/x86_64-linux-gnu/NvInferPlugin.h:
-
 /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/per_thread_tls.h:
 
 /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/raw_logging.h:
@@ -6107,8 +6001,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 
 /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/version_info.h:
 
-../includes/models/ModelBuilder.h:
-
 /usr/include/c++/11/deque:
 
 /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/stubs/common.h:
@@ -6191,8 +6083,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 
 /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/stubs/casts.h:
 
-/usr/include/x86_64-linux-gnu/NvInfer.h:
-
 /usr/include/c++/11/queue:
 
 /home/hunglt31/Downloads/TritonClientSDK/include/google/protobuf/message.h:
@@ -6242,8 +6132,6 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 /usr/include/opencv4/opencv2/core/cv_cpu_dispatch.h:
 
 /home/hunglt31/Downloads/TritonClientSDK/include/grpc/byte_buffer_reader.h:
-
-/usr/include/x86_64-linux-gnu/NvInferRuntime.h:
 
 /usr/include/c++/11/cctype:
 

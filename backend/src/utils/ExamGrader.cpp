@@ -26,9 +26,7 @@ const int PART_2_NUM_CENTER_Y = 6;
 const int NUM_SUBMATRICES_ON_IMG = 2;
 const int NUM_SUBMATRIX_COLS = 2;
 
-cv::Mat
-ExamGrader::createMetadataMatrix(const std::vector<Detection> &detections,
-                                 int numRows, int numCols) {
+cv::Mat ExamGrader::createMetadataMatrix(const std::vector<Detection> &detections, int numRows, int numCols) {
   cv::Mat matrix = cv::Mat::zeros(numRows, numCols, CV_8UC1);
 
   if (detections.empty()) {
@@ -38,8 +36,8 @@ ExamGrader::createMetadataMatrix(const std::vector<Detection> &detections,
   // Use K-means to assign detections to grid positions
   std::vector<cv::Point2f> centers;
   for (const auto &detection : detections) {
-    centers.push_back(cv::Point2f(detection.box.x + detection.box.width / 2,
-                                  detection.box.y + detection.box.height / 2));
+    centers.push_back(
+        cv::Point2f(detection.box.x + detection.box.width / 2, detection.box.y + detection.box.height / 2));
   }
 
   float minX = centers[0].x, maxX = centers[0].x;
@@ -139,8 +137,7 @@ ExamGrader::createMetadataMatrix(const std::vector<Detection> &detections,
   return matrix;
 }
 
-cv::Mat ExamGrader::createPart1Matrix(const std::vector<Detection> &detections,
-                                      int numRows, int numCols) {
+cv::Mat ExamGrader::createPart1Matrix(const std::vector<Detection> &detections, int numRows, int numCols) {
   cv::Mat matrix = cv::Mat::zeros(numRows, numCols, CV_8UC1);
 
   if (detections.empty()) {
@@ -150,8 +147,8 @@ cv::Mat ExamGrader::createPart1Matrix(const std::vector<Detection> &detections,
   // Use K-means to assign detections to grid positions
   std::vector<cv::Point2f> centers;
   for (const auto &detection : detections) {
-    centers.push_back(cv::Point2f(detection.box.x + detection.box.width / 2,
-                                  detection.box.y + detection.box.height / 2));
+    centers.push_back(
+        cv::Point2f(detection.box.x + detection.box.width / 2, detection.box.y + detection.box.height / 2));
   }
 
   float minX = centers[0].x, maxX = centers[0].x;
@@ -232,8 +229,7 @@ cv::Mat ExamGrader::createPart1Matrix(const std::vector<Detection> &detections,
   return matrix;
 }
 
-cv::Mat ExamGrader::createPart2Matrix(const std::vector<Detection> &detections,
-                                      int numRows, int numCols) {
+cv::Mat ExamGrader::createPart2Matrix(const std::vector<Detection> &detections, int numRows, int numCols) {
   cv::Mat matrix = cv::Mat::zeros(numRows, numCols, CV_8UC1);
 
   if (detections.empty()) {
@@ -243,8 +239,8 @@ cv::Mat ExamGrader::createPart2Matrix(const std::vector<Detection> &detections,
   // Use K-means to assign detections to grid positions
   std::vector<cv::Point2f> centers;
   for (const auto &detection : detections) {
-    centers.push_back(cv::Point2f(detection.box.x + detection.box.width / 2,
-                                  detection.box.y + detection.box.height / 2));
+    centers.push_back(
+        cv::Point2f(detection.box.x + detection.box.width / 2, detection.box.y + detection.box.height / 2));
   }
 
   float minX = centers[0].x, maxX = centers[0].x;
@@ -280,8 +276,7 @@ cv::Mat ExamGrader::createPart2Matrix(const std::vector<Detection> &detections,
     for (int row = 0; row < numRows; ++row) {
       std::vector<std::pair<int, Detection>> subRowCandidates;
       for (const auto &cand : rowCandidates[row]) {
-        if (cand.first >= colStart &&
-            cand.first < colStart + NUM_SUBMATRIX_COLS)
+        if (cand.first >= colStart && cand.first < colStart + NUM_SUBMATRIX_COLS)
           subRowCandidates.push_back(cand);
       }
       // Keep your existing logic for processing each subrow
@@ -391,8 +386,7 @@ std::string ExamGrader::getExamId(const cv::Mat &matrix) {
 
 std::vector<std::string> ExamGrader::processContentPart1(const cv::Mat &array) {
   std::vector<std::string> answers;
-  if (array.rows != (PART_1_NUM_QUESTIONS + 2) ||
-      array.cols != PART_1_NUM_CENTER_Y) {
+  if (array.rows != (PART_1_NUM_QUESTIONS + 2) || array.cols != PART_1_NUM_CENTER_Y) {
     return answers;
   }
 
@@ -431,8 +425,7 @@ std::vector<std::string> ExamGrader::processContentPart1(const cv::Mat &array) {
 std::vector<std::string> ExamGrader::processContentPart2(const cv::Mat &array) {
   std::vector<std::string> overallAnswers;
   int numCols = PART_2_NUM_QUESTIONS + 1;
-  if (array.rows != PART_2_NUM_CENTER_Y ||
-      array.cols != (3 * PART_2_NUM_CENTER_X) || !array.isContinuous()) {
+  if (array.rows != PART_2_NUM_CENTER_Y || array.cols != (3 * PART_2_NUM_CENTER_X) || !array.isContinuous()) {
     return overallAnswers;
   }
 
@@ -472,73 +465,62 @@ std::vector<std::string> ExamGrader::processContentPart2(const cv::Mat &array) {
   return overallAnswers;
 }
 
-std::vector<std::string> ExamGrader::extractAnswersAndGradeExam(
-    const std::string &imageBasename,
-    const std::vector<std::vector<Detection>> &metadataDetections,
-    const std::vector<std::vector<Detection>> &contentDetections,
-    const std::map<std::string, std::vector<std::string>> &examAnswerKeys) {
+std::vector<std::string>
+ExamGrader::extractAnswersAndGradeExam(const std::string &imageBasename,
+                                       const std::vector<std::vector<Detection>> &metadataDetections,
+                                       const std::vector<std::vector<Detection>> &contentDetections,
+                                       const std::map<std::string, std::vector<std::string>> &examAnswerKeys) {
   try {
     // Process metadata matrix
     cv::Mat studentIdMatrix =
-        createMetadataMatrix(metadataDetections[0], STUDENT_ID_NUM_CENTER_Y,
-                             STUDENT_ID_NUM_CENTER_X);
-    cv::Mat examIdMatrix = createMetadataMatrix(
-        metadataDetections[1], EXAM_ID_NUM_CENTER_Y, EXAM_ID_NUM_CENTER_X);
+        createMetadataMatrix(metadataDetections[0], STUDENT_ID_NUM_CENTER_Y, STUDENT_ID_NUM_CENTER_X);
+    cv::Mat examIdMatrix = createMetadataMatrix(metadataDetections[1], EXAM_ID_NUM_CENTER_Y, EXAM_ID_NUM_CENTER_X);
 
     // Process content part 1 matrix
-    cv::Mat content11Matrix = createPart1Matrix(
-        contentDetections[0], PART_1_NUM_CENTER_Y, PART_1_NUM_CENTER_X);
-    cv::Mat content12Matrix = createPart1Matrix(
-        contentDetections[1], PART_1_NUM_CENTER_Y, PART_1_NUM_CENTER_X);
-    cv::Mat content13Matrix = createPart1Matrix(
-        contentDetections[2], PART_1_NUM_CENTER_Y, PART_1_NUM_CENTER_X);
+    cv::Mat content11Matrix = createPart1Matrix(contentDetections[0], PART_1_NUM_CENTER_Y, PART_1_NUM_CENTER_X);
+    cv::Mat content12Matrix = createPart1Matrix(contentDetections[1], PART_1_NUM_CENTER_Y, PART_1_NUM_CENTER_X);
+    cv::Mat content13Matrix = createPart1Matrix(contentDetections[2], PART_1_NUM_CENTER_Y, PART_1_NUM_CENTER_X);
     // cv::Mat content14Matrix = createPart1Matrix(
     //     contentDetections[3], PART_1_NUM_CENTER_Y, PART_1_NUM_CENTER_X);
 
     cv::Mat contentPart1Matrix;
-    std::vector<cv::Mat> matricesPart1 = {content11Matrix, content12Matrix,
-                                          content13Matrix};
+    std::vector<cv::Mat> matricesPart1 = {content11Matrix, content12Matrix, content13Matrix};
     cv::vconcat(matricesPart1, contentPart1Matrix);
 
+    std::cout << "Content Part 1 Matrix:\n" << contentPart1Matrix << std::endl;
+
     // Process content part 2 matrix
-    cv::Mat content21Matrix = createPart2Matrix(
-        contentDetections[4], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
-    cv::Mat content22Matrix = createPart2Matrix(
-        contentDetections[5], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
-    cv::Mat content23Matrix = createPart2Matrix(
-        contentDetections[6], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
+    cv::Mat content21Matrix = createPart2Matrix(contentDetections[4], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
+    cv::Mat content22Matrix = createPart2Matrix(contentDetections[5], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
+    cv::Mat content23Matrix = createPart2Matrix(contentDetections[6], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
     // cv::Mat content24Matrix = createPart2Matrix(
     //     contentDetections[7], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
 
     cv::Mat contentPart2Matrix;
-    std::vector<cv::Mat> matricesPart2 = {content21Matrix, content22Matrix,
-                                          content23Matrix};
+    std::vector<cv::Mat> matricesPart2 = {content21Matrix, content22Matrix, content23Matrix};
     cv::hconcat(matricesPart2, contentPart2Matrix);
+
+    std::cout << "Content Part 2 Matrix:\n" << contentPart2Matrix << std::endl;
 
     // Extract answers
     std::string studentId = getStudentId(studentIdMatrix);
     std::string examId = getExamId(examIdMatrix);
-    std::vector<std::string> contentPart1Answers =
-        processContentPart1(contentPart1Matrix);
-    std::vector<std::string> contentPart2Answers =
-        processContentPart2(contentPart2Matrix);
+    std::vector<std::string> contentPart1Answers = processContentPart1(contentPart1Matrix);
+    std::vector<std::string> contentPart2Answers = processContentPart2(contentPart2Matrix);
 
     std::vector<std::string> result;
     result.push_back(imageBasename);
     result.push_back(studentId);
     result.push_back(examId);
     result.push_back("Answers");
-    result.insert(result.end(), contentPart1Answers.begin(),
-                  contentPart1Answers.end());
-    result.insert(result.end(), contentPart2Answers.begin(),
-                  contentPart2Answers.end());
+    result.insert(result.end(), contentPart1Answers.begin(), contentPart1Answers.end());
+    result.insert(result.end(), contentPart2Answers.begin(), contentPart2Answers.end());
 
     // Grade exam
     auto answerKeyIt = examAnswerKeys.find(examId);
     if (answerKeyIt != examAnswerKeys.end()) {
       const std::vector<std::string> &correctAnswers = answerKeyIt->second;
-      ExamGradingResult gradingResult =
-          gradeStudentExam(result, correctAnswers);
+      ExamGradingResult gradingResult = gradeStudentExam(result, correctAnswers);
 
       result.push_back(std::to_string(gradingResult.part1CorrectCount));
       result.push_back(std::to_string(gradingResult.part2CorrectCount));
@@ -551,16 +533,15 @@ std::vector<std::string> ExamGrader::extractAnswersAndGradeExam(
 
     return result;
   } catch (const std::exception &e) {
-    Logger::error("EXAM GRADER", "Answer extraction and grading failed for " +
-                                     imageBasename + ": " +
-                                     std::string(e.what()));
+    Logger::error("EXAM GRADER",
+                  "Answer extraction and grading failed for " + imageBasename + ": " + std::string(e.what()));
     return {};
   }
 }
 
-std::vector<std::string> ExamGrader::extractAnswersAndRegradeExam(
-    const std::vector<std::string> &studentAnswers,
-    const std::map<std::string, std::vector<std::string>> &examAnswerKeys) {
+std::vector<std::string>
+ExamGrader::extractAnswersAndRegradeExam(const std::vector<std::string> &studentAnswers,
+                                         const std::map<std::string, std::vector<std::string>> &examAnswerKeys) {
   try {
     // Extract exam ID from student answers (should be at index 2)
     if (studentAnswers.size() < 3) {
@@ -588,8 +569,7 @@ std::vector<std::string> ExamGrader::extractAnswersAndRegradeExam(
     const std::vector<std::string> &correctAnswers = answerKeyIt->second;
 
     // Perform grading using existing grading logic
-    ExamGradingResult gradingResult =
-        gradeStudentExam(studentAnswers, correctAnswers);
+    ExamGradingResult gradingResult = gradeStudentExam(studentAnswers, correctAnswers);
 
     // Prepare result with updated scores
     std::vector<std::string> result = studentAnswers;
@@ -611,9 +591,8 @@ std::vector<std::string> ExamGrader::extractAnswersAndRegradeExam(
   }
 }
 
-ExamGrader::ExamGradingResult
-ExamGrader::gradeStudentExam(const std::vector<std::string> &studentAnswers,
-                             const std::vector<std::string> &correctAnswers) {
+ExamGrader::ExamGradingResult ExamGrader::gradeStudentExam(const std::vector<std::string> &studentAnswers,
+                                                           const std::vector<std::string> &correctAnswers) {
   ExamGradingResult result;
   result.part1CorrectCount = 0;
   result.part2CorrectCount = 0;
@@ -633,8 +612,7 @@ ExamGrader::gradeStudentExam(const std::vector<std::string> &studentAnswers,
 
     if (studentAns != "_" && studentAns != "X" && !correctAns.empty()) {
       std::string studentUpper = studentAns;
-      std::transform(studentUpper.begin(), studentUpper.end(),
-                     studentUpper.begin(), ::toupper);
+      std::transform(studentUpper.begin(), studentUpper.end(), studentUpper.begin(), ::toupper);
 
       if (studentUpper == correctAns) {
         qResult.isCorrect = true;
@@ -658,13 +636,11 @@ ExamGrader::gradeStudentExam(const std::vector<std::string> &studentAnswers,
     qResult.correctAnswer = correctAns;
     qResult.isCorrect = false;
 
-    if (!studentAns.empty() && !correctAns.empty() &&
-        studentAns.find('_') == std::string::npos &&
+    if (!studentAns.empty() && !correctAns.empty() && studentAns.find('_') == std::string::npos &&
         studentAns.find('X') == std::string::npos) {
 
       std::string studentUpper = studentAns;
-      std::transform(studentUpper.begin(), studentUpper.end(),
-                     studentUpper.begin(), ::toupper);
+      std::transform(studentUpper.begin(), studentUpper.end(), studentUpper.begin(), ::toupper);
 
       if (studentUpper == correctAns) {
         qResult.isCorrect = true;
