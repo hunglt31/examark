@@ -7,7 +7,7 @@ import UniversityLogo from '../assets/logos/logo_hust.png';
 import FamiLogo from '../assets/logos/logo_fami.png';
 
 import BackArrowIcon from '../assets/icons/back-arrow.png';
-import ResultIcon from '../assets/icons/result.png'; 
+import ResultIcon from '../assets/icons/result.png';
 import DownloadIcon from '../assets/icons/download.png';
 import DeleteIcon from '../assets/icons/delete.png';
 
@@ -23,7 +23,7 @@ function SheetPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [hasResults, setHasResults] = useState(false);
   const [selectedCell, setSelectedCell] = useState({ row: 0, col: 0 });
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [editedMetadata, setEditedMetadata] = useState({});
   const [editedAnswers, setEditedAnswers] = useState({});
@@ -50,9 +50,9 @@ function SheetPage() {
   const [alert, setAlert] = useState({
     isOpen: false,
     message: '',
-    type: 'info', 
+    type: 'info',
     showConfirm: false,
-    onConfirm: null
+    onConfirm: null,
   });
 
   const showAlert = (message, type = 'info', showConfirm = false, onConfirm = null) => {
@@ -61,7 +61,7 @@ function SheetPage() {
       message,
       type,
       showConfirm,
-      onConfirm
+      onConfirm,
     });
   };
 
@@ -71,26 +71,21 @@ function SheetPage() {
       message: '',
       type: 'info',
       showConfirm: false,
-      onConfirm: null
+      onConfirm: null,
     });
   };
 
-    const handleClearSheet = () => {
-    showAlert(
-      'Do you want to clear all sheet data? This action cannot be undone.',
-      'warning',
-      true,
-      () => {
-        localStorage.removeItem('examarkJobId');
-        localStorage.removeItem('examarkCsvData');
-        localStorage.removeItem('examarkImages');
-        localStorage.removeItem('examarkEdits');
-        setHasResults(false);
-        setCsvRows([]);
-        setImages([]);
-        closeAlert();
-      }
-    );
+  const handleClearSheet = () => {
+    showAlert('Do you want to clear all sheet data? This action cannot be undone.', 'warning', true, () => {
+      localStorage.removeItem('examarkJobId');
+      localStorage.removeItem('examarkCsvData');
+      localStorage.removeItem('examarkImages');
+      localStorage.removeItem('examarkEdits');
+      setHasResults(false);
+      setCsvRows([]);
+      setImages([]);
+      closeAlert();
+    });
   };
 
   // [MinIO] Load data on component mount
@@ -98,15 +93,15 @@ function SheetPage() {
     // Get URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const urlJobId = urlParams.get('jobId');
-    
+
     // Get data from localStorage
     const savedJobId = localStorage.getItem('examarkJobId') || urlJobId;
     const savedCsvData = localStorage.getItem('examarkCsvData');
     const savedImages = localStorage.getItem('examarkImages');
-    
+
     const savedAnswerKey = localStorage.getItem('examarkAnswerKey');
     const savedFileName = localStorage.getItem('examarkAnswerKeyFileName');
-    
+
     if (savedAnswerKey) {
       setHasPreviousAnswerKey(true);
       setPreviousAnswerKeyFileName(savedFileName || 'Previous answer key');
@@ -114,13 +109,13 @@ function SheetPage() {
 
     if (savedJobId && savedCsvData && savedImages) {
       setJobId(savedJobId);
-      
+
       // Parse CSV data
-      const rows = savedCsvData.split('\n').map(row => {
+      const rows = savedCsvData.split('\n').map((row) => {
         const cells = [];
         let current = '';
         let inQuotes = false;
-        
+
         for (let i = 0; i < row.length; i++) {
           const char = row[i];
           if (char === '"') {
@@ -135,30 +130,30 @@ function SheetPage() {
         cells.push(current.trim());
         return cells;
       });
-      
+
       setCsvData(savedCsvData);
       setCsvRows(rows);
 
       const parsedImages = JSON.parse(savedImages);
-      
+
       // Images should already have MinIO URLs from the backend
-      const processedImages = parsedImages.map(img => {
+      const processedImages = parsedImages.map((img) => {
         if (typeof img === 'string') {
           // Old format - shouldn't happen with MinIO but keep for safety
           console.warn("Old image format detected, this shouldn't happen with MinIO");
           return {
             name: img,
-            url: `http://localhost:8080/results/${savedJobId}/images/${img}`
+            url: `http://localhost:8080/results/${savedJobId}/images/${img}`,
           };
         } else {
           // New format from MinIO - use direct URL
           return {
             name: img.name,
-            url: img.url  // Direct MinIO URL
+            url: img.url, // Direct MinIO URL
           };
         }
       });
-      
+
       // Sort images by page number
       const sortedImages = processedImages.sort((a, b) => {
         const pageNumA = parseInt(a.name.match(/page_(\d+)/)?.[1] || '0', 10);
@@ -177,11 +172,11 @@ function SheetPage() {
       if (savedCsvData && savedCsvData !== csvData) {
         setCsvData(savedCsvData);
         // Parse lại CSV rows
-        const newRows = savedCsvData.split('\n').map(row => {
+        const newRows = savedCsvData.split('\n').map((row) => {
           const cells = [];
           let current = '';
           let inQuotes = false;
-          
+
           for (let i = 0; i < row.length; i++) {
             const char = row[i];
             if (char === '"') {
@@ -215,7 +210,7 @@ function SheetPage() {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
@@ -224,17 +219,17 @@ function SheetPage() {
   // New helper function to apply edits to CSV rows
   const applyEditsToRows = (rows, edits) => {
     if (!edits || !rows.length) return rows;
-    
-    const newRows = rows.map(row => [...row]); 
-    
+
+    const newRows = rows.map((row) => [...row]);
+
     // Apply metadata edits
     if (edits.metadata) {
       Object.entries(edits.metadata).forEach(([imageIndex, metadataObj]) => {
         const imgIdx = parseInt(imageIndex, 10);
-        
+
         // Map image index to CSV column - this should match ResultsPage logic
         const csvColumnIndex = imgIdx + 2; // Assuming metadata starts at column 2
-        
+
         // Apply each metadata edit
         Object.entries(metadataObj).forEach(([label, value]) => {
           // Find the row for this metadata item
@@ -250,25 +245,25 @@ function SheetPage() {
         });
       });
     }
-    
+
     // Apply answer edits
     if (edits.answers) {
       Object.entries(edits.answers).forEach(([key, value]) => {
         // Parse key format: "[imageIndex]-[part]-[questionIdx]"
         const [imgIdx, part, questionIdx] = key.split('-');
         const imageIndex = parseInt(imgIdx, 10);
-        
+
         // Map image index to CSV column
         const csvColumnIndex = imageIndex + 2; // Same mapping as metadata
-        
+
         // Find the correct row based on part and question index
         let rowIndex = -1;
-        
+
         if (part === '1') {
           // For part 1, find the row with matching part and question
           const flatQuestionIndex = parseInt(questionIdx, 10);
           const actualQuestionNumber = flatQuestionIndex + 1; // Convert 0-based to 1-based
-          
+
           for (let i = 4; i < newRows.length; i++) {
             if (newRows[i][0] === '1' && parseInt(newRows[i][1]) === actualQuestionNumber) {
               rowIndex = i;
@@ -280,7 +275,7 @@ function SheetPage() {
           const [qIdx, qRow] = questionIdx.split('-');
           const questionNumber = parseInt(qIdx, 10) + 1; // Convert 0-based to 1-based
           const rowOffset = parseInt(qRow, 10);
-          
+
           // Find the base row for this question in part 2
           for (let i = 4; i < newRows.length; i++) {
             if (newRows[i][0] === '2' && parseInt(newRows[i][1]) === questionNumber) {
@@ -288,67 +283,65 @@ function SheetPage() {
               break;
             }
           }
-          
+
           // For part 2, we need to handle multi-character answers
           // The value should be placed as a single character in the answer string
           if (rowIndex >= 0 && csvColumnIndex < newRows[rowIndex].length) {
             let currentAnswer = newRows[rowIndex][csvColumnIndex] || '';
-            
+
             // Ensure the answer string is long enough
             while (currentAnswer.length <= rowOffset) {
               currentAnswer += 'X'; // Use 'X' as placeholder
             }
-            
+
             // Replace the character at the specific position
             const answerArray = currentAnswer.split('');
             answerArray[rowOffset] = value;
             newRows[rowIndex][csvColumnIndex] = answerArray.join('');
           }
-          
+
           // Skip the normal assignment below
           rowIndex = -1;
         }
-        
+
         // Apply the edit for part 1 or if we didn't handle it above
         if (rowIndex >= 0 && csvColumnIndex < newRows[rowIndex].length) {
           newRows[rowIndex][csvColumnIndex] = value;
         }
       });
     }
-    
+
     return newRows;
   };
 
   const saveChanges = () => {
     // First update the local state and get the updated CSV
     const updatedCsv = updateCsvFromRows();
-    
+
     // Prepare edits in the format expected by ResultsPage
     const editsToSave = {
       metadata: {},
-      answers: {}
+      answers: {},
     };
-    
+
     // Extract edits by comparing with original CSV data
-    const originalRows = csvData.split('\n')
-      .map(line => line.split(',')
-        .map(cell => cell.trim()));
-    
+    const originalRows = csvData.split('\n').map((line) => line.split(',').map((cell) => cell.trim()));
+
     // Check each cell for changes
     csvRows.forEach((row, rowIndex) => {
       row.forEach((cell, colIndex) => {
         // Skip first two columns (part and question)
         if (colIndex < 2) return;
-        
+
         // Check if this is a header row (metadata)
         const isMetadata = rowIndex < 4;
-        
+
         // Calculate which image this column belongs to
         const imageIndex = colIndex - 2; // Assuming data starts at column 2
-        
+
         // Skip if out of range of original data
         if (originalRows.length <= rowIndex || originalRows[rowIndex].length <= colIndex) return;
-        
+
         // Check if the value has changed
         if (cell !== originalRows[rowIndex][colIndex]) {
           if (isMetadata) {
@@ -362,7 +355,7 @@ function SheetPage() {
             // It's an answer - need to convert CSV format to ResultsPage format
             const part = row[0];
             const questionNumber = parseInt(row[1], 10);
-            
+
             if (part === '1') {
               // For Part 1: convert 1-based question number to 0-based index
               const questionIdx = questionNumber - 1;
@@ -372,7 +365,7 @@ function SheetPage() {
               // For Part 2: need to handle multi-character answers
               // Each character in the answer string corresponds to a different row in ResultsPage
               const questionIdx = questionNumber - 1; // Convert to 0-based
-              
+
               // Split the cell value into individual characters
               const answerString = cell || '';
               for (let charIndex = 0; charIndex < answerString.length; charIndex++) {
@@ -387,21 +380,25 @@ function SheetPage() {
         }
       });
     });
-    
+
     localStorage.setItem('examarkEdits', JSON.stringify(editsToSave));
 
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'examarkCsvData',
-      newValue: updatedCsv,
-      oldValue: csvData
-    }));
-    
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: 'examarkEdits', 
-      newValue: JSON.stringify(editsToSave),
-      oldValue: localStorage.getItem('examarkEdits')
-    }));
-    
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: 'examarkCsvData',
+        newValue: updatedCsv,
+        oldValue: csvData,
+      }),
+    );
+
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: 'examarkEdits',
+        newValue: JSON.stringify(editsToSave),
+        oldValue: localStorage.getItem('examarkEdits'),
+      }),
+    );
+
     setCsvData(updatedCsv);
     setIsEditing(false);
     showAlert('CSV data saved successfully!', 'success');
@@ -410,20 +407,16 @@ function SheetPage() {
   // Parse CSV data into a rows array
   const parseCsvData = (csvString) => {
     if (!csvString) return;
-    
-    const rows = csvString.split('\n')
-      .map(line => line.split(',')
-        .map(cell => cell.trim()));
-    
+
+    const rows = csvString.split('\n').map((line) => line.split(',').map((cell) => cell.trim()));
+
     setCsvRows(rows);
   };
 
   // Update CSV from edited rows
   const updateCsvFromRows = () => {
-    const newCsvData = csvRows
-      .map(row => row.join(','))
-      .join('\n');
-    
+    const newCsvData = csvRows.map((row) => row.join(',')).join('\n');
+
     setCsvData(newCsvData);
     localStorage.setItem('examarkCsvData', newCsvData);
     return newCsvData;
@@ -432,7 +425,7 @@ function SheetPage() {
   // Handle cell edit
   const handleCellEdit = (rowIndex, colIndex, newValue) => {
     if (!isEditing) return;
-    
+
     const newRows = [...csvRows];
     newRows[rowIndex][colIndex] = newValue;
     setCsvRows(newRows);
@@ -441,9 +434,9 @@ function SheetPage() {
   // Handle input changes and auto uppercase
   const handleInput = (e, rowIndex, colIndex) => {
     if (!isEditing) return;
-    
+
     let value = e.target.textContent;
-    
+
     // For Student ID (row 1) and Exam ID (row 2), only allow numbers
     if ((rowIndex === 1 || rowIndex === 2) && colIndex > 1) {
       const numbersOnly = value.replace(/\D/g, '');
@@ -459,14 +452,14 @@ function SheetPage() {
       }
       return;
     }
-    
+
     // Auto uppercase for answer cells (rows after headers, non-metadata columns)
     if (rowIndex > 3 && colIndex > 1) {
       if (value.length > 1) {
         value = value.charAt(0);
         e.target.textContent = value;
       }
-      
+
       const uppercase = value.toUpperCase();
       if (uppercase !== value) {
         e.target.textContent = uppercase;
@@ -484,7 +477,7 @@ function SheetPage() {
       }
       return {};
     }
-      
+
     // Only apply to answer columns
     if (colIndex < 2) return {};
 
@@ -492,14 +485,14 @@ function SheetPage() {
 
     // Check if this is one of the last 3 rows (grading results)
     const isGradingResultRow = csvRows.length > 0 && rowIndex >= csvRows.length - 4;
-    
+
     if (isGradingResultRow) {
       if (value && /^\d+(\.\d+)?$/.test(value.toString())) {
         styles.fontWeight = 'bold';
         styles.fontSize = '18px';
-        
+
         const rowLabel = csvRows[rowIndex]?.[1]?.toLowerCase() || '';
-        
+
         if (rowLabel.includes('correct')) {
           styles.backgroundColor = '#f3e5f5';
           styles.color = '#6a1b9a';
@@ -511,23 +504,26 @@ function SheetPage() {
           styles.border = '2px solid #f44336';
         }
       }
-      
+
       return styles;
     }
 
-    // Style lowercase letters 
+    // Style lowercase letters
     if (value && /[a-z]/.test(value)) {
       return { backgroundColor: 'cyan' };
     }
-    
+
     // Style invalid answers
     // For Part 1, valid answers are A, B, C, D
     // For Part 2, valid answers are D, S
     const part = csvRows[rowIndex]?.[0] || '';
     if (value && value.trim() !== '') {
+      if (value.trim() === '_') {
+        return { backgroundColor: '#d0f5dd' };
+      }
       if (part === '1') {
         // For Part 1, valid answers are A, B, C, D, _
-        const validAnswers = ['A', 'B', 'C', 'D', '_'];
+        const validAnswers = ['A', 'B', 'C', 'D'];
         if (!validAnswers.includes(value.toUpperCase())) {
           return { backgroundColor: 'yellow' };
         }
@@ -537,9 +533,12 @@ function SheetPage() {
         if (!validPattern.test(value)) {
           return { backgroundColor: 'yellow' };
         }
+        if (value.includes('_')) {
+          return { backgroundColor: '#d0f5dd' };
+        }
       }
     }
-    
+
     return {};
   };
 
@@ -549,7 +548,7 @@ function SheetPage() {
       setCurrentImageIndex(currentImageIndex + 1);
     }
   };
-  
+
   const showPrevImage = () => {
     if (currentImageIndex > 0) {
       setCurrentImageIndex(currentImageIndex - 1);
@@ -560,24 +559,24 @@ function SheetPage() {
   const findImageForColumn = (colIndex) => {
     // Column 0, 1 might be metadata (e.g., Part, Question, etc.)
     // So column 2 corresponds to the first image (index 0)
-    
+
     // Map column index to image index (adjusting for the metadata columns)
     const imageIndex = colIndex - 2;
-    
+
     // Make sure we don't go beyond the available images
     if (imageIndex >= 0 && imageIndex < images.length) {
       return imageIndex;
     }
-    
+
     // Return current index if we can't map properly
     return currentImageIndex;
   };
-  
+
   // Update handleCellClick to use column mapping
   const handleCellClick = (rowIndex, colIndex) => {
     // Set the selected cell
     setSelectedCell({ row: rowIndex, col: colIndex });
-    
+
     // Find and show the corresponding image based on column
     const imageIndex = findImageForColumn(colIndex);
     if (imageIndex !== currentImageIndex) {
@@ -586,7 +585,7 @@ function SheetPage() {
   };
 
   // Render CSV table with proper frozen handling
-  
+
   const renderCsvTable = () => {
     if (!csvRows.length) return <div>No CSV data available</div>;
 
@@ -612,9 +611,15 @@ function SheetPage() {
                       className={`csv-cell ${isEditable ? 'editable' : ''} ${isSelected ? 'current-cell' : ''} ${isFrozenColumn || isNonEditableRow ? 'column-frozen' : ''}`}
                       contentEditable={isEditable}
                       suppressContentEditableWarning={true}
-                      onKeyDown={(e) => (isFrozenColumn || isNonEditableRow) ? null : handleKeyDown(e, rowIndex, colIndex)}
-                      onInput={(e) => (isFrozenColumn || isNonEditableRow) ? null : handleInput(e, rowIndex, colIndex)}
-                      onBlur={(e) => (isFrozenColumn || isNonEditableRow) ? null : handleCellEdit(rowIndex, colIndex, e.target.textContent)}
+                      onKeyDown={(e) =>
+                        isFrozenColumn || isNonEditableRow ? null : handleKeyDown(e, rowIndex, colIndex)
+                      }
+                      onInput={(e) => (isFrozenColumn || isNonEditableRow ? null : handleInput(e, rowIndex, colIndex))}
+                      onBlur={(e) =>
+                        isFrozenColumn || isNonEditableRow
+                          ? null
+                          : handleCellEdit(rowIndex, colIndex, e.target.textContent)
+                      }
                       onClick={() => handleCellClick(rowIndex, colIndex)}
                       tabIndex={isEditable ? 0 : -1}
                       style={getCellStyle(cell, rowIndex, colIndex)}
@@ -629,7 +634,7 @@ function SheetPage() {
         </thead>
         <tbody>
           {bodyRows.map((row, rowIndex) => {
-            const actualRowIndex = rowIndex + 4; 
+            const actualRowIndex = rowIndex + 4;
             return (
               <tr key={`body-${rowIndex}`}>
                 {row.map((cell, colIndex) => {
@@ -649,11 +654,13 @@ function SheetPage() {
                         suppressContentEditableWarning={true}
                         onKeyDown={(e) => !isFrozenColumn && handleKeyDown(e, actualRowIndex, colIndex)}
                         onInput={(e) => !isFrozenColumn && handleInput(e, actualRowIndex, colIndex)}
-                        onBlur={(e) => !isFrozenColumn && handleCellEdit(actualRowIndex, colIndex, e.target.textContent)}
+                        onBlur={(e) =>
+                          !isFrozenColumn && handleCellEdit(actualRowIndex, colIndex, e.target.textContent)
+                        }
                         onClick={() => handleCellClick(actualRowIndex, colIndex)}
                         tabIndex={isEditable ? 0 : -1}
                         // In the body rows section of renderCsvTable
-                      style={getCellStyle(cell, actualRowIndex, colIndex)}
+                        style={getCellStyle(cell, actualRowIndex, colIndex)}
                       >
                         {displayValue}
                       </div>
@@ -673,8 +680,8 @@ function SheetPage() {
     if (!isEditing) return;
 
     const selection = window.getSelection();
-    const isEditingContent = selection.rangeCount > 0 && 
-      selection.getRangeAt(0).startContainer.nodeType === Node.TEXT_NODE;
+    const isEditingContent =
+      selection.rangeCount > 0 && selection.getRangeAt(0).startContainer.nodeType === Node.TEXT_NODE;
 
     const rows = csvRows.length;
     const cols = csvRows[0]?.length || 0;
@@ -695,7 +702,7 @@ function SheetPage() {
         }
         if (newRow < 0) newRow = rowIndex; // Stay in place if no valid cell above
         break;
-        
+
       case 'ArrowDown':
       case 'Enter':
         newRow = Math.min(rows - 1, rowIndex + 1);
@@ -705,7 +712,7 @@ function SheetPage() {
         }
         if (newRow >= rows) newRow = rowIndex; // Stay in place if no valid cell below
         break;
-        
+
       case 'ArrowLeft':
         // Allow left arrow to move within cell content if actively editing
         if (isEditingContent) {
@@ -714,7 +721,7 @@ function SheetPage() {
             return; // Let browser handle cursor movement within cell
           }
         }
-        
+
         newCol = Math.max(0, colIndex - 1);
         // Skip frozen columns
         while (newCol >= 0 && isCellNonEditable(rowIndex, newCol)) {
@@ -722,7 +729,7 @@ function SheetPage() {
         }
         if (newCol < 0) newCol = colIndex; // Stay in place if no valid cell to left
         break;
-        
+
       case 'ArrowRight':
         // Allow right arrow to move within cell content if actively editing
         if (isEditingContent) {
@@ -732,17 +739,17 @@ function SheetPage() {
             return; // Let browser handle cursor movement within cell
           }
         }
-        
+
         newCol = Math.min(cols - 1, colIndex + 1);
         break;
-        
+
       case 'Tab':
         e.preventDefault();
         if (e.shiftKey) {
           // Move backwards
           newCol = colIndex - 1;
           newRow = rowIndex;
-          
+
           // Find previous editable cell
           while ((newRow > 0 || newCol >= 0) && isCellNonEditable(newRow, newCol)) {
             newCol--;
@@ -751,7 +758,7 @@ function SheetPage() {
               newCol = cols - 1;
             }
           }
-          
+
           // If we went too far, stay in current position
           if (newRow < 0) {
             newRow = rowIndex;
@@ -761,7 +768,7 @@ function SheetPage() {
           // Move forwards
           newCol = colIndex + 1;
           newRow = rowIndex;
-          
+
           // Find next editable cell
           while ((newRow < rows - 1 || newCol < cols) && isCellNonEditable(newRow, newCol)) {
             newCol++;
@@ -770,7 +777,7 @@ function SheetPage() {
               newCol = 0;
             }
           }
-          
+
           // If we went too far, stay in current position
           if (newRow >= rows) {
             newRow = rowIndex;
@@ -778,7 +785,7 @@ function SheetPage() {
           }
         }
         break;
-        
+
       default:
         return;
     }
@@ -795,16 +802,16 @@ function SheetPage() {
   const handleSaveExcel = () => {
     try {
       const currentCsvData = updateCsvFromRows();
-      
+
       if (!currentCsvData) {
         showAlert('No data to save', 'error');
         return;
       }
-      
+
       // Parse CSV data into rows
-      const csvRows = currentCsvData.split('\n').filter(row => row.trim());
-      const data = csvRows.map(row => row.split(',').map(cell => cell.trim()));
-      
+      const csvRows = currentCsvData.split('\n').filter((row) => row.trim());
+      const data = csvRows.map((row) => row.split(',').map((cell) => cell.trim()));
+
       // Create simple Excel XML format
       let excelXML = `<?xml version="1.0"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
@@ -815,8 +822,12 @@ function SheetPage() {
       // Add data rows
       data.forEach((row) => {
         excelXML += '<Row>';
-        row.forEach(cell => {
-          const cellValue = cell.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        row.forEach((cell) => {
+          const cellValue = cell
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
           excelXML += `<Cell><Data ss:Type="String">${cellValue}</Data></Cell>`;
         });
         excelXML += '</Row>';
@@ -825,12 +836,12 @@ function SheetPage() {
       excelXML += `  </Table>
  </Worksheet>
 </Workbook>`;
-      
+
       // Create blob with Excel MIME type
-      const blob = new Blob([excelXML], { 
-        type: 'application/vnd.ms-excel' 
+      const blob = new Blob([excelXML], {
+        type: 'application/vnd.ms-excel',
       });
-      
+
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -840,28 +851,27 @@ function SheetPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
     } catch (error) {
       console.error('Error saving Excel:', error);
       showAlert('Error saving Excel file', 'error');
     }
   };
 
-    // Helper function to parse CSV content to JSON
+  // Helper function to parse CSV content to JSON
   const parseCsvToJson = (csvContent) => {
     const lines = csvContent.trim().split('\n');
-    const headers = lines[0].split(',').map(cell => cell.trim());
-    
+    const headers = lines[0].split(',').map((cell) => cell.trim());
+
     const result = [];
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(cell => cell.trim());
+      const values = lines[i].split(',').map((cell) => cell.trim());
       const row = {};
       headers.forEach((header, index) => {
         row[header] = values[index] || '';
       });
       result.push(row);
     }
-    
+
     return result;
   };
 
@@ -870,16 +880,16 @@ function SheetPage() {
     // Simple XLS XML parser for our specific format
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xlsContent, 'text/xml');
-    
+
     const rows = xmlDoc.querySelectorAll('Row');
     if (rows.length === 0) {
       throw new Error('Invalid XLS format');
     }
-    
+
     // Extract headers from first row
     const headerCells = rows[0].querySelectorAll('Cell Data');
-    const headers = Array.from(headerCells).map(cell => cell.textContent.trim());
-    
+    const headers = Array.from(headerCells).map((cell) => cell.textContent.trim());
+
     const result = [];
     for (let i = 1; i < rows.length; i++) {
       const cells = rows[i].querySelectorAll('Cell Data');
@@ -890,7 +900,7 @@ function SheetPage() {
       });
       result.push(row);
     }
-    
+
     return result;
   };
 
@@ -900,20 +910,22 @@ function SheetPage() {
     if (!file) return;
 
     // Update to accept XLS and CSV files
-    if (file.type !== 'application/vnd.ms-excel' && 
-        file.type !== 'text/csv' &&
-        !file.name.toLowerCase().endsWith('.xls') && 
-        !file.name.toLowerCase().endsWith('.csv')) {
+    if (
+      file.type !== 'application/vnd.ms-excel' &&
+      file.type !== 'text/csv' &&
+      !file.name.toLowerCase().endsWith('.xls') &&
+      !file.name.toLowerCase().endsWith('.csv')
+    ) {
       showAlert('Please select an XLS or CSV file for the answer key.', 'error');
       return;
     }
 
     try {
       setIsRegrade(true);
-      
+
       // Get current CSV data with any edits applied
       const currentCsvData = updateCsvFromRows();
-      
+
       if (!currentCsvData) {
         showAlert('No CSV data available for re-grading.', 'error');
         setIsRegrade(false);
@@ -922,7 +934,7 @@ function SheetPage() {
 
       // Read and parse the answer key file to JSON
       let answerKeyJson;
-      
+
       if (file.name.toLowerCase().endsWith('.xls')) {
         // For XLS files, read as text and parse XML
         const xlsContent = await new Promise((resolve, reject) => {
@@ -953,7 +965,7 @@ function SheetPage() {
       const regradePayload = {
         jobId: jobId,
         csvData: currentCsvData,
-        answerKey: answerKeyJson
+        answerKey: answerKeyJson,
       };
 
       console.log('Sending regrade request with answer key JSON:', regradePayload);
@@ -963,9 +975,9 @@ function SheetPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          Accept: 'application/json',
         },
-        body: JSON.stringify(regradePayload)
+        body: JSON.stringify(regradePayload),
       });
 
       if (!response.ok) {
@@ -975,10 +987,9 @@ function SheetPage() {
       const result = await response.json();
       const newRegradeJobId = result.jobId;
       setRegradeJobId(newRegradeJobId);
-      
+
       // Poll for re-grade completion
       await pollRegradeStatus(newRegradeJobId);
-      
     } catch (error) {
       console.error('Regrade error:', error);
       setIsRegrade(false);
@@ -993,9 +1004,9 @@ function SheetPage() {
 
   const handleRegradeWithExistingKey = async () => {
     setShowRegradeOptions(false);
-    
+
     const savedAnswerKey = localStorage.getItem('examarkAnswerKey');
-    
+
     if (!savedAnswerKey) {
       showAlert('No previous answer key found. Please upload a new one.', 'error');
       setShowRegradeModal(true);
@@ -1004,10 +1015,10 @@ function SheetPage() {
 
     try {
       setIsRegrade(true);
-      
+
       // Get current CSV data with any edits applied
       const currentCsvData = updateCsvFromRows();
-      
+
       if (!currentCsvData) {
         showAlert('No CSV data available for re-grading.', 'error');
         setIsRegrade(false);
@@ -1021,7 +1032,7 @@ function SheetPage() {
       const regradePayload = {
         jobId: jobId,
         csvData: currentCsvData,
-        answerKey: answerKeyJson
+        answerKey: answerKeyJson,
       };
 
       console.log('Sending regrade request with existing answer key JSON:', regradePayload);
@@ -1031,9 +1042,9 @@ function SheetPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          Accept: 'application/json',
         },
-        body: JSON.stringify(regradePayload)
+        body: JSON.stringify(regradePayload),
       });
 
       if (!response.ok) {
@@ -1043,10 +1054,9 @@ function SheetPage() {
       const result = await response.json();
       const newRegradeJobId = result.jobId;
       setRegradeJobId(newRegradeJobId);
-      
+
       // Poll for re-grade completion
       await pollRegradeStatus(newRegradeJobId);
-      
     } catch (error) {
       console.error('Regrade error:', error);
       setIsRegrade(false);
@@ -1066,10 +1076,10 @@ function SheetPage() {
 
   //   try {
   //     setIsRegrade(true);
-      
+
   //     // Get current CSV data with any edits applied
   //     const currentCsvData = updateCsvFromRows();
-      
+
   //     if (!currentCsvData) {
   //       showAlert('No CSV data available for re-grading.', 'error');
   //       setIsRegrade(false);
@@ -1117,13 +1127,13 @@ function SheetPage() {
 
   //     const result = await response.json();
   //     console.log('Regrade response:', result);
-      
+
   //     if (result.regrade_job_id) {
   //       await pollRegradeStatus(result.regrade_job_id);
   //     } else {
   //       throw new Error('No regrade job ID returned');
   //     }
-      
+
   //   } catch (error) {
   //     console.error('Regrade error:', error);
   //     setIsRegrade(false);
@@ -1160,7 +1170,7 @@ function SheetPage() {
 
   // const handleRegradeWithExistingKey = async () => {
   //   setShowRegradeOptions(false);
-    
+
   //   const savedAnswerKey = localStorage.getItem('examarkAnswerKey');
   //   if (!savedAnswerKey) {
   //     showAlert('No previous answer key found. Please upload a new one.', 'error');
@@ -1170,10 +1180,10 @@ function SheetPage() {
 
   //   try {
   //     setIsRegrade(true);
-      
+
   //     // Get current CSV data with any edits applied
   //     const currentCsvData = updateCsvFromRows();
-      
+
   //     if (!currentCsvData) {
   //       showAlert('No CSV data available for re-grading.', 'error');
   //       setIsRegrade(false);
@@ -1207,13 +1217,13 @@ function SheetPage() {
 
   //     const result = await response.json();
   //     console.log('Regrade response:', result);
-      
+
   //     if (result.regrade_job_id) {
   //       await pollRegradeStatus(result.regrade_job_id);
   //     } else {
   //       throw new Error('No regrade job ID returned');
   //     }
-      
+
   //   } catch (error) {
   //     console.error('Regrade error:', error);
   //     setIsRegrade(false);
@@ -1229,37 +1239,35 @@ function SheetPage() {
   const pollRegradeStatus = async (regradeJobId) => {
     const maxAttempts = 30; // 30 seconds timeout
     let attempts = 0;
-    
+
     while (attempts < maxAttempts) {
       try {
         const statusResponse = await fetch(`http://127.0.0.1:8080/status/${regradeJobId}`);
         if (!statusResponse.ok) {
           throw new Error('Failed to check regrade status');
         }
-        
+
         const statusData = await statusResponse.json();
         console.log('Regrade status:', statusData);
-        
+
         if (statusData.status === 'completed') {
           setIsRegrade(false);
           showAlert('Re-grading completed successfully! Fetching updated results...', 'success');
-          
+
           // Fetch updated results
           try {
             const updatedCsvResponse = await fetch(`http://127.0.0.1:8080/results/${jobId}/csv`);
             if (updatedCsvResponse.ok) {
               const updatedCsvData = await updatedCsvResponse.text();
-              
+
               // Update the state with new data
               setCsvData(updatedCsvData);
-              const newRows = updatedCsvData.split('\n').map(line => 
-                line.split(',').map(cell => cell.trim())
-              );
+              const newRows = updatedCsvData.split('\n').map((line) => line.split(',').map((cell) => cell.trim()));
               setCsvRows(newRows);
-              
+
               // Update localStorage with new data
               localStorage.setItem('examarkCsvData', updatedCsvData);
-              
+
               showAlert('Results updated successfully!', 'success');
             } else {
               throw new Error('Failed to fetch updated results');
@@ -1272,18 +1280,17 @@ function SheetPage() {
         } else if (statusData.status === 'error') {
           throw new Error(statusData.error || 'Regrade failed');
         }
-        
+
         // Wait 1 second before next check
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         attempts++;
-        
       } catch (error) {
         console.error('Status check error:', error);
         setIsRegrade(false);
         throw error;
       }
     }
-    
+
     setIsRegrade(false);
     throw new Error('Regrade timeout - process took too long');
   };
@@ -1337,17 +1344,11 @@ function SheetPage() {
                 <img src={ResultIcon} alt="Result" className="header-btn-icon" draggable="false" />
               </button>
             </Link>
-            <button 
-              className="header-btn header-btn-secondary"
-              onClick={handleSaveExcel}
-            >
+            <button className="header-btn header-btn-secondary" onClick={handleSaveExcel}>
               Save Excel
               <img src={DownloadIcon} alt="Download" className="header-btn-icon" draggable="false" />
             </button>
-            <button
-              className="header-btn header-btn-danger"
-              onClick={handleClearSheet}
-            >
+            <button className="header-btn header-btn-danger" onClick={handleClearSheet}>
               Clear Sheet
               <img src={DeleteIcon} alt="Delete" className="header-btn-icon" draggable="false" />
             </button>
@@ -1355,36 +1356,35 @@ function SheetPage() {
           <img src={FamiLogo} alt="Fami Logo" className="page-header-fami-logo" draggable="false" />
         </div>
       </header>
-      
+
       {hasResults ? (
         <>
           {/* Image Container */}
           <div className="image-container">
             {images.length > 0 ? (
               <>
-                <img 
-                  //src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`} 
-                  src={images[currentImageIndex].url} 
+                <img
+                  //src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`}
+                  src={images[currentImageIndex].url}
                   alt={`Exam page ${currentImageIndex + 1}`}
                   className="result-image"
                   onError={(e) => {
-                    console.error("Failed to load image from MinIO:", e.target.src);
-                    e.target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y4ZjlmYSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2Yzc1N2QiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBub3QgYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==";
+                    console.error('Failed to load image from MinIO:', e.target.src);
+                    e.target.src =
+                      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y4ZjlmYSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2Yzc1N2QiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBub3QgYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==';
                   }}
                 />
                 <div className="sheet-image-navigation">
                   <div className="sheet-image-navigation-buttons">
-                    <button 
-                      className="sheet-nav-button"
-                      onClick={showPrevImage} 
-                      disabled={currentImageIndex === 0}
-                    >
+                    <button className="sheet-nav-button" onClick={showPrevImage} disabled={currentImageIndex === 0}>
                       <img src={PreviousIcon} alt="Previous" className="nav-icon" draggable="false" />
                     </button>
-                    <span className="sheet-nav-text">Page {currentImageIndex + 1} of {images.length}</span>
-                    <button 
+                    <span className="sheet-nav-text">
+                      Page {currentImageIndex + 1} of {images.length}
+                    </span>
+                    <button
                       className="sheet-nav-button"
-                      onClick={showNextImage} 
+                      onClick={showNextImage}
                       disabled={currentImageIndex === images.length - 1}
                     >
                       <img src={NextIcon} alt="Next" className="nav-icon" draggable="false" />
@@ -1404,15 +1404,11 @@ function SheetPage() {
                 <h3>Grading Sheet Editor</h3>
                 <div className="action-buttons">
                   {!isEditing ? (
-                    <>  
+                    <>
                       <button className="btn btn-primary btn-small" onClick={() => setIsEditing(true)}>
                         EDIT SHEET
                       </button>
-                      <button 
-                        className="btn btn-success btn-small" 
-                        onClick={handleRegradeClick}
-                        disabled={isRegrade}
-                      >
+                      <button className="btn btn-success btn-small" onClick={handleRegradeClick} disabled={isRegrade}>
                         {isRegrade ? 'REGRADING...' : 'REGRADE EXAMS'}
                       </button>
                     </>
@@ -1421,10 +1417,13 @@ function SheetPage() {
                       <button className="btn btn-success btn-small" onClick={saveChanges}>
                         Save Changes
                       </button>
-                      <button className="btn btn-secondary btn-small" onClick={() => {
-                        setIsEditing(false);
-                        parseCsvData(csvData);
-                      }}>
+                      <button
+                        className="btn btn-secondary btn-small"
+                        onClick={() => {
+                          setIsEditing(false);
+                          parseCsvData(csvData);
+                        }}
+                      >
                         Cancel
                       </button>
                     </>
@@ -1440,28 +1439,22 @@ function SheetPage() {
                 ref={answerKeyInputRef}
                 style={{ display: 'none' }}
               />
-              
-              {/* Regrade Options Modal */} 
+
+              {/* Regrade Options Modal */}
               {showRegradeOptions && (
                 <div className="modal-overlay">
                   <div className="modal-content">
                     <h3>Regrade Options</h3>
                     <p>You have uploaded an answer key before. How would you like to proceed?</p>
-                    
+
                     <div className="regrade-options">
-                      <button
-                        className="btn btn-primary btn-large"
-                        onClick={handleRegradeWithExistingKey}
-                      >
+                      <button className="btn btn-primary btn-large" onClick={handleRegradeWithExistingKey}>
                         <i className="fas fa-recycle"></i>
                         Use Previous Answer Key
                         <small>Continue with: {previousAnswerKeyFileName}</small>
                       </button>
-                      
-                      <button
-                        className="btn btn-info btn-large"
-                        onClick={handleRegradeWithNewKey}
-                      >
+
+                      <button className="btn btn-info btn-large" onClick={handleRegradeWithNewKey}>
                         <i className="fas fa-upload"></i>
                         Upload New Answer Key
                         <small>Upload a different CSV answer key file</small>
@@ -1469,10 +1462,7 @@ function SheetPage() {
                     </div>
 
                     <div className="modal-buttons">
-                      <button
-                        className="btn btn-secondary"
-                        onClick={handleRegradeOptionsCancel}
-                      >
+                      <button className="btn btn-secondary" onClick={handleRegradeOptionsCancel}>
                         Cancel
                       </button>
                     </div>
@@ -1490,9 +1480,7 @@ function SheetPage() {
                 </div>
               )}
 
-              <div className="csv-table-container">
-                {renderCsvTable()}
-              </div>
+              <div className="csv-table-container">{renderCsvTable()}</div>
               {isEditing && (
                 <div className="editing-instructions">
                   <p>Navigation: Use arrow keys to move between cells. Press Enter to move down.</p>
