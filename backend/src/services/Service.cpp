@@ -4,6 +4,7 @@
 #include "utils/ImageProcessor.h"
 #include "utils/Logger.h"
 #include "utils/MinIOHTTPClient.h"
+#include <algorithm>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -131,11 +132,13 @@ bool examark::services::extract_all_exams_answers(const std::string &pdfFileName
     std::string qr_info;
 
     for (first_exam_image_idx = 0; first_exam_image_idx < images.size(); ++first_exam_image_idx) {
-      if (!imgProc.get_qr_code_info(images[first_exam_image_idx], qr_info)) {
+      std::string temp_qr_info;
+      if (!imgProc.get_qr_code_info(images[first_exam_image_idx], temp_qr_info)) {
         break;
       }
 
       if (!get_qr_info) {
+        qr_info = temp_qr_info;
         std::string subject_id, class_id, random_id;
         {
           std::istringstream iss(qr_info);
@@ -251,11 +254,17 @@ bool examark::services::extract_all_exams_answers(const std::string &pdfFileName
 
     std::string csvBasename;
     if (!qr_info.empty()) {
-      // Use QR info as filename if available
-      csvBasename = qr_info;
+      // Clean QR info to make it filename-safe
+      std::string cleanQrInfo = qr_info;
+      // Replace spaces with underscores
+      std::replace(cleanQrInfo.begin(), cleanQrInfo.end(), ' ', '_');
+      // Remove any other invalid characters if needed
+      csvBasename = cleanQrInfo;
+      Logger::info("SERVICE", "Using QR info for filename: " + qr_info + " -> " + csvBasename);
     } else {
       // Fallback to PDF filename if QR info is not available
       csvBasename = pdfFileName.substr(0, pdfFileName.find_last_of('.'));
+      Logger::info("SERVICE", "QR info empty, using PDF filename: " + csvBasename);
     }
     // // Save CSV locally (for regrade function)
     // std::string csvFilePath = outputDir + "/" + csvBasename + ".csv";
@@ -278,7 +287,7 @@ bool examark::services::extract_all_exams_answers(const std::string &pdfFileName
       Logger::error("SERVICE", "Failed to upload CSV to MinIO.");
       return false;
     }
-    Logger::info("SERVICE", "Results uploaded to MinIO at " + csvObjectName);
+    Logger::info("SERVICE", "Results uploaded to MinIO at " + csvObjectName + " (QR: " + qr_info + ")");
 
     updateJobProgress(jobId, "completed", "All processing completed successfully", numImages, numImages, 100.0);
     return true;
