@@ -239,7 +239,7 @@ server: /usr/lib/x86_64-linux-gnu/libopencv_viz.so.4.5.4d
 server: /usr/lib/x86_64-linux-gnu/libopencv_wechat_qrcode.so.4.5.4d
 server: /usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.4.5.4d
 server: /usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libcudart_static.a
+server: /usr/local/cuda-12.4/lib64/libcudart_static.a
 server: /usr/lib/x86_64-linux-gnu/librt.a
 server: /usr/lib/x86_64-linux-gnu/libnvinfer.so
 server: /usr/lib/x86_64-linux-gnu/libnvonnxparser.so

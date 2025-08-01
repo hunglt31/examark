@@ -3647,7 +3647,23 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/include/c++/11/bits/stl_vector.h \
   /usr/include/c++/11/bits/stl_bvector.h \
   /usr/include/c++/11/bits/vector.tcc \
-  /usr/include/opencv4/opencv2/calib3d.hpp \
+  ../includes/utils/ImageProcessor.h \
+  ../includes/utils/Logger.h \
+  /usr/include/c++/11/functional \
+  /usr/include/c++/11/bits/std_function.h \
+  /usr/include/c++/11/unordered_map \
+  /usr/include/c++/11/bits/hashtable.h \
+  /usr/include/c++/11/bits/hashtable_policy.h \
+  /usr/include/c++/11/bits/enable_special_members.h \
+  /usr/include/c++/11/bits/node_handle.h \
+  /usr/include/c++/11/bits/unordered_map.h \
+  /usr/include/c++/11/bits/erase_if.h \
+  /usr/include/c++/11/bits/stl_algo.h \
+  /usr/include/c++/11/bits/algorithmfwd.h \
+  /usr/include/c++/11/bits/stl_heap.h \
+  /usr/include/c++/11/bits/uniform_int_dist.h \
+  /usr/include/opencv4/opencv2/opencv.hpp \
+  /usr/include/opencv4/opencv2/opencv_modules.hpp \
   /usr/include/opencv4/opencv2/core.hpp \
   /usr/include/opencv4/opencv2/core/cvdef.h \
   /usr/include/opencv4/opencv2/core/version.hpp \
@@ -3660,7 +3676,6 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/lib/gcc/x86_64-linux-gnu/11/include/mm_malloc.h \
   /usr/include/c++/11/stdlib.h \
   /usr/include/opencv4/opencv2/core/base.hpp \
-  /usr/include/opencv4/opencv2/opencv_modules.hpp \
   /usr/include/c++/11/climits \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/limits.h \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/syslimits.h \
@@ -3672,20 +3687,7 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
   /usr/include/c++/11/algorithm \
-  /usr/include/c++/11/bits/stl_algo.h \
-  /usr/include/c++/11/bits/algorithmfwd.h \
-  /usr/include/c++/11/bits/stl_heap.h \
-  /usr/include/c++/11/bits/uniform_int_dist.h \
   /usr/include/c++/11/pstl/glue_algorithm_defs.h \
-  /usr/include/c++/11/functional \
-  /usr/include/c++/11/bits/std_function.h \
-  /usr/include/c++/11/unordered_map \
-  /usr/include/c++/11/bits/hashtable.h \
-  /usr/include/c++/11/bits/hashtable_policy.h \
-  /usr/include/c++/11/bits/enable_special_members.h \
-  /usr/include/c++/11/bits/node_handle.h \
-  /usr/include/c++/11/bits/unordered_map.h \
-  /usr/include/c++/11/bits/erase_if.h \
   /usr/include/opencv4/opencv2/core/cvstd.hpp \
   /usr/include/c++/11/cstring \
   /usr/include/string.h \
@@ -3716,17 +3718,12 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/include/opencv4/opencv2/core/optim.hpp \
   /usr/include/opencv4/opencv2/core/ovx.hpp \
   /usr/include/opencv4/opencv2/core/cvdef.h \
+  /usr/include/opencv4/opencv2/calib3d.hpp \
   /usr/include/opencv4/opencv2/features2d.hpp \
   /usr/include/opencv4/opencv2/flann/miniflann.hpp \
   /usr/include/opencv4/opencv2/flann/defines.h \
   /usr/include/opencv4/opencv2/flann/config.h \
   /usr/include/opencv4/opencv2/core/affine.hpp \
-  /usr/include/opencv4/opencv2/highgui.hpp \
-  /usr/include/opencv4/opencv2/imgcodecs.hpp \
-  /usr/include/opencv4/opencv2/videoio.hpp \
-  /usr/include/opencv4/opencv2/imgproc.hpp \
-  /usr/include/opencv4/opencv2/imgproc/segmentation.hpp \
-  /usr/include/opencv4/opencv2/opencv.hpp \
   /usr/include/opencv4/opencv2/dnn.hpp \
   /usr/include/opencv4/opencv2/dnn/dnn.hpp \
   /usr/include/opencv4/opencv2/core/async.hpp \
@@ -3774,6 +3771,11 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/include/opencv4/opencv2/flann/index_testing.h \
   /usr/include/opencv4/opencv2/flann/timer.h \
   /usr/include/opencv4/opencv2/flann/sampling.h \
+  /usr/include/opencv4/opencv2/highgui.hpp \
+  /usr/include/opencv4/opencv2/imgcodecs.hpp \
+  /usr/include/opencv4/opencv2/videoio.hpp \
+  /usr/include/opencv4/opencv2/imgproc.hpp \
+  /usr/include/opencv4/opencv2/imgproc/segmentation.hpp \
   /usr/include/opencv4/opencv2/ml.hpp \
   /usr/include/opencv4/opencv2/ml/ml.inl.hpp \
   /usr/include/opencv4/opencv2/objdetect.hpp \
@@ -3809,6 +3811,7 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/include/opencv4/opencv2/video.hpp \
   /usr/include/opencv4/opencv2/video/tracking.hpp \
   /usr/include/opencv4/opencv2/video/background_segm.hpp \
+  /usr/include/opencv4/opencv2/wechat_qrcode.hpp \
   /usr/include/poppler/cpp/poppler-document.h \
   /usr/include/poppler/cpp/poppler-global.h \
   /usr/include/poppler/cpp/poppler_cpp_export.h \
@@ -3817,9 +3820,7 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/include/poppler/cpp/poppler-rectangle.h \
   /usr/include/poppler/cpp/poppler-page-renderer.h \
   /usr/include/poppler/cpp/poppler-image.h \
-  /usr/include/poppler/cpp/poppler-page.h \
-  ../includes/utils/ImageProcessor.h \
-  ../includes/utils/Logger.h
+  /usr/include/poppler/cpp/poppler-page.h
 
 CMakeFiles/server.dir/src/utils/Logger.cpp.o: ../src/utils/Logger.cpp \
   /usr/include/stdc-predef.h \
@@ -4550,6 +4551,8 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPCli
 /usr/include/poppler/cpp/poppler-font.h:
 
 /usr/include/poppler/cpp/poppler-global.h:
+
+/usr/include/opencv4/opencv2/wechat_qrcode.hpp:
 
 ../src/utils/ImageProcessor.cpp:
 

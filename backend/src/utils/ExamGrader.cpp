@@ -466,10 +466,9 @@ std::vector<std::string> ExamGrader::processContentPart2(const cv::Mat &array) {
 }
 
 std::vector<std::string>
-ExamGrader::extractAnswersAndGradeExam(const std::string &imageBasename,
-                                       const std::vector<std::vector<Detection>> &metadataDetections,
-                                       const std::vector<std::vector<Detection>> &contentDetections,
-                                       const std::map<std::string, std::vector<std::string>> &examAnswerKeys) {
+ExamGrader::extract_answers_from_detections(const std::string &imageBasename,
+                                            const std::vector<std::vector<Detection>> &metadataDetections,
+                                            const std::vector<std::vector<Detection>> &contentDetections) {
   try {
     // Process metadata matrix
     cv::Mat studentIdMatrix =
@@ -487,7 +486,7 @@ ExamGrader::extractAnswersAndGradeExam(const std::string &imageBasename,
     std::vector<cv::Mat> matricesPart1 = {content11Matrix, content12Matrix, content13Matrix};
     cv::vconcat(matricesPart1, contentPart1Matrix);
 
-    std::cout << "Content Part 1 Matrix:\n" << contentPart1Matrix << std::endl;
+    // std::cout << "Content Part 1 Matrix:\n" << contentPart1Matrix << std::endl;
 
     // Process content part 2 matrix
     cv::Mat content21Matrix = createPart2Matrix(contentDetections[4], PART_2_NUM_CENTER_Y, PART_2_NUM_CENTER_X);
@@ -500,7 +499,7 @@ ExamGrader::extractAnswersAndGradeExam(const std::string &imageBasename,
     std::vector<cv::Mat> matricesPart2 = {content21Matrix, content22Matrix, content23Matrix};
     cv::hconcat(matricesPart2, contentPart2Matrix);
 
-    std::cout << "Content Part 2 Matrix:\n" << contentPart2Matrix << std::endl;
+    // std::cout << "Content Part 2 Matrix:\n" << contentPart2Matrix << std::endl;
 
     // Extract answers
     std::string studentId = getStudentId(studentIdMatrix);
@@ -512,29 +511,19 @@ ExamGrader::extractAnswersAndGradeExam(const std::string &imageBasename,
     result.push_back(imageBasename);
     result.push_back(studentId);
     result.push_back(examId);
+
     result.push_back("Answers");
     result.insert(result.end(), contentPart1Answers.begin(), contentPart1Answers.end());
     result.insert(result.end(), contentPart2Answers.begin(), contentPart2Answers.end());
 
-    // Grade exam
-    auto answerKeyIt = examAnswerKeys.find(examId);
-    if (answerKeyIt != examAnswerKeys.end()) {
-      const std::vector<std::string> &correctAnswers = answerKeyIt->second;
-      ExamGradingResult gradingResult = gradeStudentExam(result, correctAnswers);
-
-      result.push_back(std::to_string(gradingResult.part1CorrectCount));
-      result.push_back(std::to_string(gradingResult.part2CorrectCount));
-      result.push_back(std::to_string(gradingResult.totalPoints));
-    } else {
-      result.push_back("N/A");
-      result.push_back("N/A");
-      result.push_back("N/A");
-    }
+    result.push_back("N/A");
+    result.push_back("N/A");
+    result.push_back("N/A");
 
     return result;
+
   } catch (const std::exception &e) {
-    Logger::error("EXAM GRADER",
-                  "Answer extraction and grading failed for " + imageBasename + ": " + std::string(e.what()));
+    Logger::error("EXAM GRADER", "Answer extraction failed for " + imageBasename + ": " + std::string(e.what()));
     return {};
   }
 }

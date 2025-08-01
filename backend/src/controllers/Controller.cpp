@@ -83,7 +83,6 @@ struct JobProgress {
   bool processCompleted;
   std::string outputDir;
   std::string pdfFilename;
-  std::string csvContent;
   std::string currentStage;
   std::string currentStep;
   int currentPage;
@@ -136,20 +135,10 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
 
     try {
       auto pdf_file = req.get_file_value("pdfFile");
-      auto answer_key = req.get_file_value("answerKey");
 
-      if (pdf_file.filename.empty() || answer_key.filename.empty()) {
+      if (pdf_file.filename.empty()) {
         res.status = 400;
-        res.set_content("{\"error\":\"Missing required files\"}", "application/json");
-        return;
-      }
-
-      nlohmann::json answerKeyJson;
-      try {
-        answerKeyJson = nlohmann::json::parse(answer_key.content);
-      } catch (const nlohmann::json::exception &e) {
-        res.status = 400;
-        res.set_content("{\"error\":\"Invalid JSON format in answer key\"}", "application/json");
+        res.set_content("{\"error\":\"Missing required PDF file\"}", "application/json");
         return;
       }
 
@@ -164,7 +153,6 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
         progress.processCompleted = false;
         progress.outputDir = outputDir;
         progress.pdfFilename = pdf_file.filename;
-        progress.csvContent = answer_key.content;
         progress.currentStage = "initializing";
         progress.currentStep = "Starting grading process...";
         progress.progressPercent = 0.0;
@@ -172,8 +160,8 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
 
       // Queue the grading task
       grading_thread_pool.enqueue([=]() {
-        bool success = examark::services::gradeWithJson(pdf_file.filename, pdf_file.content, answer_key.content,
-                                                        outputDir, tritonClient, jobId);
+        bool success = examark::services::extract_all_exams_answers(pdf_file.filename, pdf_file.content, outputDir,
+                                                                    tritonClient, jobId);
         if (!success) {
           updateJobProgress(jobId, "error", "Grading process failed", 0, 0, 0.0, true, "Failed to complete grading");
           Logger::error("GRADING", "Failed to complete grading");
@@ -385,7 +373,8 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
         }
 
         // Download CSV content from MinIO
-        csvContent = minioClient.downloadCSV(csvObjectName);
+        std::string fullObjectName = jobId + "/" + csvObjectName;
+        csvContent = minioClient.downloadCSV(fullObjectName);
         if (csvContent.empty()) {
           res.status = 500;
           res.set_content("Failed to download CSV from storage", "text/plain");
@@ -403,131 +392,134 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
       res.set_content("Failed to fetch CSV: " + std::string(e.what()), "text/plain");
     }
   });
-
-  // Regrade endpoint
-  server.Post("/regrade", [](const httplib::Request &req, httplib::Response &res) {
-    res.set_header("Access-Control-Allow-Origin", "*");
-    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-    try {
-      nlohmann::json requestData = nlohmann::json::parse(req.body);
-
-      if (!requestData.contains("jobId") || !requestData.contains("csvData") || !requestData.contains("answerKey")) {
-        res.status = 400;
-        res.set_content("{\"error\":\"Missing required fields: jobId, csvData, "
-                        "answerKey\"}",
-                        "application/json");
-        return;
-      }
-
-      std::string originalJobId = requestData["jobId"];
-      std::string csvData = requestData["csvData"];
-      nlohmann::json answerKeyJson = requestData["answerKey"];
-      std::string answerKeyData = answerKeyJson.dump();
-
-      std::string regradeJobId = generateRandomId();
-      std::string outputDir;
-
-      // Get output directory from original job
-      {
-        std::lock_guard<std::mutex> lock(progressMutex);
-        auto it = jobProgressMap.find(originalJobId);
-        if (it == jobProgressMap.end()) {
-          res.status = 404;
-          res.set_content("{\"error\":\"Original job not found\"}", "application/json");
-          return;
-        }
-        outputDir = it->second.outputDir;
-      }
-
-      if (!std::filesystem::exists(outputDir)) {
-        res.status = 404;
-        res.set_content("{\"error\":\"Original job results not found\"}", "application/json");
-        return;
-      }
-
-      // Initialize regrade job progress
-      {
-        std::lock_guard<std::mutex> lock(progressMutex);
-        jobProgressMap[regradeJobId] = JobProgress{};
-        auto &progress = jobProgressMap[regradeJobId];
-        progress.processCompleted = false;
-        progress.outputDir = outputDir;
-        progress.pdfFilename = "";
-        progress.csvContent = csvData;
-        progress.currentStage = "regrading";
-        progress.currentStep = "Starting regrade process...";
-        progress.progressPercent = 0.0;
-      }
-
-      // Queue the regrade task
-      grading_thread_pool.enqueue([=]() {
-        updateJobProgress(regradeJobId, "regrading", "Reprocessing grades with updated data...", 0, 0, 50.0, false, "");
-
-        bool success =
-            examark::services::regradeWithJson(outputDir, csvData, answerKeyData, regradeJobId, originalJobId);
-
-        if (success) {
-          updateJobProgress(regradeJobId, "completed", "Regrade completed successfully", 0, 0, 100.0, false, "");
-        } else {
-          updateJobProgress(regradeJobId, "error", "Regrade process failed", 0, 0, 0.0, true,
-                            "Failed to complete regrade");
-        }
-      });
-
-      nlohmann::json response;
-      response["regrade_job_id"] = regradeJobId;
-      response["message"] = "Regrade started successfully";
-      res.set_content(response.dump(), "application/json");
-
-    } catch (const nlohmann::json::exception &e) {
-      res.status = 400;
-      nlohmann::json error_response;
-      error_response["error"] = "Invalid JSON: " + std::string(e.what());
-      res.set_content(error_response.dump(), "application/json");
-    } catch (const std::exception &e) {
-      res.status = 500;
-      nlohmann::json error_response;
-      error_response["error"] = "Server error: " + std::string(e.what());
-      res.set_content(error_response.dump(), "application/json");
-    }
-  });
-
-  // Cancel job endpoint
-  server.Post("/cancel/:jobId", [](const httplib::Request &req, httplib::Response &res) {
-    res.set_header("Access-Control-Allow-Origin", "*");
-    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-    std::string jobId = req.path_params.at("jobId");
-
-    {
-      std::lock_guard<std::mutex> lock(progressMutex);
-      auto it = jobProgressMap.find(jobId);
-      if (it != jobProgressMap.end()) {
-        auto &progress = it->second;
-        progress.hasError = true;
-        progress.errorMessage = "Job cancelled by user";
-        progress.currentStage = "cancelled";
-        progress.currentStep = "Process terminated";
-        progress.processCompleted = true;
-      }
-    }
-
-    nlohmann::json response;
-    response["message"] = "Job cancellation requested";
-    res.set_content(response.dump(), "application/json");
-  });
-
-  // Handle CORS preflight requests
-  server.Options(".*", [](const httplib::Request &req, httplib::Response &res) {
-    res.set_header("Access-Control-Allow-Origin", "*");
-    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.status = 204;
-  });
 }
+
+//   // Regrade endpoint
+//   server.Post("/regrade", [](const httplib::Request &req, httplib::Response &res) {
+//     res.set_header("Access-Control-Allow-Origin", "*");
+//     res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//     res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+//     try {
+//       nlohmann::json requestData = nlohmann::json::parse(req.body);
+
+//       if (!requestData.contains("jobId") || !requestData.contains("csvData") || !requestData.contains("answerKey"))
+//       {
+//         res.status = 400;
+//         res.set_content("{\"error\":\"Missing required fields: jobId, csvData, "
+//                         "answerKey\"}",
+//                         "application/json");
+//         return;
+//       }
+
+//       std::string originalJobId = requestData["jobId"];
+//       std::string csvData = requestData["csvData"];
+//       nlohmann::json answerKeyJson = requestData["answerKey"];
+//       std::string answerKeyData = answerKeyJson.dump();
+
+//       std::string regradeJobId = generateRandomId();
+//       std::string outputDir;
+
+//       // Get output directory from original job
+//       {
+//         std::lock_guard<std::mutex> lock(progressMutex);
+//         auto it = jobProgressMap.find(originalJobId);
+//         if (it == jobProgressMap.end()) {
+//           res.status = 404;
+//           res.set_content("{\"error\":\"Original job not found\"}", "application/json");
+//           return;
+//         }
+//         outputDir = it->second.outputDir;
+//       }
+
+//       if (!std::filesystem::exists(outputDir)) {
+//         res.status = 404;
+//         res.set_content("{\"error\":\"Original job results not found\"}", "application/json");
+//         return;
+//       }
+
+//       // Initialize regrade job progress
+//       {
+//         std::lock_guard<std::mutex> lock(progressMutex);
+//         jobProgressMap[regradeJobId] = JobProgress{};
+//         auto &progress = jobProgressMap[regradeJobId];
+//         progress.processCompleted = false;
+//         progress.outputDir = outputDir;
+//         progress.pdfFilename = "";
+//         progress.csvContent = csvData;
+//         progress.currentStage = "regrading";
+//         progress.currentStep = "Starting regrade process...";
+//         progress.progressPercent = 0.0;
+//       }
+
+//       // Queue the regrade task
+//       grading_thread_pool.enqueue([=]() {
+//         updateJobProgress(regradeJobId, "regrading", "Reprocessing grades with updated data...", 0, 0, 50.0, false,
+//         "");
+
+//         bool success =
+//             examark::services::regradeWithJson(outputDir, csvData, answerKeyData, regradeJobId, originalJobId);
+
+//         if (success) {
+//           updateJobProgress(regradeJobId, "completed", "Regrade completed successfully", 0, 0, 100.0, false, "");
+//         } else {
+//           updateJobProgress(regradeJobId, "error", "Regrade process failed", 0, 0, 0.0, true,
+//                             "Failed to complete regrade");
+//         }
+//       });
+
+//       nlohmann::json response;
+//       response["regrade_job_id"] = regradeJobId;
+//       response["message"] = "Regrade started successfully";
+//       res.set_content(response.dump(), "application/json");
+
+//     } catch (const nlohmann::json::exception &e) {
+//       res.status = 400;
+//       nlohmann::json error_response;
+//       error_response["error"] = "Invalid JSON: " + std::string(e.what());
+//       res.set_content(error_response.dump(), "application/json");
+//     } catch (const std::exception &e) {
+//       res.status = 500;
+//       nlohmann::json error_response;
+//       error_response["error"] = "Server error: " + std::string(e.what());
+//       res.set_content(error_response.dump(), "application/json");
+//     }
+//   });
+
+//   // Cancel job endpoint
+//   server.Post("/cancel/:jobId", [](const httplib::Request &req, httplib::Response &res) {
+//     res.set_header("Access-Control-Allow-Origin", "*");
+//     res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//     res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+//     std::string jobId = req.path_params.at("jobId");
+
+//     {
+//       std::lock_guard<std::mutex> lock(progressMutex);
+//       auto it = jobProgressMap.find(jobId);
+//       if (it != jobProgressMap.end()) {
+//         auto &progress = it->second;
+//         progress.hasError = true;
+//         progress.errorMessage = "Job cancelled by user";
+//         progress.currentStage = "cancelled";
+//         progress.currentStep = "Process terminated";
+//         progress.processCompleted = true;
+//       }
+//     }
+
+//     nlohmann::json response;
+//     response["message"] = "Job cancellation requested";
+//     res.set_content(response.dump(), "application/json");
+//   });
+
+//   // Handle CORS preflight requests
+//   server.Options(".*", [](const httplib::Request &req, httplib::Response &res) {
+//     res.set_header("Access-Control-Allow-Origin", "*");
+//     res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+//     res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+//     res.status = 204;
+//   });
+// }
 
 // void registerGradingRouteTRT(httplib::Server &server, ModelBuilder *metadataModel, ModelBuilder *contentModel) {
 
@@ -578,8 +570,8 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
 //         bool success = examark::services::gradeWithJson(pdf_file.filename, pdf_file.content, answer_key.content,
 //                                                         outputDir, metadataModel, contentModel, jobId);
 //         if (!success) {
-//           updateJobProgress(jobId, "error", "Grading process failed", 0, 0, 0.0, true, "Failed to complete grading");
-//           Logger::error("GRADING", "Failed to complete grading");
+//           updateJobProgress(jobId, "error", "Grading process failed", 0, 0, 0.0, true, "Failed to complete
+//           grading"); Logger::error("GRADING", "Failed to complete grading");
 //         }
 //       });
 
@@ -816,7 +808,8 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
 //     try {
 //       nlohmann::json requestData = nlohmann::json::parse(req.body);
 
-//       if (!requestData.contains("jobId") || !requestData.contains("csvData") || !requestData.contains("answerKey")) {
+//       if (!requestData.contains("jobId") || !requestData.contains("csvData") || !requestData.contains("answerKey"))
+//       {
 //         res.status = 400;
 //         res.set_content("{\"error\":\"Missing required fields: jobId, csvData, "
 //                         "answerKey\"}",

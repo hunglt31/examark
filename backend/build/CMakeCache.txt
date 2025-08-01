@@ -256,8 +256,8 @@ CUDA_NVCC_FLAGS_RELEASE:STRING=
 // builds.
 CUDA_NVCC_FLAGS_RELWITHDEBINFO:STRING=
 
-//Path to a library.
-CUDA_OpenCL_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libOpenCL.so
+//"OpenCL" library
+CUDA_OpenCL_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libOpenCL.so
 
 //Propagate C/CXX_FLAGS and friends to the host compiler via -Xcompile
 CUDA_PROPAGATE_HOST_FLAGS:BOOL=ON
@@ -293,8 +293,8 @@ CUDA_cublasLt_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcublasLt.so
 //Path to a library.
 CUDA_cublasLt_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcublasLt_static.a
 
-//Path to a library.
-CUDA_cublas_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcublas.so
+//"cublas" library
+CUDA_cublas_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcublas.so
 
 //Path to a library.
 CUDA_cublas_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcublas_static.a
@@ -308,11 +308,11 @@ CUDA_cudadevrt_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcudadevrt.a
 //Path to a library.
 CUDA_cudart_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcudart.so
 
-//Path to a library.
-CUDA_cudart_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcudart_static.a
+//static CUDA runtime library
+CUDA_cudart_static_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcudart_static.a
 
-//Path to a library.
-CUDA_cufft_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcufft.so
+//"cufft" library
+CUDA_cufft_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcufft.so
 
 //Path to a library.
 CUDA_cufft_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcufft_static.a
@@ -323,32 +323,32 @@ CUDA_cufftw_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcufftw.so
 //Path to a library.
 CUDA_culibos_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libculibos.a
 
-//Path to a library.
+//"cupti" library
 CUDA_cupti_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcupti.so
 
 //Path to a library.
 CUDA_cupti_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcupti_static.a
 
-//Path to a library.
-CUDA_curand_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcurand.so
+//"curand" library
+CUDA_curand_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcurand.so
 
 //Path to a library.
 CUDA_curand_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcurand_static.a
 
-//Path to a library.
-CUDA_cusolver_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcusolver.so
+//"cusolver" library
+CUDA_cusolver_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcusolver.so
 
 //Path to a library.
 CUDA_cusolver_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcusolver_static.a
 
-//Path to a library.
-CUDA_cusparse_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcusparse.so
+//"cusparse" library
+CUDA_cusparse_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libcusparse.so
 
 //Path to a library.
 CUDA_cusparse_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcusparse_static.a
 
-//Path to a library.
-CUDA_nppc_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppc.so
+//"nppc" library
+CUDA_nppc_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppc.so
 
 //Path to a library.
 CUDA_nppc_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppc_static.a
@@ -413,14 +413,14 @@ CUDA_nppitc_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppitc.so
 //Path to a library.
 CUDA_nppitc_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppitc_static.a
 
-//Path to a library.
-CUDA_npps_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnpps.so
+//"npps" library
+CUDA_npps_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnpps.so
 
 //Path to a library.
 CUDA_npps_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnpps_static.a
 
-//Path to a library.
-CUDA_nvToolsExt_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnvToolsExt.so
+//"nvToolsExt" library
+CUDA_nvToolsExt_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnvToolsExt.so
 
 //Path to a library.
 CUDA_nvgraph_LIBRARY:FILEPATH=CUDA_nvgraph_LIBRARY-NOTFOUND
@@ -478,6 +478,9 @@ PKG_CONFIG_ARGN:STRING=
 
 //pkg-config executable
 PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
+
+//Path to a library.
+QUIRC_LIBRARY:FILEPATH=QUIRC_LIBRARY-NOTFOUND
 
 //Value Computed by CMake
 examark_BINARY_DIR:STATIC=/home/hunglt31/examark/backend/build
@@ -818,7 +821,7 @@ CURL_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CURL_LIBRARY_RELEASE
 CURL_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //Details about finding CUDA
-FIND_PACKAGE_MESSAGE_DETAILS_CUDA:INTERNAL=[/usr/local/cuda-12.4][/usr/local/cuda-12.4/bin/nvcc][/usr/local/cuda-12.4/include][/usr/lib/x86_64-linux-gnu/libcudart_static.a][v12.4()]
+FIND_PACKAGE_MESSAGE_DETAILS_CUDA:INTERNAL=[/usr/local/cuda-12.4][/usr/local/cuda-12.4/bin/nvcc][/usr/local/cuda-12.4/include][/usr/local/cuda-12.4/lib64/libcudart_static.a][v12.4()]
 //Details about finding CUDAToolkit
 FIND_PACKAGE_MESSAGE_DETAILS_CUDAToolkit:INTERNAL=[/usr/include][/usr/lib/x86_64-linux-gnu/libcudart.so][/usr/bin][v11.5.119()]
 //Details about finding CURL
@@ -960,5 +963,5 @@ pkgcfg_lib_POPPLERCPP_poppler-cpp-ADVANCED:INTERNAL=1
 pkgcfg_lib__OPENSSL_crypto-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: pkgcfg_lib__OPENSSL_ssl
 pkgcfg_lib__OPENSSL_ssl-ADVANCED:INTERNAL=1
-prefix_result:INTERNAL=/usr/lib/x86_64-linux-gnu
+prefix_result:INTERNAL=AsynchDNS;GSS-API;HSTS;HTTP2;HTTPS-proxy;IDN;IPv6;Kerberos;Largefile;NTLM;NTLM_WB;PSL;SPNEGO;SSL;TLS-SRP;UnixSockets;alt-svc;brotli;libz;zstd
 

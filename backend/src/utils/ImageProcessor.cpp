@@ -8,27 +8,34 @@
 #include <tuple>
 #include <vector>
 
+#include "utils/ImageProcessor.h"
+
 #include <opencv2/calib3d.hpp>
 #include <opencv2/features2d.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
+#include <opencv2/wechat_qrcode.hpp>
 
 #include <poppler/cpp/poppler-document.h>
 #include <poppler/cpp/poppler-image.h>
 #include <poppler/cpp/poppler-page-renderer.h>
 #include <poppler/cpp/poppler-page.h>
 
-#include "utils/ImageProcessor.h"
+// Constants for qr reader
+static const std::string detect_model = "../assets/wechat_qr_decoder/detect.prototxt";
+static const std::string detect_weights = "../assets/wechat_qr_decoder/detect.caffemodel";
+static const std::string sr_model = "../assets/wechat_qr_decoder/sr.prototxt";
+static const std::string sr_weights = "../assets/wechat_qr_decoder/sr.caffemodel";
 
 // Constants for image processor
 // --- 1. Align image ---
 const std::string REF_IMG_PATH = "../assets/reference.jpg";
 const cv::Mat REF_IMG_ORI = cv::imread(REF_IMG_PATH, cv::IMREAD_GRAYSCALE);
+
 cv::Mat REF_IMG_GRAY = [] {
   cv::Mat tmp;
-  cv::resize(REF_IMG_ORI, tmp, cv::Size(IMAGE_WIDTH, IMAGE_HEIGHT), 0, 0,
-             cv::INTER_LINEAR);
+  cv::resize(REF_IMG_ORI, tmp, cv::Size(IMAGE_WIDTH, IMAGE_HEIGHT), 0, 0, cv::INTER_LINEAR);
   return tmp;
 }();
 
@@ -103,9 +110,8 @@ const int CONTENT_24_CONTOUR_1_COORD_Y = 1685;
 const int CONTENT_24_CONTOUR_2_COORD_X = 2270;
 const int CONTENT_24_CONTOUR_2_COORD_Y = 2180;
 
-bool ImageProcessor::getRequestImagesWithProgress(
-    const char *pdfData, int dataSize, std::vector<cv::Mat> &images,
-    ProgressCallback progressCallback, double dpi) {
+bool ImageProcessor::getRequestImagesWithProgress(const char *pdfData, int dataSize, std::vector<cv::Mat> &images,
+                                                  ProgressCallback progressCallback, double dpi) {
   images.clear();
 
   // Load PDF document
@@ -113,8 +119,7 @@ bool ImageProcessor::getRequestImagesWithProgress(
     progressCallback(0, 0, 5.0);
   }
 
-  std::unique_ptr<poppler::document> doc(
-      poppler::document::load_from_raw_data(pdfData, dataSize));
+  std::unique_ptr<poppler::document> doc(poppler::document::load_from_raw_data(pdfData, dataSize));
   if (!doc) {
     return false;
   }
@@ -142,15 +147,10 @@ bool ImageProcessor::getRequestImagesWithProgress(
       continue;
     }
 
-    cv::Mat img(popImg.height(), popImg.width(), CV_8UC4, (void *)popImg.data(),
-                popImg.bytes_per_row());
+    cv::Mat img(popImg.height(), popImg.width(), CV_8UC4, (void *)popImg.data(), popImg.bytes_per_row());
     cv::Mat imgBGR;
     cv::cvtColor(img, imgBGR, cv::COLOR_BGRA2BGR);
-    cv::Mat imgAligned = alignImage(imgBGR);
-
-    cv::Mat corrected;
-    cv::LUT(imgAligned, GAMMA_LUT, corrected);
-    images.emplace_back(corrected);
+    images.emplace_back(imgBGR);
 
     if (progressCallback) {
       double pageProgress = 10.0 + ((double)(i + 1) / numPages) * 65.0;
@@ -220,8 +220,7 @@ cv::Mat ImageProcessor::alignImage(const cv::Mat &imgScan, cv::Size imgSize) {
   sift->detectAndCompute(REF_IMG_GRAY, cv::noArray(), kpsRef, descRef);
 
   // FLANN matcher parameters
-  cv::FlannBasedMatcher matcher(new cv::flann::KDTreeIndexParams(5),
-                                new cv::flann::SearchParams(50));
+  cv::FlannBasedMatcher matcher(new cv::flann::KDTreeIndexParams(5), new cv::flann::SearchParams(50));
   std::vector<std::vector<cv::DMatch>> knnMatches;
   matcher.knnMatch(descScan, descRef, knnMatches, 2);
 
@@ -247,8 +246,7 @@ cv::Mat ImageProcessor::alignImage(const cv::Mat &imgScan, cv::Size imgSize) {
     kpsRefPt.push_back(kpsRef[m.trainIdx].pt);
   }
 
-  cv::Mat H = cv::findHomography(kpsScanPt, kpsRefPt, cv::RANSAC,
-                                 RANSAC_THRESHOLD, cv::noArray(), ITERATIONS);
+  cv::Mat H = cv::findHomography(kpsScanPt, kpsRefPt, cv::RANSAC, RANSAC_THRESHOLD, cv::noArray(), ITERATIONS);
   cv::Mat imgAligned;
   cv::warpPerspective(imgScan, imgAligned, H, imgSize, cv::INTER_LINEAR);
 
@@ -258,8 +256,7 @@ cv::Mat ImageProcessor::alignImage(const cv::Mat &imgScan, cv::Size imgSize) {
 cv::Mat ImageProcessor::paddingImage(cv::Mat &image, cv::Size paddingSize) {
   int height = image.rows, width = image.cols;
   float scale = static_cast<float>(paddingSize.width) / std::max(height, width);
-  int newW = static_cast<int>(width * scale),
-      newH = static_cast<int>(height * scale);
+  int newW = static_cast<int>(width * scale), newH = static_cast<int>(height * scale);
 
   cv::Mat tmp;
   cv::resize(image, tmp, cv::Size(newW, newH));
@@ -268,48 +265,36 @@ cv::Mat ImageProcessor::paddingImage(cv::Mat &image, cv::Size paddingSize) {
   int left = padW / 2, right = padW - left;
   int top = padH / 2, bottom = padH - top;
 
-  cv::copyMakeBorder(tmp, image, top, bottom, left, right, cv::BORDER_CONSTANT,
-                     cv::Scalar(0, 0, 0));
+  cv::copyMakeBorder(tmp, image, top, bottom, left, right, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
   return image;
 }
 
-bool ImageProcessor::splitImage(const cv::Mat &image,
-                                std::vector<cv::Mat> &metadataImages,
+bool ImageProcessor::splitImage(const cv::Mat &image, std::vector<cv::Mat> &metadataImages,
                                 std::vector<cv::Mat> &contentImages) {
   try {
     // Extract regions for metadata
-    cv::Mat studentId = image(
-        cv::Range(STUDENT_ID_CONTOUR_1_COORD_Y, STUDENT_ID_CONTOUR_2_COORD_Y),
-        cv::Range(STUDENT_ID_CONTOUR_1_COORD_X, STUDENT_ID_CONTOUR_2_COORD_X));
-    cv::Mat examId =
-        image(cv::Range(EXAM_ID_CONTOUR_1_COORD_Y, EXAM_ID_CONTOUR_2_COORD_Y),
-              cv::Range(EXAM_ID_CONTOUR_1_COORD_X, EXAM_ID_CONTOUR_2_COORD_X));
+    cv::Mat studentId = image(cv::Range(STUDENT_ID_CONTOUR_1_COORD_Y, STUDENT_ID_CONTOUR_2_COORD_Y),
+                              cv::Range(STUDENT_ID_CONTOUR_1_COORD_X, STUDENT_ID_CONTOUR_2_COORD_X));
+    cv::Mat examId = image(cv::Range(EXAM_ID_CONTOUR_1_COORD_Y, EXAM_ID_CONTOUR_2_COORD_Y),
+                           cv::Range(EXAM_ID_CONTOUR_1_COORD_X, EXAM_ID_CONTOUR_2_COORD_X));
 
     // Extract content region
-    cv::Mat content11 = image(
-        cv::Range(CONTENT_11_CONTOUR_1_COORD_Y, CONTENT_11_CONTOUR_2_COORD_Y),
-        cv::Range(CONTENT_11_CONTOUR_1_COORD_X, CONTENT_11_CONTOUR_2_COORD_X));
-    cv::Mat content12 = image(
-        cv::Range(CONTENT_12_CONTOUR_1_COORD_Y, CONTENT_12_CONTOUR_2_COORD_Y),
-        cv::Range(CONTENT_12_CONTOUR_1_COORD_X, CONTENT_12_CONTOUR_2_COORD_X));
-    cv::Mat content13 = image(
-        cv::Range(CONTENT_13_CONTOUR_1_COORD_Y, CONTENT_13_CONTOUR_2_COORD_Y),
-        cv::Range(CONTENT_13_CONTOUR_1_COORD_X, CONTENT_13_CONTOUR_2_COORD_X));
-    cv::Mat content14 = image(
-        cv::Range(CONTENT_14_CONTOUR_1_COORD_Y, CONTENT_14_CONTOUR_2_COORD_Y),
-        cv::Range(CONTENT_14_CONTOUR_1_COORD_X, CONTENT_14_CONTOUR_2_COORD_X));
-    cv::Mat content21 = image(
-        cv::Range(CONTENT_21_CONTOUR_1_COORD_Y, CONTENT_21_CONTOUR_2_COORD_Y),
-        cv::Range(CONTENT_21_CONTOUR_1_COORD_X, CONTENT_21_CONTOUR_2_COORD_X));
-    cv::Mat content22 = image(
-        cv::Range(CONTENT_22_CONTOUR_1_COORD_Y, CONTENT_22_CONTOUR_2_COORD_Y),
-        cv::Range(CONTENT_22_CONTOUR_1_COORD_X, CONTENT_22_CONTOUR_2_COORD_X));
-    cv::Mat content23 = image(
-        cv::Range(CONTENT_23_CONTOUR_1_COORD_Y, CONTENT_23_CONTOUR_2_COORD_Y),
-        cv::Range(CONTENT_23_CONTOUR_1_COORD_X, CONTENT_23_CONTOUR_2_COORD_X));
-    cv::Mat content24 = image(
-        cv::Range(CONTENT_24_CONTOUR_1_COORD_Y, CONTENT_24_CONTOUR_2_COORD_Y),
-        cv::Range(CONTENT_24_CONTOUR_1_COORD_X, CONTENT_24_CONTOUR_2_COORD_X));
+    cv::Mat content11 = image(cv::Range(CONTENT_11_CONTOUR_1_COORD_Y, CONTENT_11_CONTOUR_2_COORD_Y),
+                              cv::Range(CONTENT_11_CONTOUR_1_COORD_X, CONTENT_11_CONTOUR_2_COORD_X));
+    cv::Mat content12 = image(cv::Range(CONTENT_12_CONTOUR_1_COORD_Y, CONTENT_12_CONTOUR_2_COORD_Y),
+                              cv::Range(CONTENT_12_CONTOUR_1_COORD_X, CONTENT_12_CONTOUR_2_COORD_X));
+    cv::Mat content13 = image(cv::Range(CONTENT_13_CONTOUR_1_COORD_Y, CONTENT_13_CONTOUR_2_COORD_Y),
+                              cv::Range(CONTENT_13_CONTOUR_1_COORD_X, CONTENT_13_CONTOUR_2_COORD_X));
+    cv::Mat content14 = image(cv::Range(CONTENT_14_CONTOUR_1_COORD_Y, CONTENT_14_CONTOUR_2_COORD_Y),
+                              cv::Range(CONTENT_14_CONTOUR_1_COORD_X, CONTENT_14_CONTOUR_2_COORD_X));
+    cv::Mat content21 = image(cv::Range(CONTENT_21_CONTOUR_1_COORD_Y, CONTENT_21_CONTOUR_2_COORD_Y),
+                              cv::Range(CONTENT_21_CONTOUR_1_COORD_X, CONTENT_21_CONTOUR_2_COORD_X));
+    cv::Mat content22 = image(cv::Range(CONTENT_22_CONTOUR_1_COORD_Y, CONTENT_22_CONTOUR_2_COORD_Y),
+                              cv::Range(CONTENT_22_CONTOUR_1_COORD_X, CONTENT_22_CONTOUR_2_COORD_X));
+    cv::Mat content23 = image(cv::Range(CONTENT_23_CONTOUR_1_COORD_Y, CONTENT_23_CONTOUR_2_COORD_Y),
+                              cv::Range(CONTENT_23_CONTOUR_1_COORD_X, CONTENT_23_CONTOUR_2_COORD_X));
+    cv::Mat content24 = image(cv::Range(CONTENT_24_CONTOUR_1_COORD_Y, CONTENT_24_CONTOUR_2_COORD_Y),
+                              cv::Range(CONTENT_24_CONTOUR_1_COORD_X, CONTENT_24_CONTOUR_2_COORD_X));
 
     // Padding
     studentId = paddingImage(studentId);
@@ -341,8 +326,17 @@ bool ImageProcessor::splitImage(const cv::Mat &image,
 
     return true;
   } catch (const std::exception &e) {
-    Logger::error("IMAGE PROCESSOR",
-                  "Image splitting failed: " + std::string(e.what()));
+    Logger::error("IMAGE PROCESSOR", "Image splitting failed: " + std::string(e.what()));
     return false;
   }
+}
+
+bool ImageProcessor::get_qr_code_info(const cv::Mat &image, std::string &qr_info) {
+  static cv::wechat_qrcode::WeChatQRCode detector(detect_model, detect_weights, sr_model, sr_weights);
+
+  std::vector<cv::Mat> qr_imgs;
+  std::vector<std::string> results = detector.detectAndDecode(image, qr_imgs);
+
+  qr_info = results.empty() ? "" : results[0];
+  return !qr_info.empty();
 }
