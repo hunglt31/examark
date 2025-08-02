@@ -31,8 +31,8 @@ bool extract_all_exams_answers(const std::string &pdfFileName, const std::string
                                TritonClient *tritonClient, const std::string &jobId);
 
 // Regrade with answer key in JSON format
-bool regradeWithJson(const std::string &outputDir, const std::string &csvData, const std::string &answerKeyJson,
-                     const std::string &regradeJobId, const std::string &originalJobId);
+// bool regradeWithJson(const std::string &outputDir, const std::string &csvData, const std::string &answerKeyJson,
+//                   const std::string &regradeJobId, const std::string &originalJobId);
 
 } // namespace services
 } // namespace examark

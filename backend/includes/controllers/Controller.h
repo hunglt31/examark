@@ -21,6 +21,14 @@
  */
 void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonClient);
 
+/**
+ * @brief Update job progress with QR information.
+ * 
+ * @param jobId The job ID to update.
+ * @param qrInfo The QR information to store.
+ */
+void updateJobQrInfo(const std::string &jobId, const std::string &qrInfo);
+
 // /**
 //  * @brief Register the grading route with the server.
 //  *

@@ -7,6 +7,9 @@ import * as XLSX from 'xlsx';
 import UniversityLogo from '../assets/logos/logo_hust.png';
 import FamiLogo from '../assets/logos/logo_fami.png';
 
+// Import sample answer key directly (for testing)
+// import sampleAnswerKey from '../../public/answer-keys/correct_answers.xlsx';
+
 function GradeExamPage() {
   const [gradingMessage, setGradingMessage] = useState('');
   const [pdfFile, setPdfFile] = useState(null);
@@ -48,6 +51,129 @@ function GradeExamPage() {
     };
   }, []);
 
+  // Function to automatically find and load answer key file
+  const autoLoadAnswerKey = async () => {
+    try {
+      // First, try to get a list of files in the answer-keys folder
+      // Since we can't directly list files from frontend, we'll try common patterns
+      const possibleFileNames = [
+        'correct_answers.xlsx', // Your actual file name - try this first
+        'answer_key.xlsx',
+        'key.xlsx',
+        'answer.xlsx',
+        'exam_key.xlsx',
+        'test_key.xlsx',
+      ];
+
+      let foundFile = null;
+      let fileName = null;
+
+      // Try each possible filename
+      for (const name of possibleFileNames) {
+        try {
+          console.log(`Trying to load: /answer-keys/${name}`);
+          const response = await fetch(`/answer-keys/${name}`);
+          console.log(`Response status for ${name}:`, response.status, response.statusText);
+
+          if (response.ok) {
+            foundFile = await response.arrayBuffer();
+            fileName = name;
+            console.log(`Successfully loaded file: ${name}, size: ${foundFile.byteLength} bytes`);
+
+            // Debug: Check if file is actually XLSX by looking at first few bytes
+            const firstBytes = new Uint8Array(foundFile.slice(0, 8));
+            console.log(
+              `First 8 bytes of ${name}:`,
+              Array.from(firstBytes)
+                .map((b) => b.toString(16).padStart(2, '0'))
+                .join(' '),
+            );
+
+            // XLSX files should start with PK (50 4B) - ZIP file signature
+            if (firstBytes[0] === 0x50 && firstBytes[1] === 0x4b) {
+              console.log(`${name} appears to be a valid ZIP/XLSX file`);
+            } else {
+              console.log(`${name} does not appear to be a valid XLSX file (should start with PK)`);
+              // Try to read as text to see what it actually contains
+              const textDecoder = new TextDecoder();
+              const textContent = textDecoder.decode(foundFile.slice(0, 200));
+              console.log(`First 200 characters of ${name}:`, textContent);
+            }
+
+            break;
+          } else {
+            console.log(`File not found: ${name} (status: ${response.status})`);
+          }
+        } catch (error) {
+          console.log(`Error loading ${name}:`, error);
+          // Continue to next filename
+          continue;
+        }
+      }
+
+      if (!foundFile) {
+        throw new Error(
+          'No answer key file found in answer-keys folder. Please ensure at least one .xlsx file exists.',
+        );
+      }
+
+      try {
+        console.log('Parsing XLSX file...');
+        const workbook = XLSX.read(foundFile, { type: 'array' });
+        console.log('Workbook sheets:', workbook.SheetNames);
+
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        console.log('Worksheet data range:', worksheet['!ref']);
+
+        const xlsxData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        console.log('Parsed XLSX data:', xlsxData);
+        console.log('First row:', xlsxData[0]);
+        console.log('Second row:', xlsxData[1]);
+        console.log('Third row:', xlsxData[2]);
+
+        // Validate data structure
+        if (!xlsxData || xlsxData.length < 3) {
+          throw new Error('Invalid file format: File must have at least 3 rows');
+        }
+
+        // Convert to your JSON format using existing function
+        const simpleJson = create_json_from_array(xlsxData);
+        console.log('Auto-loaded answer key JSON:', simpleJson);
+        console.log('JSON length:', simpleJson.length);
+        if (simpleJson.length > 0) {
+          console.log('First exam data:', simpleJson[0]);
+        }
+
+        // Create a virtual file object for compatibility
+        const virtualFile = {
+          name: fileName,
+          arrayBuffer: () => Promise.resolve(foundFile),
+        };
+
+        set_xlsx_file(virtualFile);
+        set_valid_files(true);
+        setGradingMessage(`Exam file: ${pdfFile ? pdfFile.name : 'Unknown'}, Auto-loaded answer key: ${fileName}`);
+
+        localStorage.setItem('examarkAnswerKey', JSON.stringify(simpleJson));
+        localStorage.setItem('examarkAnswerKeyFileName', fileName);
+
+        return true;
+      } catch (parseError) {
+        console.error('Error parsing XLSX file:', parseError);
+        throw new Error(
+          `Failed to parse answer key file: ${parseError.message}. Please ensure the file format is correct.`,
+        );
+      }
+    } catch (error) {
+      console.error('Error auto-loading answer key:', error);
+      setGradingMessage(
+        `Error: ${error.message}. Please ensure at least one .xlsx file exists in the answer-keys folder.`,
+      );
+      return false;
+    }
+  };
+
   // Sample XLSX download functionality
   const download_sample_xlsx = () => {
     const sampleXLSXData = [
@@ -87,23 +213,108 @@ function GradeExamPage() {
     window.URL.revokeObjectURL(url);
   };
 
+  // Function to create and save sample file to answer-keys folder
+  const create_sample_in_folder = async () => {
+    try {
+      const sampleXLSXData = [
+        ['ExamID', '101', '102'],
+        ['Part', 'Question', 'Key', 'Key'],
+        ['1', '1', 'A', 'A'],
+        ['1', '2', 'B', 'D'],
+        ['1', '3', 'A', 'B'],
+        ['1', '4', 'A', 'C'],
+        ['1', '5', 'A', 'B'],
+        ['1', '6', 'B', 'C'],
+        ['1', '7', 'A', 'A'],
+        ['1', '8', 'C', 'C'],
+        ['1', '9', 'C', 'C'],
+        ['1', '10', 'A', 'A'],
+        ['2', '1', 'AB', 'ACD'],
+        ['2', '2', 'DF', 'BCD'],
+        ['2', '3', 'AC', 'BCDE'],
+        ['2', '4', 'ACD', 'BCDF'],
+        ['2', '5', 'ACDE', 'ACD'],
+      ];
+
+      const worksheet = XLSX.utils.aoa_to_sheet(sampleXLSXData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sample Data');
+
+      const blob = new Blob([XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+
+      // Create download link to save file locally
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'answer_key.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      console.log('Sample file downloaded. Please place it in the answer-keys folder.');
+      setGradingMessage(
+        'Sample file downloaded. Please place answer_key.xlsx in the answer-keys folder and try again.',
+      );
+
+      return true;
+    } catch (error) {
+      console.error('Error creating sample file:', error);
+      setGradingMessage('Error creating sample file: ' + error.message);
+      return false;
+    }
+  };
+
   // Handle file input changes
-  const handlePdfFileChange = (event) => {
+  const handlePdfFileChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
       setPdfFile(file);
-      set_valid_files(true);
-      setGradingMessage(xlsx_file ? `Exam file: ${file.name}, Key file: ${xlsx_file.name}` : `Exam file: ${file.name}`);
+
+      // Auto-load answer key when PDF is uploaded
+      const answerKeyLoaded = await autoLoadAnswerKey();
+
+      if (answerKeyLoaded) {
+        set_valid_files(true);
+      } else {
+        set_valid_files(false);
+      }
     } else {
       setPdfFile(null);
       set_valid_files(false);
-      setGradingMessage(xlsx_file ? `Key file: ${xlsx_file.name}` : '');
+      setGradingMessage('');
     }
   };
 
   const create_json_from_array = (xlsx_data) => {
-    if (xlsx_data.length < 3) {
+    if (!xlsx_data || xlsx_data.length < 3) {
       throw new Error('File must have at least 3 rows');
+    }
+
+    // Validate header structure
+    const firstRow = xlsx_data[0];
+    const secondRow = xlsx_data[1];
+
+    if (!firstRow || !secondRow) {
+      throw new Error('Invalid file structure: Missing header rows');
+    }
+
+    // Check if first row contains ExamID or Assignment
+    const firstCell = firstRow[0] ? firstRow[0].toString().toLowerCase() : '';
+    if (!firstCell.includes('examid') && !firstCell.includes('assignment')) {
+      throw new Error('Invalid file format: First row must start with "ExamID" or "Assignment"');
+    }
+
+    // Check if second row contains Part and Question
+    if (
+      !secondRow[0] ||
+      !secondRow[1] ||
+      !secondRow[0].toString().toLowerCase().includes('part') ||
+      !secondRow[1].toString().toLowerCase().includes('question')
+    ) {
+      throw new Error('Invalid file format: Second row must contain "Part" and "Question"');
     }
 
     const results = [];
@@ -121,6 +332,10 @@ function GradeExamPage() {
         questionNumber++;
       }
       results.push(result);
+    }
+
+    if (results.length === 0) {
+      throw new Error('No valid exam data found. Please check the file format.');
     }
 
     return results;
@@ -164,14 +379,17 @@ function GradeExamPage() {
 
   // Start grading process
   const handle_grade_exam = async () => {
-    if (!pdfFile || !xlsx_file) {
-      setGradingMessage('Please upload both the exam PDF and the answer key file.');
+    if (!pdfFile) {
+      setGradingMessage('Please upload the exam PDF file.');
       return;
     }
 
-    setGradingMessage(
-      `Uploading and initiating grading for PDF: ${pdfFile.name} with answers from: ${xlsx_file.name}...`,
-    );
+    if (!xlsx_file) {
+      setGradingMessage('Please ensure at least one .xlsx file exists in the answer-keys folder.');
+      return;
+    }
+
+    setGradingMessage(`Uploading and initiating grading for PDF: ${pdfFile.name} with auto-loaded answer key...`);
     setIsGrading(true);
     setIsGradingComplete(false);
     set_csv_data(null);
@@ -339,6 +557,11 @@ function GradeExamPage() {
       localStorage.setItem('examarkCsvData', csvText);
       localStorage.setItem('examarkImages', JSON.stringify(imageUrls));
 
+      // Save QR info if available
+      if (imagesData.qrInfo) {
+        localStorage.setItem('examarkQrInfo', imagesData.qrInfo);
+      }
+
       setGradingMessage('Grading request completed successfully!');
       setIsGrading(false);
       setShowNavigationOptions(true);
@@ -421,7 +644,7 @@ function GradeExamPage() {
         <div className="exam-content">
           {!showNavigationOptions ? (
             <>
-              <p>Upload the exam papers (PDF) and the answer key (XLS/CSV) to begin grading.</p>
+              <p>Upload the exam papers (PDF) to begin grading.</p>
 
               <div className="file-upload-section">
                 <div className="file-upload-area">
@@ -445,7 +668,8 @@ function GradeExamPage() {
                   {pdfFile && <span className="file-name">PDF: {pdfFile.name}</span>}
                 </div>
 
-                <div className="file-upload-area">
+                {/* Answer key upload section is now hidden - auto-loaded from answer-keys folder */}
+                <div className="file-upload-area" style={{ display: 'none' }}>
                   <button
                     type="button"
                     onClick={() => xlsx_input_ref.current && xlsx_input_ref.current.click()}
@@ -484,11 +708,19 @@ function GradeExamPage() {
                 <div className="csv-helper-section">
                   <div className="helper-info">
                     <h3>
-                      <i className="fas fa-question-circle"></i> Need help with the key file format?
+                      <i className="fas fa-question-circle"></i> Answer Key Setup
                     </h3>
-                    <p>Download our sample answer key template to understand the correct format.</p>
+                    <p>Place any .xlsx answer key file in the answer-keys folder to enable automatic loading.</p>
                     <button type="button" onClick={download_sample_xlsx} className="btn btn-outline btn-medium">
                       <i className="fas fa-download"></i> Download Sample Key
+                    </button>
+                    <button
+                      type="button"
+                      onClick={create_sample_in_folder}
+                      className="btn btn-outline btn-medium"
+                      style={{ marginLeft: '10px' }}
+                    >
+                      <i className="fas fa-plus"></i> Create Sample in Folder
                     </button>
                   </div>
                   <div className="csv-format-info">

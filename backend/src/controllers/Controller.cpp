@@ -90,6 +90,7 @@ struct JobProgress {
   double progressPercent;
   bool hasError;
   std::string errorMessage;
+  std::string qrInfo;
 
   JobProgress() : processCompleted(false), currentPage(0), totalPages(0), progressPercent(0.0), hasError(false) {}
 };
@@ -112,6 +113,15 @@ void updateJobProgress(const std::string &jobId, const std::string &stage, const
 
   if (stage == "completed" || stage == "error") {
     progress.processCompleted = true;
+  }
+}
+
+void updateJobQrInfo(const std::string &jobId, const std::string &qrInfo) {
+  std::lock_guard<std::mutex> lock(progressMutex);
+
+  auto it = jobProgressMap.find(jobId);
+  if (it != jobProgressMap.end()) {
+    it->second.qrInfo = qrInfo;
   }
 }
 
@@ -144,6 +154,9 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
 
       std::string jobId = generateRandomId();
       std::string outputDir = "/tmp/examark_" + USER_NAME + "_" + jobId;
+
+      // Note: We'll use jobId for now, but later we can update it with QR info
+      // The actual folder name on MinIO will be determined after QR code reading
 
       // Initialize job progress
       {
@@ -241,8 +254,22 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
       // Initialize MinIO client
       MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
 
-      // Get list of all files from MinIO for this job
-      std::vector<std::string> allFiles = minioClient.listFiles(jobId + "/");
+      // Get QR info and determine folder name
+      std::string folderName = jobId;
+      {
+        std::lock_guard<std::mutex> lock(progressMutex);
+        auto it = jobProgressMap.find(jobId);
+        if (it != jobProgressMap.end() && !it->second.qrInfo.empty()) {
+          folderName = it->second.qrInfo;
+        }
+      }
+
+      std::vector<std::string> allFiles = minioClient.listFiles(folderName + "/");
+
+      if (allFiles.empty() && folderName != jobId) {
+        allFiles = minioClient.listFiles(jobId + "/");
+        folderName = jobId;
+      }
 
       // Filter and process image files
       nlohmann::json response;
@@ -256,7 +283,7 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
           nlohmann::json imageInfo;
           imageInfo["name"] = filename;
 
-          std::string fullObjectName = jobId + "/" + filename;
+          std::string fullObjectName = folderName + "/" + filename;
           imageInfo["url"] = minioClient.getFileUrl(fullObjectName);
           imageUrls.push_back(imageInfo);
         }
@@ -355,14 +382,36 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
       if (!foundLocal) {
         MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
 
-        // List objects to find CSV file
-        std::vector<std::string> objects = minioClient.listFiles(jobId + "/");
+        // Get QR info and determine folder name
+        std::string folderName = jobId;
+        {
+          std::lock_guard<std::mutex> lock(progressMutex);
+          auto it = jobProgressMap.find(jobId);
+          if (it != jobProgressMap.end() && !it->second.qrInfo.empty()) {
+            folderName = it->second.qrInfo;
+          }
+        }
+
+        // Try to get CSV from QR-based folder first, then fallback to jobId
+        std::vector<std::string> objects = minioClient.listFiles(folderName + "/");
         std::string csvObjectName;
 
         for (const std::string &objectName : objects) {
           if (objectName.find(".csv") != std::string::npos) {
             csvObjectName = objectName;
             break;
+          }
+        }
+
+        // If not found in QR folder and folderName is not jobId, try jobId folder
+        if (csvObjectName.empty() && folderName != jobId) {
+          objects = minioClient.listFiles(jobId + "/");
+          folderName = jobId; // Update folderName for download
+          for (const std::string &objectName : objects) {
+            if (objectName.find(".csv") != std::string::npos) {
+              csvObjectName = objectName;
+              break;
+            }
           }
         }
 
@@ -373,7 +422,7 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
         }
 
         // Download CSV content from MinIO
-        std::string fullObjectName = jobId + "/" + csvObjectName;
+        std::string fullObjectName = folderName + "/" + csvObjectName;
         csvContent = minioClient.downloadCSV(fullObjectName);
         if (csvContent.empty()) {
           res.status = 500;
@@ -390,6 +439,103 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
     } catch (const std::exception &e) {
       res.status = 500;
       res.set_content("Failed to fetch CSV: " + std::string(e.what()), "text/plain");
+    }
+  });
+
+  // Upload CSV endpoint - uploads updated CSV to MinIO
+  server.Post("/upload-csv/:jobId", [](const httplib::Request &req, httplib::Response &res) {
+    res.set_header("Access-Control-Allow-Origin", "*");
+    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    std::string jobId = req.path_params.at("jobId");
+
+    // Check if job exists
+    {
+      std::lock_guard<std::mutex> lock(progressMutex);
+      auto it = jobProgressMap.find(jobId);
+      if (it == jobProgressMap.end()) {
+        res.status = 404;
+        res.set_content("{\"error\":\"Job not found\"}", "application/json");
+        return;
+      }
+    }
+
+    try {
+      // Check if CSV file is present in request
+      if (!req.has_file("csvFile")) {
+        res.status = 400;
+        res.set_content("{\"error\":\"No CSV file provided\"}", "application/json");
+        return;
+      }
+
+      const auto &file = req.get_file_value("csvFile");
+      std::string csvContent = file.content;
+
+      if (csvContent.empty()) {
+        res.status = 400;
+        res.set_content("{\"error\":\"Empty CSV content\"}", "application/json");
+        return;
+      }
+
+      // Upload to MinIO
+      MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
+
+      // Get QR info and determine folder name
+      std::string folderName = jobId;
+      {
+        std::lock_guard<std::mutex> lock(progressMutex);
+        auto it = jobProgressMap.find(jobId);
+        if (it != jobProgressMap.end() && !it->second.qrInfo.empty()) {
+          folderName = it->second.qrInfo;
+        }
+      }
+
+      // Try to find existing CSV file in QR-based folder first, then fallback to jobId
+      std::vector<std::string> objects = minioClient.listFiles(folderName + "/");
+      std::string csvObjectName;
+
+      for (const std::string &objectName : objects) {
+        if (objectName.find(".csv") != std::string::npos) {
+          csvObjectName = folderName + "/" + objectName;
+          break;
+        }
+      }
+
+      // If not found in QR folder and folderName is not jobId, try jobId folder
+      if (csvObjectName.empty() && folderName != jobId) {
+        objects = minioClient.listFiles(jobId + "/");
+        for (const std::string &objectName : objects) {
+          if (objectName.find(".csv") != std::string::npos) {
+            csvObjectName = jobId + "/" + objectName;
+            folderName = jobId; // Update folderName for consistency
+            break;
+          }
+        }
+      }
+
+      if (csvObjectName.empty()) {
+        // Create new CSV file name if none exists - use QR folder if available
+        csvObjectName = folderName + "/results.csv";
+      }
+
+      // Upload the updated CSV content
+      if (!minioClient.uploadCSV(csvObjectName, csvContent)) {
+        res.status = 500;
+        res.set_content("{\"error\":\"Failed to upload CSV to MinIO\"}", "application/json");
+        return;
+      }
+
+      nlohmann::json response;
+      response["message"] = "CSV uploaded successfully";
+      response["objectName"] = csvObjectName;
+      res.set_content(response.dump(), "application/json");
+
+    } catch (const std::exception &e) {
+      res.status = 500;
+      nlohmann::json errorResponse;
+      errorResponse["error"] = "Failed to upload CSV: " + std::string(e.what());
+      res.set_content(errorResponse.dump(), "application/json");
     }
   });
 }
@@ -924,4 +1070,3 @@ void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonCli
 //     res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 //     res.status = 204;
 //   });
-// }

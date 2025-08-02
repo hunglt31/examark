@@ -285,19 +285,11 @@ function SheetPage() {
           }
 
           // For part 2, we need to handle multi-character answers
-          // The value should be placed as a single character in the answer string
+          // When editing in SheetPage, replace the entire answer string
           if (rowIndex >= 0 && csvColumnIndex < newRows[rowIndex].length) {
-            let currentAnswer = newRows[rowIndex][csvColumnIndex] || '';
-
-            // Ensure the answer string is long enough
-            while (currentAnswer.length <= rowOffset) {
-              currentAnswer += 'X'; // Use 'X' as placeholder
-            }
-
-            // Replace the character at the specific position
-            const answerArray = currentAnswer.split('');
-            answerArray[rowOffset] = value;
-            newRows[rowIndex][csvColumnIndex] = answerArray.join('');
+            // In SheetPage, we want to replace the entire answer string
+            // So we'll use the value directly as the new answer
+            newRows[rowIndex][csvColumnIndex] = value;
           }
 
           // Skip the normal assignment below
@@ -314,7 +306,7 @@ function SheetPage() {
     return newRows;
   };
 
-  const saveChanges = () => {
+  const saveChanges = async () => {
     // First update the local state and get the updated CSV
     const updatedCsv = updateCsvFromRows();
 
@@ -401,7 +393,28 @@ function SheetPage() {
 
     setCsvData(updatedCsv);
     setIsEditing(false);
-    showAlert('CSV data saved successfully!', 'success');
+
+    // Upload updated CSV to MinIO via backend
+    try {
+      const formData = new FormData();
+      const csvBlob = new Blob([updatedCsv], { type: 'text/csv' });
+      formData.append('csvFile', csvBlob, 'updated_results.csv');
+
+      const response = await fetch(`http://127.0.0.1:8080/upload-csv/${jobId}`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to upload CSV: ${response.status} - ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      showAlert('CSV data saved successfully and uploaded to MinIO!', 'success');
+    } catch (error) {
+      console.error('Error uploading CSV to MinIO:', error);
+      showAlert(`CSV saved locally but failed to upload to MinIO: ${error.message}`, 'warning');
+    }
   };
 
   // Parse CSV data into a rows array
@@ -455,14 +468,34 @@ function SheetPage() {
 
     // Auto uppercase for answer cells (rows after headers, non-metadata columns)
     if (rowIndex > 3 && colIndex > 1) {
-      if (value.length > 1) {
-        value = value.charAt(0);
-        e.target.textContent = value;
-      }
+      const part = csvRows[rowIndex]?.[0] || '';
 
-      const uppercase = value.toUpperCase();
-      if (uppercase !== value) {
-        e.target.textContent = uppercase;
+      if (part === '2') {
+        // For Part 2: limit to 6 characters, allow any letters (like Part 1)
+        const validChars = value.replace(/[^A-Za-z]/g, '');
+        const limitedValue = validChars.slice(0, 6).toUpperCase();
+
+        if (limitedValue !== value) {
+          e.target.textContent = limitedValue;
+          // Move cursor to end
+          const range = document.createRange();
+          const sel = window.getSelection();
+          range.selectNodeContents(e.target);
+          range.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      } else {
+        // For Part 1: single character only
+        if (value.length > 1) {
+          value = value.charAt(0);
+          e.target.textContent = value;
+        }
+
+        const uppercase = value.toUpperCase();
+        if (uppercase !== value) {
+          e.target.textContent = uppercase;
+        }
       }
     }
   };
@@ -483,30 +516,30 @@ function SheetPage() {
 
     let styles = {};
 
-    // Check if this is one of the last 3 rows (grading results)
-    const isGradingResultRow = csvRows.length > 0 && rowIndex >= csvRows.length - 4;
+    // Check if this is one of the last 3 rows (grading results) - DISABLED
+    // const isGradingResultRow = csvRows.length > 0 && rowIndex >= csvRows.length - 4;
 
-    if (isGradingResultRow) {
-      if (value && /^\d+(\.\d+)?$/.test(value.toString())) {
-        styles.fontWeight = 'bold';
-        styles.fontSize = '18px';
+    // if (isGradingResultRow) {
+    //   if (value && /^\d+(\.\d+)?$/.test(value.toString())) {
+    //     styles.fontWeight = 'bold';
+    //     styles.fontSize = '18px';
 
-        const rowLabel = csvRows[rowIndex]?.[1]?.toLowerCase() || '';
+    //     const rowLabel = csvRows[rowIndex]?.[1]?.toLowerCase() || '';
 
-        if (rowLabel.includes('correct')) {
-          styles.backgroundColor = '#f3e5f5';
-          styles.color = '#6a1b9a';
-          styles.border = '2px solid #9c27b0';
-        } else if (rowLabel.includes('points')) {
-          // Red background for points (last row)
-          styles.backgroundColor = '#ffebee';
-          styles.color = '#c62828';
-          styles.border = '2px solid #f44336';
-        }
-      }
+    //     if (rowLabel.includes('correct')) {
+    //       styles.backgroundColor = '#f3e5f5';
+    //       styles.color = '#6a1b9a';
+    //       styles.border = '2px solid #9c27b0';
+    //     } else if (rowLabel.includes('points')) {
+    //       // Red background for points (last row)
+    //       styles.backgroundColor = '#ffebee';
+    //       styles.color = '#c62828';
+    //       styles.border = '2px solid #f44336';
+    //     }
+    //   }
 
-      return styles;
-    }
+    //   return styles;
+    // }
 
     // Style lowercase letters
     if (value && /[a-z]/.test(value)) {
@@ -591,7 +624,13 @@ function SheetPage() {
 
     // Split rows: first 4 are frozen header rows, rest are body rows
     const headerRows = csvRows.slice(0, 4);
-    const bodyRows = csvRows.slice(4);
+    let bodyRows = csvRows.slice(4);
+
+    // Filter out the scoring rows (last 3 rows: PART 1 CORRECT, PART 2 CORRECT, TOTAL POINTS)
+    bodyRows = bodyRows.filter((row, index) => {
+      const rowLabel = row[1]?.toLowerCase() || '';
+      return !rowLabel.includes('correct') && !rowLabel.includes('points');
+    });
 
     return (
       <table className="csv-table" ref={tableRef}>
@@ -837,16 +876,28 @@ function SheetPage() {
  </Worksheet>
 </Workbook>`;
 
-      // Create blob with Excel MIME type
+      // Create blob with Excel MIME type for XLSX
       const blob = new Blob([excelXML], {
-        type: 'application/vnd.ms-excel',
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
 
       // Create download link
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `exam_results_${jobId || 'sheet'}.xls`;
+
+      // Use QR info for filename if available, otherwise use jobId
+      const qrInfo = localStorage.getItem('examarkQrInfo');
+      let filename;
+      if (qrInfo) {
+        // Clean QR info for filename (replace spaces with underscores)
+        const cleanQrInfo = qrInfo.replace(/\s+/g, '_');
+        filename = `${cleanQrInfo}.xlsx`;
+      } else {
+        filename = `exam_results_${jobId || 'sheet'}.xlsx`;
+      }
+
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
