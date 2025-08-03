@@ -57,7 +57,7 @@ function GradeExamPage() {
       // First, try to get a list of files in the answer-keys folder
       // Since we can't directly list files from frontend, we'll try common patterns
       const possibleFileNames = [
-        'correct_answers.xlsx', // Your actual file name - try this first
+        'correct_answers.xlsx',
         'answer_key.xlsx',
         'key.xlsx',
         'answer.xlsx',
@@ -417,7 +417,7 @@ function GradeExamPage() {
       });
       formData.append('answerKey', jsonBlob, 'answer_key.json');
 
-      const response = await fetch('http://localhost:8080/grade', {
+      const response = await fetch('http://localhost:8080/extract', {
         method: 'POST',
         body: formData,
       });

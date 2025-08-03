@@ -1,3 +1,5 @@
+#include "utils/ImageProcessor.h"
+#include "utils/Logger.h"
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -5,13 +7,16 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <tuple>
 #include <vector>
 
-#include "utils/ImageProcessor.h"
-
 #include <opencv2/calib3d.hpp>
-#include <opencv2/features2d.hpp>
+#include <opencv2/core/cuda.hpp>
+#include <opencv2/cudaarithm.hpp>
+#include <opencv2/cudafeatures2d.hpp>
+#include <opencv2/cudaimgproc.hpp>
+#include <opencv2/cudawarping.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
@@ -29,7 +34,6 @@ static const std::string sr_model = "../assets/wechat_qr_decoder/sr.prototxt";
 static const std::string sr_weights = "../assets/wechat_qr_decoder/sr.caffemodel";
 
 // Constants for image processor
-// --- 1. Align image ---
 const std::string REF_IMG_PATH = "../assets/reference.jpg";
 const cv::Mat REF_IMG_ORI = cv::imread(REF_IMG_PATH, cv::IMREAD_GRAYSCALE);
 
@@ -43,30 +47,15 @@ const int MIN_GOOD_MATCHES = 15;
 const float RANSAC_THRESHOLD = 3.0f;
 const int ITERATIONS = 2000;
 
-// --- 2. Apply constrast ---
-const float DEFAULT_GAMMA = 2.2f;
-
-cv::Mat createGammaLUT(float gamma) {
-  cv::Mat lut(1, 256, CV_8UC1);
-  uchar *p = lut.ptr();
-  const double inv255 = 1.0 / 255.0;
-  for (int i = 0; i < 256; ++i) {
-    p[i] = cv::saturate_cast<uchar>(std::pow(i * inv255, gamma) * 255.0);
-  }
-  return lut;
-}
-
-const cv::Mat GAMMA_LUT = createGammaLUT(DEFAULT_GAMMA);
-
 // --- 3. Coordinates for metadata ---
-const int STUDENT_ID_CONTOUR_1_COORD_X = 187;
+const int STUDENT_ID_CONTOUR_1_COORD_X = 180;
 const int STUDENT_ID_CONTOUR_1_COORD_Y = 372;
-const int STUDENT_ID_CONTOUR_2_COORD_X = 656;
+const int STUDENT_ID_CONTOUR_2_COORD_X = 666;
 const int STUDENT_ID_CONTOUR_2_COORD_Y = 1109;
 
-const int EXAM_ID_CONTOUR_1_COORD_X = 697;
+const int EXAM_ID_CONTOUR_1_COORD_X = 687;
 const int EXAM_ID_CONTOUR_1_COORD_Y = 372;
-const int EXAM_ID_CONTOUR_2_COORD_X = 868;
+const int EXAM_ID_CONTOUR_2_COORD_X = 878;
 const int EXAM_ID_CONTOUR_2_COORD_Y = 1109;
 
 // --- 4. Coordinates for content ---
@@ -110,119 +99,75 @@ const int CONTENT_24_CONTOUR_1_COORD_Y = 1685;
 const int CONTENT_24_CONTOUR_2_COORD_X = 2270;
 const int CONTENT_24_CONTOUR_2_COORD_Y = 2180;
 
-bool ImageProcessor::getRequestImagesWithProgress(const char *pdfData, int dataSize, std::vector<cv::Mat> &images,
-                                                  ProgressCallback progressCallback, double dpi) {
-  images.clear();
+ImageProcessor::ImageProcessor() {
+  sift = cv::SIFT::create();
+  flann_matcher =
+      cv::makePtr<cv::FlannBasedMatcher>(new cv::flann::KDTreeIndexParams(5), new cv::flann::SearchParams(50));
+}
 
-  // Load PDF document
-  if (progressCallback) {
-    progressCallback(0, 0, 5.0);
-  }
+bool ImageProcessor::renderImages(const char *pdfData, int dataSize, std::vector<cv::Mat> &images,
+                                  ProgressCallback progressCallback, double dpi) {
+  images.clear();
+  if (progressCallback)
+    progressCallback(0, 0, 0.0);
 
   std::unique_ptr<poppler::document> doc(poppler::document::load_from_raw_data(pdfData, dataSize));
-  if (!doc) {
+  if (!doc)
     return false;
-  }
 
   int numPages = doc->pages();
-  if (numPages == 0) {
+  if (numPages == 0)
     return false;
-  }
 
-  if (progressCallback) {
-    progressCallback(0, numPages, 10.0);
-  }
+  if (progressCallback)
+    progressCallback(0, numPages, 0.0);
 
   poppler::page_renderer renderer;
   images.reserve(numPages);
 
   for (int i = 0; i < numPages; ++i) {
     std::unique_ptr<poppler::page> page(doc->create_page(i));
-    if (!page) {
+    if (!page)
       continue;
-    }
 
     poppler::image popImg = renderer.render_page(page.get(), dpi, dpi);
-    if (!popImg.is_valid()) {
+    if (!popImg.is_valid())
       continue;
-    }
 
     cv::Mat img(popImg.height(), popImg.width(), CV_8UC4, (void *)popImg.data(), popImg.bytes_per_row());
+    cv::cuda::GpuMat gpu_img, gpu_img_bgr;
+    gpu_img.upload(img);
+    cv::cuda::cvtColor(gpu_img, gpu_img_bgr, cv::COLOR_BGRA2BGR);
+
     cv::Mat imgBGR;
-    cv::cvtColor(img, imgBGR, cv::COLOR_BGRA2BGR);
+    gpu_img_bgr.download(imgBGR);
     images.emplace_back(imgBGR);
 
     if (progressCallback) {
-      double pageProgress = 10.0 + ((double)(i + 1) / numPages) * 65.0;
+      double pageProgress = ((double)(i + 1) / numPages) * 9.0;
       progressCallback(i + 1, numPages, pageProgress);
     }
   }
 
-  if (progressCallback) {
-    progressCallback(numPages, numPages, 75.0);
-  }
+  if (progressCallback)
+    progressCallback(numPages, numPages, 9.0);
 
   return !images.empty();
 }
 
-// bool ImageProcessor::getRequestImages(const char* pdfData, int dataSize,
-// std::vector<cv::Mat> &images, double dpi) {
-//   images.clear();
-//   // Load PDF document
-//   std::unique_ptr<poppler::document>
-//   doc(poppler::document::load_from_raw_data(pdfData, dataSize)); if (!doc) {
-//     Logger::error("IMAGE PROCESSOR", "Failed to load PDF document from raw
-//     data."); return false;
-//   }
-
-//   int numPages = doc->pages();
-//   if (numPages == 0) {
-//     Logger::error("IMAGE PROCESSOR", "No pages found in the PDF document.");
-//     return false;
-//   }
-
-//   // Render pages to images
-//   poppler::page_renderer renderer;
-//   images.reserve(numPages);
-//   for (int i = 0; i < numPages; ++i) {
-//     std::unique_ptr<poppler::page> page(doc->create_page(i));
-//     if (!page) {
-//       continue;
-//     }
-
-//     poppler::image popImg = renderer.render_page(page.get(), dpi, dpi);
-//     if (!popImg.is_valid()) {
-//       continue;
-//     }
-
-//     cv::Mat img(popImg.height(), popImg.width(), CV_8UC4,
-//     (void*)popImg.data(), popImg.bytes_per_row()); cv::Mat imgBGR;
-//     cv::cvtColor(img, imgBGR, cv::COLOR_BGRA2BGR);
-
-//     cv::Mat imgAligned = alignImage(imgBGR);
-
-//     cv::Mat corrected;
-//     cv::LUT(imgAligned, GAMMA_LUT, corrected);
-//     images.emplace_back(corrected);
-//   }
-//   return !images.empty();
-// }
-
-cv::Mat ImageProcessor::alignImage(const cv::Mat &imgScan, cv::Size imgSize) {
+cv::Mat ImageProcessor::preprocessImage(const cv::Mat &imgScan, cv::Size imgSize) {
   cv::Mat imgScanGray;
   cv::cvtColor(imgScan, imgScanGray, cv::COLOR_BGR2GRAY);
 
-  // Create SIFT detector
-  auto sift = cv::SIFT::create();
+  // SIFT detector
   std::vector<cv::KeyPoint> kpsScan, kpsRef;
   cv::Mat descScan, descRef;
   sift->detectAndCompute(imgScanGray, cv::noArray(), kpsScan, descScan);
   sift->detectAndCompute(REF_IMG_GRAY, cv::noArray(), kpsRef, descRef);
 
   // FLANN matcher parameters
-  cv::FlannBasedMatcher matcher(new cv::flann::KDTreeIndexParams(5), new cv::flann::SearchParams(50));
   std::vector<std::vector<cv::DMatch>> knnMatches;
-  matcher.knnMatch(descScan, descRef, knnMatches, 2);
+  flann_matcher->knnMatch(descScan, descRef, knnMatches, 2);
 
   // Filter matches using Lowe's ratio test
   std::vector<cv::DMatch> goodMatches;
@@ -250,35 +195,40 @@ cv::Mat ImageProcessor::alignImage(const cv::Mat &imgScan, cv::Size imgSize) {
   cv::Mat imgAligned;
   cv::warpPerspective(imgScan, imgAligned, H, imgSize, cv::INTER_LINEAR);
 
-  return imgAligned;
+  cv::Mat contrast_corrected;
+  applyGammaCorrection_CUDA(imgAligned, contrast_corrected, GAMMA_LUT_CUDA);
+
+  return contrast_corrected;
 }
 
-cv::Mat ImageProcessor::paddingImage(cv::Mat &image, cv::Size paddingSize) {
+cv::Mat ImageProcessor::paddingImage(const cv::Mat &image, cv::Size paddingSize) {
   int height = image.rows, width = image.cols;
   float scale = static_cast<float>(paddingSize.width) / std::max(height, width);
   int newW = static_cast<int>(width * scale), newH = static_cast<int>(height * scale);
 
-  cv::Mat tmp;
-  cv::resize(image, tmp, cv::Size(newW, newH));
+  cv::cuda::GpuMat gpu_img, gpu_resized, gpu_padded;
+  gpu_img.upload(image);
+  cv::cuda::resize(gpu_img, gpu_resized, cv::Size(newW, newH));
 
   int padW = paddingSize.width - newW, padH = paddingSize.height - newH;
   int left = padW / 2, right = padW - left;
   int top = padH / 2, bottom = padH - top;
 
-  cv::copyMakeBorder(tmp, image, top, bottom, left, right, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
-  return image;
+  cv::cuda::copyMakeBorder(gpu_resized, gpu_padded, top, bottom, left, right, cv::BORDER_CONSTANT, cv::Scalar(0, 0, 0));
+
+  cv::Mat result;
+  gpu_padded.download(result);
+  return result;
 }
 
 bool ImageProcessor::splitImage(const cv::Mat &image, std::vector<cv::Mat> &metadataImages,
                                 std::vector<cv::Mat> &contentImages) {
   try {
-    // Extract regions for metadata
     cv::Mat studentId = image(cv::Range(STUDENT_ID_CONTOUR_1_COORD_Y, STUDENT_ID_CONTOUR_2_COORD_Y),
                               cv::Range(STUDENT_ID_CONTOUR_1_COORD_X, STUDENT_ID_CONTOUR_2_COORD_X));
     cv::Mat examId = image(cv::Range(EXAM_ID_CONTOUR_1_COORD_Y, EXAM_ID_CONTOUR_2_COORD_Y),
                            cv::Range(EXAM_ID_CONTOUR_1_COORD_X, EXAM_ID_CONTOUR_2_COORD_X));
 
-    // Extract content region
     cv::Mat content11 = image(cv::Range(CONTENT_11_CONTOUR_1_COORD_Y, CONTENT_11_CONTOUR_2_COORD_Y),
                               cv::Range(CONTENT_11_CONTOUR_1_COORD_X, CONTENT_11_CONTOUR_2_COORD_X));
     cv::Mat content12 = image(cv::Range(CONTENT_12_CONTOUR_1_COORD_Y, CONTENT_12_CONTOUR_2_COORD_Y),
@@ -296,36 +246,22 @@ bool ImageProcessor::splitImage(const cv::Mat &image, std::vector<cv::Mat> &meta
     cv::Mat content24 = image(cv::Range(CONTENT_24_CONTOUR_1_COORD_Y, CONTENT_24_CONTOUR_2_COORD_Y),
                               cv::Range(CONTENT_24_CONTOUR_1_COORD_X, CONTENT_24_CONTOUR_2_COORD_X));
 
-    // Padding
-    studentId = paddingImage(studentId);
-    examId = paddingImage(examId);
-
-    content11 = paddingImage(content11);
-    content12 = paddingImage(content12);
-    content13 = paddingImage(content13);
-    content14 = paddingImage(content14);
-    content21 = paddingImage(content21);
-    content22 = paddingImage(content22);
-    content23 = paddingImage(content23);
-    content24 = paddingImage(content24);
-
-    // Batching
     metadataImages.clear();
-    metadataImages.push_back(studentId);
-    metadataImages.push_back(examId);
+    metadataImages.emplace_back(paddingImage(studentId));
+    metadataImages.emplace_back(paddingImage(examId));
 
     contentImages.clear();
-    contentImages.push_back(content11);
-    contentImages.push_back(content12);
-    contentImages.push_back(content13);
-    contentImages.push_back(content14);
-    contentImages.push_back(content21);
-    contentImages.push_back(content22);
-    contentImages.push_back(content23);
-    contentImages.push_back(content24);
+    contentImages.emplace_back(paddingImage(content11));
+    contentImages.emplace_back(paddingImage(content12));
+    contentImages.emplace_back(paddingImage(content13));
+    contentImages.emplace_back(paddingImage(content14));
+    contentImages.emplace_back(paddingImage(content21));
+    contentImages.emplace_back(paddingImage(content22));
+    contentImages.emplace_back(paddingImage(content23));
+    contentImages.emplace_back(paddingImage(content24));
 
     return true;
-  } catch (const std::exception &e) {
+  } catch (const cv::Exception &e) {
     Logger::error("IMAGE PROCESSOR", "Image splitting failed: " + std::string(e.what()));
     return false;
   }
@@ -333,10 +269,8 @@ bool ImageProcessor::splitImage(const cv::Mat &image, std::vector<cv::Mat> &meta
 
 bool ImageProcessor::get_qr_code_info(const cv::Mat &image, std::string &qr_info) {
   static cv::wechat_qrcode::WeChatQRCode detector(detect_model, detect_weights, sr_model, sr_weights);
-
   std::vector<cv::Mat> qr_imgs;
   std::vector<std::string> results = detector.detectAndDecode(image, qr_imgs);
-
   qr_info = results.empty() ? "" : results[0];
   return !qr_info.empty();
 }

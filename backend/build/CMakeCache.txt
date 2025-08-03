@@ -26,7 +26,7 @@ CMAKE_BUILD_TYPE:STRING=Debug
 CMAKE_COLOR_MAKEFILE:BOOL=ON
 
 //Target CUDA Architectures (e.g., '75', '86', '75;86')
-CMAKE_CUDA_ARCHITECTURES:STRING=89
+CMAKE_CUDA_ARCHITECTURES:STRING=75
 
 //CUDA compiler
 CMAKE_CUDA_COMPILER:FILEPATH=/usr/bin/nvcc
@@ -353,14 +353,17 @@ CUDA_nppc_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppc.so
 //Path to a library.
 CUDA_nppc_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppc_static.a
 
-//Path to a library.
-CUDA_nppial_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppial.so
+//"nppi" library
+CUDA_nppi_LIBRARY:FILEPATH=CUDA_nppi_LIBRARY-NOTFOUND
+
+//"nppial" library
+CUDA_nppial_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppial.so
 
 //Path to a library.
 CUDA_nppial_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppial_static.a
 
-//Path to a library.
-CUDA_nppicc_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppicc.so
+//"nppicc" library
+CUDA_nppicc_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppicc.so
 
 //Path to a library.
 CUDA_nppicc_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppicc_static.a
@@ -371,44 +374,44 @@ CUDA_nppicom_LIBRARY:FILEPATH=CUDA_nppicom_LIBRARY-NOTFOUND
 //Path to a library.
 CUDA_nppicom_static_LIBRARY:FILEPATH=CUDA_nppicom_static_LIBRARY-NOTFOUND
 
-//Path to a library.
-CUDA_nppidei_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppidei.so
+//"nppidei" library
+CUDA_nppidei_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppidei.so
 
 //Path to a library.
 CUDA_nppidei_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppidei_static.a
 
-//Path to a library.
-CUDA_nppif_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppif.so
+//"nppif" library
+CUDA_nppif_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppif.so
 
 //Path to a library.
 CUDA_nppif_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppif_static.a
 
-//Path to a library.
-CUDA_nppig_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppig.so
+//"nppig" library
+CUDA_nppig_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppig.so
 
 //Path to a library.
 CUDA_nppig_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppig_static.a
 
-//Path to a library.
-CUDA_nppim_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppim.so
+//"nppim" library
+CUDA_nppim_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppim.so
 
 //Path to a library.
 CUDA_nppim_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppim_static.a
 
-//Path to a library.
-CUDA_nppist_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppist.so
+//"nppist" library
+CUDA_nppist_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppist.so
 
 //Path to a library.
 CUDA_nppist_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppist_static.a
 
-//Path to a library.
-CUDA_nppisu_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppisu.so
+//"nppisu" library
+CUDA_nppisu_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppisu.so
 
 //Path to a library.
 CUDA_nppisu_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppisu_static.a
 
-//Path to a library.
-CUDA_nppitc_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppitc.so
+//"nppitc" library
+CUDA_nppitc_LIBRARY:FILEPATH=/usr/local/cuda-12.4/lib64/libnppitc.so
 
 //Path to a library.
 CUDA_nppitc_static_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libnppitc_static.a
@@ -470,17 +473,11 @@ OPENSSL_INCLUDE_DIR:PATH=/usr/include
 //Path to a library.
 OPENSSL_SSL_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libssl.so
 
-//The directory containing a CMake configuration file for OpenCV.
-OpenCV_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/opencv4
-
 //Arguments to supply to pkg-config
 PKG_CONFIG_ARGN:STRING=
 
 //pkg-config executable
 PKG_CONFIG_EXECUTABLE:FILEPATH=/usr/bin/pkg-config
-
-//Path to a library.
-QUIRC_LIBRARY:FILEPATH=QUIRC_LIBRARY-NOTFOUND
 
 //Value Computed by CMake
 examark_BINARY_DIR:STATIC=/home/hunglt31/examark/backend/build
@@ -750,6 +747,8 @@ CUDA_make2cmake:INTERNAL=/usr/share/cmake-3.22/Modules/FindCUDA/make2cmake.cmake
 CUDA_nppc_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CUDA_nppc_static_LIBRARY
 CUDA_nppc_static_LIBRARY-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: CUDA_nppi_LIBRARY
+CUDA_nppi_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CUDA_nppial_LIBRARY
 CUDA_nppial_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CUDA_nppial_static_LIBRARY
@@ -821,13 +820,13 @@ CURL_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CURL_LIBRARY_RELEASE
 CURL_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 //Details about finding CUDA
-FIND_PACKAGE_MESSAGE_DETAILS_CUDA:INTERNAL=[/usr/local/cuda-12.4][/usr/local/cuda-12.4/bin/nvcc][/usr/local/cuda-12.4/include][/usr/local/cuda-12.4/lib64/libcudart_static.a][v12.4()]
+FIND_PACKAGE_MESSAGE_DETAILS_CUDA:INTERNAL=[/usr/local/cuda-12.4][/usr/local/cuda-12.4/bin/nvcc][/usr/local/cuda-12.4/include][/usr/local/cuda-12.4/lib64/libcudart_static.a][v11.5()]
 //Details about finding CUDAToolkit
 FIND_PACKAGE_MESSAGE_DETAILS_CUDAToolkit:INTERNAL=[/usr/include][/usr/lib/x86_64-linux-gnu/libcudart.so][/usr/bin][v11.5.119()]
 //Details about finding CURL
 FIND_PACKAGE_MESSAGE_DETAILS_CURL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libcurl.so][/usr/include/x86_64-linux-gnu][c ][v7.81.0()]
 //Details about finding OpenCV
-FIND_PACKAGE_MESSAGE_DETAILS_OpenCV:INTERNAL=[/usr][v4.5.4()]
+FIND_PACKAGE_MESSAGE_DETAILS_OpenCV:INTERNAL=[/home/hunglt31/Downloads/opencv/build][v4.10.0()]
 //Details about finding OpenSSL
 FIND_PACKAGE_MESSAGE_DETAILS_OpenSSL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libcrypto.so][/usr/include][c ][v3.0.2()]
 //Details about finding PkgConfig

@@ -2,8 +2,8 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /home/hunglt31/examark/backend/src/services/Service.cpp \
  /usr/include/stdc-predef.h \
  /home/hunglt31/examark/backend/includes/services/Service.h \
- /home/hunglt31/examark/backend/includes/models/TritonClient.h \
- /usr/include/c++/11/string \
+ /usr/include/c++/11/filesystem /usr/include/c++/11/bits/fs_fwd.h \
+ /usr/include/c++/11/system_error \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \
@@ -15,26 +15,15 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/cpu_defines.h \
  /usr/include/c++/11/pstl/pstl_config.h \
- /usr/include/c++/11/bits/stringfwd.h \
- /usr/include/c++/11/bits/memoryfwd.h \
- /usr/include/c++/11/bits/char_traits.h \
- /usr/include/c++/11/bits/stl_algobase.h \
- /usr/include/c++/11/bits/functexcept.h \
- /usr/include/c++/11/bits/exception_defines.h \
- /usr/include/c++/11/bits/cpp_type_traits.h \
- /usr/include/c++/11/ext/type_traits.h \
- /usr/include/c++/11/ext/numeric_traits.h \
- /usr/include/c++/11/bits/stl_pair.h /usr/include/c++/11/bits/move.h \
- /usr/include/c++/11/type_traits \
- /usr/include/c++/11/bits/stl_iterator_base_types.h \
- /usr/include/c++/11/bits/stl_iterator_base_funcs.h \
- /usr/include/c++/11/bits/concept_check.h \
- /usr/include/c++/11/debug/assertions.h \
- /usr/include/c++/11/bits/stl_iterator.h \
- /usr/include/c++/11/bits/ptr_traits.h /usr/include/c++/11/debug/debug.h \
- /usr/include/c++/11/bits/predefined_ops.h \
- /usr/include/c++/11/bits/postypes.h /usr/include/c++/11/cwchar \
- /usr/include/wchar.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/error_constants.h \
+ /usr/include/c++/11/cerrno /usr/include/errno.h \
+ /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
+ /usr/include/x86_64-linux-gnu/asm/errno.h \
+ /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
+ /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
+ /usr/include/c++/11/iosfwd /usr/include/c++/11/bits/stringfwd.h \
+ /usr/include/c++/11/bits/memoryfwd.h /usr/include/c++/11/bits/postypes.h \
+ /usr/include/c++/11/cwchar /usr/include/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/x86_64-linux-gnu/bits/floatn.h \
  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
@@ -48,7 +37,29 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
- /usr/include/c++/11/cstdint \
+ /usr/include/c++/11/stdexcept /usr/include/c++/11/exception \
+ /usr/include/c++/11/bits/exception.h \
+ /usr/include/c++/11/bits/exception_ptr.h \
+ /usr/include/c++/11/bits/exception_defines.h \
+ /usr/include/c++/11/bits/cxxabi_init_exception.h \
+ /usr/include/c++/11/typeinfo /usr/include/c++/11/bits/hash_bytes.h \
+ /usr/include/c++/11/new /usr/include/c++/11/bits/move.h \
+ /usr/include/c++/11/type_traits \
+ /usr/include/c++/11/bits/nested_exception.h /usr/include/c++/11/string \
+ /usr/include/c++/11/bits/char_traits.h \
+ /usr/include/c++/11/bits/stl_algobase.h \
+ /usr/include/c++/11/bits/functexcept.h \
+ /usr/include/c++/11/bits/cpp_type_traits.h \
+ /usr/include/c++/11/ext/type_traits.h \
+ /usr/include/c++/11/ext/numeric_traits.h \
+ /usr/include/c++/11/bits/stl_pair.h \
+ /usr/include/c++/11/bits/stl_iterator_base_types.h \
+ /usr/include/c++/11/bits/stl_iterator_base_funcs.h \
+ /usr/include/c++/11/bits/concept_check.h \
+ /usr/include/c++/11/debug/assertions.h \
+ /usr/include/c++/11/bits/stl_iterator.h \
+ /usr/include/c++/11/bits/ptr_traits.h /usr/include/c++/11/debug/debug.h \
+ /usr/include/c++/11/bits/predefined_ops.h /usr/include/c++/11/cstdint \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdint.h /usr/include/stdint.h \
  /usr/include/x86_64-linux-gnu/bits/types.h \
  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
@@ -57,14 +68,12 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
  /usr/include/c++/11/bits/allocator.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h \
- /usr/include/c++/11/ext/new_allocator.h /usr/include/c++/11/new \
- /usr/include/c++/11/bits/exception.h \
+ /usr/include/c++/11/ext/new_allocator.h \
  /usr/include/c++/11/bits/localefwd.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++locale.h \
  /usr/include/c++/11/clocale /usr/include/locale.h \
- /usr/include/x86_64-linux-gnu/bits/locale.h /usr/include/c++/11/iosfwd \
- /usr/include/c++/11/cctype /usr/include/ctype.h \
- /usr/include/x86_64-linux-gnu/bits/endian.h \
+ /usr/include/x86_64-linux-gnu/bits/locale.h /usr/include/c++/11/cctype \
+ /usr/include/ctype.h /usr/include/x86_64-linux-gnu/bits/endian.h \
  /usr/include/x86_64-linux-gnu/bits/endianness.h \
  /usr/include/c++/11/bits/ostream_insert.h \
  /usr/include/c++/11/bits/cxxabi_forced.h \
@@ -106,7 +115,6 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /usr/include/c++/11/bits/alloc_traits.h \
  /usr/include/c++/11/bits/stl_construct.h /usr/include/c++/11/string_view \
  /usr/include/c++/11/bits/functional_hash.h \
- /usr/include/c++/11/bits/hash_bytes.h \
  /usr/include/c++/11/bits/string_view.tcc \
  /usr/include/c++/11/ext/string_conversions.h /usr/include/c++/11/cstdlib \
  /usr/include/stdlib.h /usr/include/x86_64-linux-gnu/bits/waitflags.h \
@@ -124,39 +132,62 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
  /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
- /usr/include/c++/11/cerrno /usr/include/errno.h \
- /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
- /usr/include/x86_64-linux-gnu/asm/errno.h \
- /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
- /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
  /usr/include/c++/11/bits/charconv.h \
- /usr/include/c++/11/bits/basic_string.tcc /usr/include/c++/11/vector \
- /usr/include/c++/11/bits/stl_uninitialized.h \
- /usr/include/c++/11/bits/stl_vector.h \
- /usr/include/c++/11/bits/stl_bvector.h \
- /usr/include/c++/11/bits/vector.tcc /usr/include/c++/11/memory \
- /usr/include/c++/11/bits/stl_tempbuf.h \
- /usr/include/c++/11/bits/stl_raw_storage_iter.h \
- /usr/include/c++/11/bits/align.h /usr/include/c++/11/bit \
- /usr/include/c++/11/bits/uses_allocator.h \
- /usr/include/c++/11/bits/unique_ptr.h /usr/include/c++/11/utility \
- /usr/include/c++/11/bits/stl_relops.h /usr/include/c++/11/tuple \
- /usr/include/c++/11/array /usr/include/c++/11/bits/invoke.h \
+ /usr/include/c++/11/bits/basic_string.tcc /usr/include/c++/11/chrono \
+ /usr/include/c++/11/ratio /usr/include/c++/11/limits \
+ /usr/include/c++/11/ctime /usr/include/c++/11/bits/parse_numbers.h \
+ /usr/include/c++/11/bits/fs_path.h /usr/include/c++/11/utility \
+ /usr/include/c++/11/bits/stl_relops.h /usr/include/c++/11/locale \
+ /usr/include/c++/11/bits/locale_classes.h \
+ /usr/include/c++/11/bits/locale_classes.tcc \
+ /usr/include/c++/11/bits/locale_facets.h /usr/include/c++/11/cwctype \
+ /usr/include/wctype.h /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_base.h \
+ /usr/include/c++/11/bits/ios_base.h /usr/include/c++/11/streambuf \
+ /usr/include/c++/11/bits/streambuf.tcc \
+ /usr/include/c++/11/bits/streambuf_iterator.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_inline.h \
+ /usr/include/c++/11/bits/locale_facets.tcc \
+ /usr/include/c++/11/bits/locale_facets_nonio.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
+ /usr/include/libintl.h /usr/include/c++/11/bits/codecvt.h \
+ /usr/include/c++/11/bits/locale_facets_nonio.tcc \
+ /usr/include/c++/11/bits/locale_conv.h \
+ /usr/include/c++/11/bits/unique_ptr.h /usr/include/c++/11/tuple \
+ /usr/include/c++/11/array /usr/include/c++/11/bits/uses_allocator.h \
+ /usr/include/c++/11/bits/invoke.h /usr/include/c++/11/iomanip \
+ /usr/include/c++/11/bits/quoted_string.h /usr/include/c++/11/sstream \
+ /usr/include/c++/11/istream /usr/include/c++/11/ios \
+ /usr/include/c++/11/bits/basic_ios.h \
+ /usr/include/c++/11/bits/basic_ios.tcc /usr/include/c++/11/ostream \
+ /usr/include/c++/11/bits/ostream.tcc \
+ /usr/include/c++/11/bits/istream.tcc \
+ /usr/include/c++/11/bits/sstream.tcc /usr/include/c++/11/codecvt \
+ /usr/include/c++/11/ext/concurrence.h \
  /usr/include/c++/11/bits/shared_ptr.h \
- /usr/include/c++/11/bits/shared_ptr_base.h /usr/include/c++/11/typeinfo \
+ /usr/include/c++/11/bits/shared_ptr_base.h \
  /usr/include/c++/11/bits/allocated_ptr.h \
  /usr/include/c++/11/bits/refwrap.h \
  /usr/include/c++/11/ext/aligned_buffer.h \
- /usr/include/c++/11/ext/concurrence.h /usr/include/c++/11/exception \
- /usr/include/c++/11/bits/exception_ptr.h \
- /usr/include/c++/11/bits/cxxabi_init_exception.h \
- /usr/include/c++/11/bits/nested_exception.h \
- /usr/include/c++/11/bits/shared_ptr_atomic.h \
- /usr/include/c++/11/bits/atomic_base.h \
- /usr/include/c++/11/bits/atomic_lockfree_defines.h \
- /usr/include/c++/11/backward/auto_ptr.h \
- /usr/include/c++/11/pstl/glue_memory_defs.h \
- /usr/include/c++/11/pstl/execution_defs.h \
+ /usr/include/c++/11/bits/fs_dir.h /usr/include/c++/11/bits/fs_ops.h \
+ /usr/include/c++/11/fstream \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
+ /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
+ /usr/include/c++/11/bits/fstream.tcc /usr/include/c++/11/iostream \
+ /usr/include/pwd.h /usr/include/unistd.h \
+ /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
+ /usr/include/x86_64-linux-gnu/bits/environments.h \
+ /usr/include/x86_64-linux-gnu/bits/confname.h \
+ /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
+ /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
+ /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
+ /usr/include/linux/close_range.h /usr/include/c++/11/vector \
+ /usr/include/c++/11/bits/stl_uninitialized.h \
+ /usr/include/c++/11/bits/stl_vector.h \
+ /usr/include/c++/11/bits/stl_bvector.h \
+ /usr/include/c++/11/bits/vector.tcc \
+ /home/hunglt31/examark/backend/includes/models/TritonClient.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpc_client.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/grpcpp.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/grpc.h \
@@ -178,6 +209,15 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/connectivity_state.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpc/impl/propagation_bits.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/channel.h \
+ /usr/include/c++/11/memory /usr/include/c++/11/bits/stl_tempbuf.h \
+ /usr/include/c++/11/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/11/bits/align.h /usr/include/c++/11/bit \
+ /usr/include/c++/11/bits/shared_ptr_atomic.h \
+ /usr/include/c++/11/bits/atomic_base.h \
+ /usr/include/c++/11/bits/atomic_lockfree_defines.h \
+ /usr/include/c++/11/backward/auto_ptr.h \
+ /usr/include/c++/11/pstl/glue_memory_defs.h \
+ /usr/include/c++/11/pstl/execution_defs.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/completion_queue.h \
  /usr/include/c++/11/list /usr/include/c++/11/bits/stl_list.h \
  /usr/include/c++/11/bits/list.tcc \
@@ -216,9 +256,6 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/config.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/status_code_enum.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/time.h \
- /usr/include/c++/11/chrono /usr/include/c++/11/ratio \
- /usr/include/c++/11/limits /usr/include/c++/11/ctime \
- /usr/include/c++/11/bits/parse_numbers.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/byte_buffer.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/serialization_traits.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/slice.h \
@@ -226,25 +263,7 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /usr/include/string.h /usr/include/strings.h \
  /usr/include/c++/11/algorithm \
  /usr/include/c++/11/pstl/glue_algorithm_defs.h \
- /usr/include/c++/11/iostream /usr/include/c++/11/ostream \
- /usr/include/c++/11/ios /usr/include/c++/11/bits/ios_base.h \
- /usr/include/c++/11/bits/locale_classes.h \
- /usr/include/c++/11/bits/locale_classes.tcc \
- /usr/include/c++/11/system_error \
- /usr/include/x86_64-linux-gnu/c++/11/bits/error_constants.h \
- /usr/include/c++/11/stdexcept /usr/include/c++/11/streambuf \
- /usr/include/c++/11/bits/streambuf.tcc \
- /usr/include/c++/11/bits/basic_ios.h \
- /usr/include/c++/11/bits/locale_facets.h /usr/include/c++/11/cwctype \
- /usr/include/wctype.h /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
- /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_base.h \
- /usr/include/c++/11/bits/streambuf_iterator.h \
- /usr/include/x86_64-linux-gnu/c++/11/bits/ctype_inline.h \
- /usr/include/c++/11/bits/locale_facets.tcc \
- /usr/include/c++/11/bits/basic_ios.tcc \
- /usr/include/c++/11/bits/ostream.tcc /usr/include/c++/11/istream \
- /usr/include/c++/11/bits/istream.tcc /usr/include/c++/11/iterator \
- /usr/include/c++/11/bits/stream_iterator.h \
+ /usr/include/c++/11/iterator /usr/include/c++/11/bits/stream_iterator.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/status.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/codegen/sync.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/impl/sync.h \
@@ -264,13 +283,6 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/optimization.h \
  /usr/include/assert.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/thread_identity.h \
- /usr/include/unistd.h /usr/include/x86_64-linux-gnu/bits/posix_opt.h \
- /usr/include/x86_64-linux-gnu/bits/environments.h \
- /usr/include/x86_64-linux-gnu/bits/confname.h \
- /usr/include/x86_64-linux-gnu/bits/getopt_posix.h \
- /usr/include/x86_64-linux-gnu/bits/getopt_core.h \
- /usr/include/x86_64-linux-gnu/bits/unistd_ext.h \
- /usr/include/linux/close_range.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/per_thread_tls.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/internal/tsan_mutex_interface.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/absl/base/thread_annotations.h \
@@ -455,138 +467,154 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/proto_buffer_writer.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/grpcpp/support/stub_options.h \
  /home/hunglt31/Downloads/TritonClientSDK/include/ipc.h \
- /usr/include/opencv4/opencv2/core.hpp \
- /usr/include/opencv4/opencv2/core/cvdef.h \
- /usr/include/opencv4/opencv2/core/version.hpp \
- /usr/include/opencv4/opencv2/core/hal/interface.h \
- /usr/include/opencv4/opencv2/core/cv_cpu_dispatch.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_runtime_api.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/crt/host_defines.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/builtin_types.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/device_types.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/driver_types.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/vector_types.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/surface_types.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/texture_types.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_device_runtime_api.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_runtime.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/crt/host_config.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/library_types.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/channel_descriptor.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/cuda_runtime_api.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/driver_functions.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/vector_functions.h \
+ /usr/local/cuda-12.4/targets/x86_64-linux/include/vector_functions.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cvdef.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/version.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/hal/interface.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cv_cpu_dispatch.h \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/xmmintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/mmintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/mm_malloc.h \
- /usr/include/opencv4/opencv2/core/base.hpp \
- /usr/include/opencv4/opencv2/opencv_modules.hpp \
- /usr/include/opencv4/opencv2/core/cvstd.hpp \
- /usr/include/opencv4/opencv2/core/cvstd_wrapper.hpp \
- /usr/include/opencv4/opencv2/core/neon_utils.hpp \
- /usr/include/opencv4/opencv2/core/vsx_utils.hpp \
- /usr/include/opencv4/opencv2/core/check.hpp \
- /usr/include/opencv4/opencv2/core/traits.hpp \
- /usr/include/opencv4/opencv2/core/matx.hpp \
- /usr/include/opencv4/opencv2/core/saturate.hpp \
- /usr/include/opencv4/opencv2/core/fast_math.hpp \
- /usr/include/opencv4/opencv2/core/types.hpp /usr/include/c++/11/cfloat \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/base.hpp \
+ /home/hunglt31/Downloads/opencv/build/opencv2/opencv_modules.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cvstd.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cvstd_wrapper.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/neon_utils.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/vsx_utils.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/check.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/traits.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/matx.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/saturate.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/fast_math.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/matx.inl.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/types.hpp \
+ /usr/include/c++/11/cfloat \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/float.h \
- /usr/include/opencv4/opencv2/core/mat.hpp \
- /usr/include/opencv4/opencv2/core/bufferpool.hpp \
- /usr/include/opencv4/opencv2/core/mat.inl.hpp \
- /usr/include/opencv4/opencv2/core/persistence.hpp \
- /usr/include/opencv4/opencv2/core/operations.hpp \
- /usr/include/opencv4/opencv2/core/cvstd.inl.hpp \
- /usr/include/c++/11/complex /usr/include/c++/11/sstream \
- /usr/include/c++/11/bits/sstream.tcc \
- /usr/include/opencv4/opencv2/core/utility.hpp \
- /usr/include/opencv4/opencv2/core/optim.hpp \
- /usr/include/opencv4/opencv2/core/ovx.hpp \
- /usr/include/opencv4/opencv2/core/cvdef.h \
- /home/hunglt31/examark/backend/includes/utils/Detection.h \
- /usr/include/opencv4/opencv2/opencv.hpp \
- /usr/include/opencv4/opencv2/calib3d.hpp \
- /usr/include/opencv4/opencv2/features2d.hpp \
- /usr/include/opencv4/opencv2/flann/miniflann.hpp \
- /usr/include/opencv4/opencv2/flann/defines.h \
- /usr/include/opencv4/opencv2/flann/config.h \
- /usr/include/opencv4/opencv2/core/affine.hpp \
- /usr/include/opencv4/opencv2/dnn.hpp \
- /usr/include/opencv4/opencv2/dnn/dnn.hpp \
- /usr/include/opencv4/opencv2/core/async.hpp \
- /usr/include/opencv4/opencv2/dnn/version.hpp \
- /usr/include/opencv4/opencv2/dnn/dict.hpp \
- /usr/include/opencv4/opencv2/dnn/layer.hpp \
- /usr/include/opencv4/opencv2/dnn/dnn.inl.hpp \
- /usr/include/opencv4/opencv2/dnn/utils/inference_engine.hpp \
- /usr/include/opencv4/opencv2/dnn/dnn.hpp \
- /usr/include/opencv4/opencv2/flann.hpp \
- /usr/include/opencv4/opencv2/flann/flann_base.hpp \
- /usr/include/opencv4/opencv2/flann/general.h \
- /usr/include/opencv4/opencv2/flann/matrix.h \
- /usr/include/opencv4/opencv2/flann/params.h \
- /usr/include/opencv4/opencv2/flann/any.h \
- /usr/include/opencv4/opencv2/flann/defines.h \
- /usr/include/opencv4/opencv2/flann/saving.h \
- /usr/include/opencv4/opencv2/flann/nn_index.h \
- /usr/include/opencv4/opencv2/flann/result_set.h \
- /usr/include/opencv4/opencv2/flann/all_indices.h \
- /usr/include/opencv4/opencv2/flann/kdtree_index.h \
- /usr/include/opencv4/opencv2/flann/dynamic_bitset.h \
- /usr/include/opencv4/opencv2/flann/dist.h \
- /usr/include/opencv4/opencv2/flann/heap.h \
- /usr/include/opencv4/opencv2/flann/allocator.h \
- /usr/include/opencv4/opencv2/flann/random.h \
- /usr/include/opencv4/opencv2/flann/kdtree_single_index.h \
- /usr/include/opencv4/opencv2/flann/kmeans_index.h \
- /usr/include/opencv4/opencv2/flann/logger.h \
- /usr/include/opencv4/opencv2/flann/composite_index.h \
- /usr/include/opencv4/opencv2/flann/linear_index.h \
- /usr/include/opencv4/opencv2/flann/hierarchical_clustering_index.h \
- /usr/include/opencv4/opencv2/flann/lsh_index.h \
- /usr/include/opencv4/opencv2/flann/lsh_table.h \
- /usr/include/c++/11/iomanip /usr/include/c++/11/locale \
- /usr/include/c++/11/bits/locale_facets_nonio.h \
- /usr/include/x86_64-linux-gnu/c++/11/bits/time_members.h \
- /usr/include/x86_64-linux-gnu/c++/11/bits/messages_members.h \
- /usr/include/libintl.h /usr/include/c++/11/bits/codecvt.h \
- /usr/include/c++/11/bits/locale_facets_nonio.tcc \
- /usr/include/c++/11/bits/locale_conv.h \
- /usr/include/c++/11/bits/quoted_string.h /usr/include/c++/11/math.h \
- /usr/include/opencv4/opencv2/flann/autotuned_index.h \
- /usr/include/opencv4/opencv2/flann/ground_truth.h \
- /usr/include/opencv4/opencv2/flann/index_testing.h \
- /usr/include/opencv4/opencv2/flann/timer.h \
- /usr/include/opencv4/opencv2/flann/sampling.h \
- /usr/include/opencv4/opencv2/highgui.hpp \
- /usr/include/opencv4/opencv2/imgcodecs.hpp \
- /usr/include/opencv4/opencv2/videoio.hpp \
- /usr/include/opencv4/opencv2/imgproc.hpp \
- /usr/include/opencv4/opencv2/imgproc/segmentation.hpp \
- /usr/include/opencv4/opencv2/ml.hpp \
- /usr/include/opencv4/opencv2/ml/ml.inl.hpp \
- /usr/include/opencv4/opencv2/objdetect.hpp \
- /usr/include/opencv4/opencv2/objdetect/detection_based_tracker.hpp \
- /usr/include/opencv4/opencv2/objdetect/face.hpp \
- /usr/include/opencv4/opencv2/photo.hpp \
- /usr/include/opencv4/opencv2/stitching.hpp \
- /usr/include/opencv4/opencv2/stitching/warpers.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/warpers.hpp \
- /usr/include/opencv4/opencv2/core/cuda.hpp \
- /usr/include/opencv4/opencv2/core/cuda_types.hpp \
- /usr/include/opencv4/opencv2/core/cuda.inl.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/warpers_inl.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/warpers.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/matchers.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/motion_estimators.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/matchers.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/util.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/util_inl.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/camera.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/exposure_compensate.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/seam_finders.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/blenders.hpp \
- /usr/include/opencv4/opencv2/stitching/detail/camera.hpp \
- /usr/include/opencv4/opencv2/video.hpp \
- /usr/include/opencv4/opencv2/video/tracking.hpp \
- /usr/include/opencv4/opencv2/video/background_segm.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/mat.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/bufferpool.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/mat.inl.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/persistence.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/operations.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cvstd.inl.hpp \
+ /usr/include/c++/11/complex \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/utility.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/optim.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/ovx.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cvdef.h \
+ /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudaimgproc/include/opencv2/cudaimgproc.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cuda.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cuda_types.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cuda.inl.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/imgproc/include/opencv2/imgproc.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/imgproc/include/opencv2/imgproc/segmentation.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/include/opencv2/opencv.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/calib3d/include/opencv2/calib3d.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/features2d/include/opencv2/features2d.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/miniflann.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/defines.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/config.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/affine.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/utils/logger.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/utils/logger.defines.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/utils/logtag.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/dnn/include/opencv2/dnn.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/dnn/include/opencv2/dnn/dnn.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/async.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/dnn/include/opencv2/dnn/version.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/dnn/include/opencv2/dnn/dict.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/dnn/include/opencv2/dnn/layer.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/dnn/include/opencv2/dnn/dnn.inl.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/dnn/include/opencv2/dnn/utils/inference_engine.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/dnn/include/opencv2/dnn/dnn.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/flann_base.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/general.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/matrix.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/params.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/any.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/defines.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/saving.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/nn_index.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/result_set.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/all_indices.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/kdtree_index.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/dynamic_bitset.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/dist.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/heap.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/allocator.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/random.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/kdtree_single_index.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/kmeans_index.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/logger.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/composite_index.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/linear_index.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/hierarchical_clustering_index.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/lsh_index.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/lsh_table.h \
+ /usr/include/c++/11/math.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/autotuned_index.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/ground_truth.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/index_testing.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/timer.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/sampling.h \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/highgui/include/opencv2/highgui.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/imgcodecs/include/opencv2/imgcodecs.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/videoio/include/opencv2/videoio.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/ml/include/opencv2/ml.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/ml/include/opencv2/ml/ml.inl.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/objdetect/include/opencv2/objdetect.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/objdetect/include/opencv2/objdetect/aruco_detector.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/objdetect/include/opencv2/objdetect/aruco_dictionary.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/objdetect/include/opencv2/objdetect/aruco_board.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/objdetect/include/opencv2/objdetect/graphical_code_detector.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/objdetect/include/opencv2/objdetect/detection_based_tracker.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/objdetect/include/opencv2/objdetect/face.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/objdetect/include/opencv2/objdetect/charuco_detector.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/objdetect/include/opencv2/objdetect/barcode.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/photo/include/opencv2/photo.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/warpers.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/warpers.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/warpers_inl.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/warpers.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/matchers.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/motion_estimators.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/matchers.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/util.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/util_inl.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/camera.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/exposure_compensate.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/seam_finders.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/blenders.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/camera.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/video/include/opencv2/video.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/video/include/opencv2/video/tracking.hpp \
+ /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/video/include/opencv2/video/background_segm.hpp \
  /home/hunglt31/examark/backend/includes/models/ModelConfig.h \
+ /home/hunglt31/examark/backend/includes/utils/Detection.h \
  /home/hunglt31/examark/backend/includes/utils/Logger.h \
- /usr/include/c++/11/filesystem /usr/include/c++/11/bits/fs_fwd.h \
- /usr/include/c++/11/bits/fs_path.h /usr/include/c++/11/codecvt \
- /usr/include/c++/11/bits/fs_dir.h /usr/include/c++/11/bits/fs_ops.h \
- /usr/include/c++/11/fstream \
- /usr/include/x86_64-linux-gnu/c++/11/bits/basic_file.h \
- /usr/include/x86_64-linux-gnu/c++/11/bits/c++io.h \
- /usr/include/c++/11/bits/fstream.tcc /usr/include/pwd.h \
+ /home/hunglt31/examark/backend/includes/utils/minio_config.h \
+ /home/hunglt31/examark/backend/includes/utils/utils.h \
  /home/hunglt31/examark/backend/includes/controllers/Controller.h \
- /home/hunglt31/examark/backend/includes/utils/ExamGrader.h \
+ /home/hunglt31/examark/backend/includes/utils/ExamExtractor.h \
  /home/hunglt31/examark/backend/includes/utils/Detection.h \
  /home/hunglt31/examark/backend/includes/utils/httplib.h \
  /usr/include/arpa/inet.h /usr/include/netinet/in.h \
@@ -676,6 +704,9 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
  /home/hunglt31/examark/backend/includes/utils/ExamConfig.h \
  /home/hunglt31/examark/backend/includes/utils/ImageProcessor.h \
+ /home/hunglt31/examark/backend/includes/kernels/gamma_correction.h \
+ /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafeatures2d/include/opencv2/cudafeatures2d.hpp \
+ /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafilters/include/opencv2/cudafilters.hpp \
  /home/hunglt31/examark/backend/includes/utils/MinIOHTTPClient.h \
  /usr/include/x86_64-linux-gnu/curl/curl.h \
  /usr/include/x86_64-linux-gnu/curl/curlver.h \

@@ -3,43 +3,21 @@
 
 #include "models/TritonClient.h"
 #include "services/Service.h"
-#include "utils/ExamGrader.h"
+#include "utils/ExamExtractor.h"
 #include "utils/Logger.h"
 #include "utils/httplib.h"
+#include "utils/minio_config.h"
+#include "utils/utils.h"
 #include <pwd.h>
 
+namespace controller {
 /**
  * @brief Register the grading route with the server.
- *
- * This function sets up the main grading endpoint, status check, and CSV
- * results retrieval. It handles incoming requests, processes the PDF files,
- and
- * manages the grading results.
- *
  * @param server The HTTP server instance.
  * @param tritonClient The Triton client instance for model inference.
  */
-void registerGradingRouteTriton(httplib::Server &server, TritonClient *tritonClient);
+void registerExtractRoute(httplib::Server &server, TritonClient *tritonClient);
 
-/**
- * @brief Update job progress with QR information.
- * 
- * @param jobId The job ID to update.
- * @param qrInfo The QR information to store.
- */
-void updateJobQrInfo(const std::string &jobId, const std::string &qrInfo);
-
-// /**
-//  * @brief Register the grading route with the server.
-//  *
-//  * This function sets up the main grading endpoint, status check, and CSV
-//  * results retrieval. It handles incoming requests, processes the PDF files, and
-//  * manages the grading results.
-//  *
-//  * @param server The HTTP server instance.
-//  * @param metadataModel The model builder for metadata detection.
-//  * @param contentModel The model builder for content detection.
-//  */
-// void registerGradingRouteTRT(httplib::Server &server, ModelBuilder *metadataModel, ModelBuilder *contentModel);
+} // namespace controller
 
 #endif // CONTROLLER_H

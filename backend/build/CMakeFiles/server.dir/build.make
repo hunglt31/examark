@@ -97,19 +97,19 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hunglt31/examark/backend/src/utils/ImageProcessor.cpp -o CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.s
 
-CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o: CMakeFiles/server.dir/flags.make
-CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o: ../src/utils/ExamGrader.cpp
-CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o -MF CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o.d -o CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o -c /home/hunglt31/examark/backend/src/utils/ExamGrader.cpp
+CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o: ../src/utils/ExamExtractor.cpp
+CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o -MF CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o.d -o CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o -c /home/hunglt31/examark/backend/src/utils/ExamExtractor.cpp
 
-CMakeFiles/server.dir/src/utils/ExamGrader.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/utils/ExamGrader.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hunglt31/examark/backend/src/utils/ExamGrader.cpp > CMakeFiles/server.dir/src/utils/ExamGrader.cpp.i
+CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hunglt31/examark/backend/src/utils/ExamExtractor.cpp > CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.i
 
-CMakeFiles/server.dir/src/utils/ExamGrader.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/utils/ExamGrader.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hunglt31/examark/backend/src/utils/ExamGrader.cpp -o CMakeFiles/server.dir/src/utils/ExamGrader.cpp.s
+CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hunglt31/examark/backend/src/utils/ExamExtractor.cpp -o CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.s
 
 CMakeFiles/server.dir/src/utils/Logger.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/utils/Logger.cpp.o: ../src/utils/Logger.cpp
@@ -125,10 +125,24 @@ CMakeFiles/server.dir/src/utils/Logger.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/utils/Logger.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hunglt31/examark/backend/src/utils/Logger.cpp -o CMakeFiles/server.dir/src/utils/Logger.cpp.s
 
+CMakeFiles/server.dir/src/utils/utils.cpp.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/utils/utils.cpp.o: ../src/utils/utils.cpp
+CMakeFiles/server.dir/src/utils/utils.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/server.dir/src/utils/utils.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/utils/utils.cpp.o -MF CMakeFiles/server.dir/src/utils/utils.cpp.o.d -o CMakeFiles/server.dir/src/utils/utils.cpp.o -c /home/hunglt31/examark/backend/src/utils/utils.cpp
+
+CMakeFiles/server.dir/src/utils/utils.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/server.dir/src/utils/utils.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/hunglt31/examark/backend/src/utils/utils.cpp > CMakeFiles/server.dir/src/utils/utils.cpp.i
+
+CMakeFiles/server.dir/src/utils/utils.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/utils/utils.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hunglt31/examark/backend/src/utils/utils.cpp -o CMakeFiles/server.dir/src/utils/utils.cpp.s
+
 CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: ../src/utils/MinIOHTTPClient.cpp
 CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o -MF CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o.d -o CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o -c /home/hunglt31/examark/backend/src/utils/MinIOHTTPClient.cpp
 
 CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.i: cmake_force
@@ -142,7 +156,7 @@ CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.s: cmake_force
 CMakeFiles/server.dir/src/models/TritonClient.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/models/TritonClient.cpp.o: ../src/models/TritonClient.cpp
 CMakeFiles/server.dir/src/models/TritonClient.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/server.dir/src/models/TritonClient.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/server.dir/src/models/TritonClient.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/models/TritonClient.cpp.o -MF CMakeFiles/server.dir/src/models/TritonClient.cpp.o.d -o CMakeFiles/server.dir/src/models/TritonClient.cpp.o -c /home/hunglt31/examark/backend/src/models/TritonClient.cpp
 
 CMakeFiles/server.dir/src/models/TritonClient.cpp.i: cmake_force
@@ -156,7 +170,7 @@ CMakeFiles/server.dir/src/models/TritonClient.cpp.s: cmake_force
 CMakeFiles/server.dir/src/services/Service.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp
 CMakeFiles/server.dir/src/services/Service.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/server.dir/src/services/Service.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/server.dir/src/services/Service.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/services/Service.cpp.o -MF CMakeFiles/server.dir/src/services/Service.cpp.o.d -o CMakeFiles/server.dir/src/services/Service.cpp.o -c /home/hunglt31/examark/backend/src/services/Service.cpp
 
 CMakeFiles/server.dir/src/services/Service.cpp.i: cmake_force
@@ -170,7 +184,7 @@ CMakeFiles/server.dir/src/services/Service.cpp.s: cmake_force
 CMakeFiles/server.dir/src/controllers/Controller.cpp.o: CMakeFiles/server.dir/flags.make
 CMakeFiles/server.dir/src/controllers/Controller.cpp.o: ../src/controllers/Controller.cpp
 CMakeFiles/server.dir/src/controllers/Controller.cpp.o: CMakeFiles/server.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/server.dir/src/controllers/Controller.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/server.dir/src/controllers/Controller.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/server.dir/src/controllers/Controller.cpp.o -MF CMakeFiles/server.dir/src/controllers/Controller.cpp.o.d -o CMakeFiles/server.dir/src/controllers/Controller.cpp.o -c /home/hunglt31/examark/backend/src/controllers/Controller.cpp
 
 CMakeFiles/server.dir/src/controllers/Controller.cpp.i: cmake_force
@@ -181,64 +195,206 @@ CMakeFiles/server.dir/src/controllers/Controller.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/server.dir/src/controllers/Controller.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/hunglt31/examark/backend/src/controllers/Controller.cpp -o CMakeFiles/server.dir/src/controllers/Controller.cpp.s
 
+CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o: CMakeFiles/server.dir/flags.make
+CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o: ../src/kernels/gamma_correction.cu
+CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o: CMakeFiles/server.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CUDA object CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o"
+	/usr/bin/nvcc -forward-unknown-to-host-compiler $(CUDA_DEFINES) $(CUDA_INCLUDES) $(CUDA_FLAGS) -MD -MT CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o -MF CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o.d -x cu -dc /home/hunglt31/examark/backend/src/kernels/gamma_correction.cu -o CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o
+
+CMakeFiles/server.dir/src/kernels/gamma_correction.cu.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CUDA source to CMakeFiles/server.dir/src/kernels/gamma_correction.cu.i"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_PREPROCESSED_SOURCE
+
+CMakeFiles/server.dir/src/kernels/gamma_correction.cu.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CUDA source to assembly CMakeFiles/server.dir/src/kernels/gamma_correction.cu.s"
+	$(CMAKE_COMMAND) -E cmake_unimplemented_variable CMAKE_CUDA_CREATE_ASSEMBLY_SOURCE
+
 # Object files for target server
 server_OBJECTS = \
 "CMakeFiles/server.dir/src/MainServer.cpp.o" \
 "CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o" \
-"CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o" \
+"CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o" \
 "CMakeFiles/server.dir/src/utils/Logger.cpp.o" \
+"CMakeFiles/server.dir/src/utils/utils.cpp.o" \
 "CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o" \
 "CMakeFiles/server.dir/src/models/TritonClient.cpp.o" \
 "CMakeFiles/server.dir/src/services/Service.cpp.o" \
-"CMakeFiles/server.dir/src/controllers/Controller.cpp.o"
+"CMakeFiles/server.dir/src/controllers/Controller.cpp.o" \
+"CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o"
+
+# External object files for target server
+server_EXTERNAL_OBJECTS =
+
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/src/MainServer.cpp.o
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/src/utils/Logger.cpp.o
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/src/utils/utils.cpp.o
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/src/models/TritonClient.cpp.o
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/src/services/Service.cpp.o
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/src/controllers/Controller.cpp.o
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/build.make
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_gapi.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_stitching.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_alphamat.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_aruco.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_bgsegm.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_bioinspired.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_ccalib.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudabgsegm.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudafeatures2d.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudaobjdetect.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudastereo.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_dnn_objdetect.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_dnn_superres.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_dpm.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_face.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_freetype.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_fuzzy.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_hdf.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_hfs.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_img_hash.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_intensity_transform.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_line_descriptor.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_mcc.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_quality.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_rapid.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_reg.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_rgbd.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_saliency.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_sfm.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_signal.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_stereo.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_structured_light.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_superres.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_surface_matching.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_tracking.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_videostab.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_wechat_qrcode.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_xfeatures2d.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_xobjdetect.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_xphoto.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/libcudart.so
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/libcuda.so
+CMakeFiles/server.dir/cmake_device_link.o: /usr/local/cuda-12.4/lib64/libcudart_static.a
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/librt.a
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/libnvinfer.so
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/libnvonnxparser.so
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/libnvinfer_plugin.so
+CMakeFiles/server.dir/cmake_device_link.o: /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcudart.so
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/TritonClientSDK/lib/libgrpcclient.so
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/libgrpc++.so
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/libgpr.so
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/libcurl.so
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/libssl.so
+CMakeFiles/server.dir/cmake_device_link.o: /usr/lib/x86_64-linux-gnu/libcrypto.so
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_shape.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_highgui.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_datasets.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_plot.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_text.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_ml.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_phase_unwrapping.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudacodec.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_videoio.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudaoptflow.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudalegacy.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudawarping.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_optflow.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_ximgproc.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_video.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_imgcodecs.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_objdetect.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_calib3d.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_dnn.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_features2d.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_flann.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_photo.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudaimgproc.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudafilters.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_imgproc.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudaarithm.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_core.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudev.so.4.10.0
+CMakeFiles/server.dir/cmake_device_link.o: CMakeFiles/server.dir/dlink.txt
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CUDA device code CMakeFiles/server.dir/cmake_device_link.o"
+	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/server.dir/dlink.txt --verbose=$(VERBOSE)
+
+# Rule to build all files generated by this target.
+CMakeFiles/server.dir/build: CMakeFiles/server.dir/cmake_device_link.o
+.PHONY : CMakeFiles/server.dir/build
+
+# Object files for target server
+server_OBJECTS = \
+"CMakeFiles/server.dir/src/MainServer.cpp.o" \
+"CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o" \
+"CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o" \
+"CMakeFiles/server.dir/src/utils/Logger.cpp.o" \
+"CMakeFiles/server.dir/src/utils/utils.cpp.o" \
+"CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o" \
+"CMakeFiles/server.dir/src/models/TritonClient.cpp.o" \
+"CMakeFiles/server.dir/src/services/Service.cpp.o" \
+"CMakeFiles/server.dir/src/controllers/Controller.cpp.o" \
+"CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o"
 
 # External object files for target server
 server_EXTERNAL_OBJECTS =
 
 server: CMakeFiles/server.dir/src/MainServer.cpp.o
 server: CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o
-server: CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o
+server: CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o
 server: CMakeFiles/server.dir/src/utils/Logger.cpp.o
+server: CMakeFiles/server.dir/src/utils/utils.cpp.o
 server: CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.o
 server: CMakeFiles/server.dir/src/models/TritonClient.cpp.o
 server: CMakeFiles/server.dir/src/services/Service.cpp.o
 server: CMakeFiles/server.dir/src/controllers/Controller.cpp.o
+server: CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o
 server: CMakeFiles/server.dir/build.make
-server: /usr/lib/x86_64-linux-gnu/libopencv_stitching.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_alphamat.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_aruco.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_barcode.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_bgsegm.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_bioinspired.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_ccalib.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_dnn_objdetect.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_dnn_superres.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_dpm.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_face.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_freetype.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_fuzzy.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_hdf.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_hfs.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_img_hash.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_intensity_transform.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_line_descriptor.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_mcc.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_quality.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_rapid.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_reg.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_rgbd.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_saliency.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_shape.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_stereo.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_structured_light.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_superres.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_surface_matching.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_tracking.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_videostab.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_viz.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_wechat_qrcode.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.4.5.4d
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_gapi.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_stitching.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_alphamat.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_aruco.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_bgsegm.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_bioinspired.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_ccalib.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudabgsegm.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudafeatures2d.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudaobjdetect.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudastereo.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_dnn_objdetect.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_dnn_superres.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_dpm.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_face.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_freetype.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_fuzzy.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_hdf.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_hfs.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_img_hash.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_intensity_transform.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_line_descriptor.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_mcc.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_quality.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_rapid.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_reg.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_rgbd.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_saliency.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_sfm.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_signal.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_stereo.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_structured_light.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_superres.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_surface_matching.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_tracking.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_videostab.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_wechat_qrcode.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_xfeatures2d.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_xobjdetect.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_xphoto.so.4.10.0
+server: /usr/lib/x86_64-linux-gnu/libcudart.so
+server: /usr/lib/x86_64-linux-gnu/libcuda.so
 server: /usr/local/cuda-12.4/lib64/libcudart_static.a
 server: /usr/lib/x86_64-linux-gnu/librt.a
 server: /usr/lib/x86_64-linux-gnu/libnvinfer.so
@@ -251,27 +407,37 @@ server: /usr/lib/x86_64-linux-gnu/libgpr.so
 server: /usr/lib/x86_64-linux-gnu/libcurl.so
 server: /usr/lib/x86_64-linux-gnu/libssl.so
 server: /usr/lib/x86_64-linux-gnu/libcrypto.so
-server: /usr/lib/x86_64-linux-gnu/libopencv_highgui.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_datasets.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_plot.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_text.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_ml.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_phase_unwrapping.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_optflow.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_ximgproc.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_video.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_videoio.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_objdetect.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_dnn.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_features2d.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_flann.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_photo.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.5.4d
-server: /usr/lib/x86_64-linux-gnu/libopencv_core.so.4.5.4d
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_shape.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_highgui.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_datasets.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_plot.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_text.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_ml.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_phase_unwrapping.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudacodec.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_videoio.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudaoptflow.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudalegacy.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudawarping.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_optflow.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_ximgproc.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_video.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_imgcodecs.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_objdetect.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_calib3d.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_dnn.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_features2d.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_flann.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_photo.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudaimgproc.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudafilters.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_imgproc.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudaarithm.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_core.so.4.10.0
+server: /home/hunglt31/Downloads/opencv/build/lib/libopencv_cudev.so.4.10.0
+server: CMakeFiles/server.dir/cmake_device_link.o
 server: CMakeFiles/server.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable server"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/hunglt31/examark/backend/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking CXX executable server"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/server.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

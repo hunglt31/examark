@@ -1,5 +1,5 @@
-#ifndef EXAM_GRADER_H
-#define EXAM_GRADER_H
+#ifndef EXAM_EXTRACTOR_H
+#define EXAM_EXTRACTOR_H
 
 #include "Detection.h"
 #include "utils/Logger.h"
@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-class ExamGrader {
+class ExamExtractor {
 public:
   /**
    * @brief Processes the exam by extracting student ID, exam ID, and answers.
@@ -27,49 +27,6 @@ public:
   extract_answers_from_detections(const std::string &imageBasename,
                                   const std::vector<std::vector<Detection>> &metadataDetections,
                                   const std::vector<std::vector<Detection>> &contentDetections);
-
-  struct QuestionResult {
-    std::string studentAnswer;
-    std::string correctAnswer;
-    bool isCorrect;
-  };
-
-  struct ExamGradingResult {
-    std::vector<QuestionResult> part1Results;
-    std::vector<QuestionResult> part2Results;
-
-    int part1CorrectCount;
-    int part2CorrectCount;
-    int totalPoints;
-  };
-
-  /**
-   * @brief Grades the exam based on student answers and the answer key.
-   *
-   * The function compares the student's answers with the answer key and calculates
-   * the total score, maximum score, and correctness for each part of the exam.
-   *
-   * @param studentAnswers A vector of strings representing the student's answers.
-   * @param answerKey A vector of strings representing the correct answers.
-   * @return GradingResult A struct containing the grading results.
-   */
-  ExamGradingResult gradeStudentExam(const std::vector<std::string> &studentAnswers,
-                                     const std::vector<std::string> &answerKey);
-
-  /**
-   * @brief Re-grades an exam using existing CSV data without extracting answers
-   *
-   * Takes pre-extracted student answers from CSV and re-grades them against
-   * the answer key. This is used for re-grading functionality where answers
-   * have already been extracted and potentially modified.
-   *
-   * @param studentAnswers Vector containing the student's answers from CSV
-   * @param examAnswerKeys Map of exam IDs to their corresponding answer keys
-   * @return Vector of strings containing the re-graded results
-   */
-  std::vector<std::string>
-  extractAnswersAndRegradeExam(const std::vector<std::string> &studentAnswers,
-                               const std::map<std::string, std::vector<std::string>> &examAnswerKeys);
 
 private:
   /**
@@ -167,4 +124,4 @@ private:
    */
   std::vector<std::string> processContentPart2(const cv::Mat &array);
 };
-#endif // EXAM_GRADER_H
+#endif // EXAM_EXTRACTOR_H

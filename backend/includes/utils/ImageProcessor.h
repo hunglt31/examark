@@ -1,8 +1,10 @@
 #ifndef IMAGE_PROCESSOR_H
 #define IMAGE_PROCESSOR_H
 
+#include "kernels/gamma_correction.h"
 #include "utils/Logger.h"
 #include <functional>
+#include <opencv2/cudafeatures2d.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
@@ -10,13 +12,11 @@
 const int IMAGE_WIDTH = 2480;
 const int IMAGE_HEIGHT = 3508;
 
-cv::Mat createGammaLUT(float gamma);
-extern const cv::Mat GAMMA_LUT;
-
-using ProgressCallback = std::function<void(int currentPage, int totalPages, double progressPercent)>;
-
 class ImageProcessor {
 private:
+  cv::Ptr<cv::SIFT> sift;
+  cv::Ptr<cv::FlannBasedMatcher> flann_matcher;
+
   /**
    * @brief Resizes the image maintaining its aspect ratio and pads it to 640x640 pixels.
    * This function scales the input image so that its largest dimension becomes 640 pixels.
@@ -26,9 +26,11 @@ private:
    * @param paddingSize The target size for the padded image (default is 640x640).
    * @return cv::Mat The padded image.
    */
-  cv::Mat paddingImage(cv::Mat &image, cv::Size paddingSize = cv::Size(640, 640));
+  cv::Mat paddingImage(const cv::Mat &image, cv::Size paddingSize = cv::Size(640, 640));
 
 public:
+  ImageProcessor();
+  ~ImageProcessor() = default;
   /**
    * @brief Callback type for progress updates during image processing.
    *
@@ -48,7 +50,7 @@ public:
    * @param imgSize The target size for the aligned image.
    * @return cv::Mat The aligned image.
    */
-  cv::Mat alignImage(const cv::Mat &imgScan, cv::Size imgSize = cv::Size(IMAGE_WIDTH, IMAGE_HEIGHT));
+  cv::Mat preprocessImage(const cv::Mat &imgScan, cv::Size imgSize = cv::Size(IMAGE_WIDTH, IMAGE_HEIGHT));
 
   /**
    * @brief Converts PDF data to images with callback.
@@ -63,21 +65,8 @@ public:
    * @param dpi The DPI for the conversion (default is 300).
    * @return true if the conversion is successful, false otherwise.
    */
-  bool getRequestImagesWithProgress(const char *pdfData, int dataSize, std::vector<cv::Mat> &images,
-                                    ProgressCallback progressCallback, double dpi = 300.0);
-
-  // /**
-  //  * @brief Reads PDF data and extracts images from it.
-  //  *
-  //  * This function reads PDF raw data and extracts images from each page.
-  //  * The extracted images are aligned and saved in the provided vector.
-  //  *
-  //  * @param pdfData The data of the PDF file.
-  //  * @param images Vector to store the extracted images.
-  //  * @param dpi The DPI for the conversion (default is 300).
-  //  * @return true if the extraction is successful, false otherwise.
-  //  */
-  // bool getRequestImages(const char* pdfData, int dataSize, std::vector<cv::Mat> &images, double dpi=300);
+  bool renderImages(const char *pdfData, int dataSize, std::vector<cv::Mat> &images, ProgressCallback progressCallback,
+                    double dpi = 300.0);
 
   /**
    * @brief Splits the scanned image into metadata and content regions.

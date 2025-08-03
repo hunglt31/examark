@@ -12,7 +12,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<MainPage />} />
-        <Route path="/grade" element={<GradingPage />} />
+        <Route path="/extract" element={<GradingPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/sheet" element={<SheetPage />} />
         <Route path="/help" element={<HelpPage />} />

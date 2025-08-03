@@ -1431,7 +1431,8 @@ function SheetPage() {
                       <img src={PreviousIcon} alt="Previous" className="nav-icon" draggable="false" />
                     </button>
                     <span className="sheet-nav-text">
-                      Page {currentImageIndex + 1} of {images.length}
+                      Exam {} {currentImageIndex + 1} of {images.length} - Page{' '}
+                      {images[currentImageIndex]?.name.match(/page_(\d+)/)?.[1] || currentImageIndex + 1}
                     </span>
                     <button
                       className="sheet-nav-button"

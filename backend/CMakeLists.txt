@@ -31,7 +31,7 @@ set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 if(NOT CMAKE_CUDA_ARCHITECTURES)
     message(WARNING "CMAKE_CUDA_ARCHITECTURES is not set. Defaulting to '75'. \
 Use -DCMAKE_CUDA_ARCHITECTURES='<arch1>[;<arch2>...]' to specify target(s).")
-    set(TARGET_ARCH 89) 
+    set(TARGET_ARCH 75) 
 else()
     set(TARGET_ARCH ${CMAKE_CUDA_ARCHITECTURES})
 endif()
@@ -56,7 +56,9 @@ find_library(GRPC_LIBRARY grpc++)
 find_library(GPR_LIBRARY gpr)
 
 # Find OpenCV
+set(OpenCV_DIR /home/hunglt31/Downloads/opencv/build)
 find_package(OpenCV REQUIRED)
+
 find_package(PkgConfig REQUIRED) 
 find_package(CUDAToolkit REQUIRED)
 find_package(CURL REQUIRED)
@@ -64,6 +66,7 @@ find_package(OpenSSL REQUIRED)
 pkg_check_modules(POPPLERCPP REQUIRED poppler-cpp)
 
 # Include CUDA and TensorRT
+enable_language(CUDA)
 find_package(CUDA REQUIRED)
 include_directories(${TensorRT_DIR}/include)
 include_directories(${CUDA_DIR}/include)
@@ -79,22 +82,51 @@ set(TensorRT_LIBS
 )
 
 # Source files
-set(SOURCES 
+set(CXX_SOURCES 
     src/MainServer.cpp
     src/utils/ImageProcessor.cpp
-    src/utils/ExamGrader.cpp
+    src/utils/ExamExtractor.cpp
     src/utils/Logger.cpp
+    src/utils/utils.cpp
     src/utils/MinIOHTTPClient.cpp
     src/models/TritonClient.cpp
     src/services/Service.cpp
     src/controllers/Controller.cpp
 )
 
+set(CUDA_SOURCES
+    src/kernels/gamma_correction.cu
+)
+
+set(ALL_SOURCES ${CXX_SOURCES} ${CUDA_SOURCES})
+
 # Server executable
-add_executable(server ${SOURCES})
+add_executable(server ${ALL_SOURCES})
+
+# Set CUDA properties for server
+set_target_properties(server PROPERTIES 
+    CUDA_SEPARABLE_COMPILATION ON
+    CUDA_RESOLVE_DEVICE_SYMBOLS ON
+)
+
+target_compile_options(server PRIVATE
+    $<$<COMPILE_LANGUAGE:CUDA>:
+        --use_fast_math
+        --ptxas-options=-v
+        --generate-line-info
+    >
+)
+
+target_compile_definitions(server PRIVATE
+    TRITON_ENABLE_GPU=1
+    CUDA_API_PER_THREAD_DEFAULT_STREAM
+)
+
 set_target_properties(server PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 target_link_libraries(server PRIVATE
     ${OpenCV_LIBS} 
+    CUDA::cudart
+    CUDA::cuda_driver
     ${CUDA_LIBRARIES} 
     ${CUDA_LIBS} 
     ${TensorRT_LIBS} 

@@ -742,7 +742,8 @@ function ResultsPage() {
                       <img src={PreviousIcon} alt="Previous" className="nav-icon" />
                     </button>
                     <span className="results-nav-text">
-                      Page {currentImageIndex + 1} of {images.length}
+                      Exam {} {currentImageIndex + 1} of {images.length} - Page{' '}
+                      {images[currentImageIndex]?.name.match(/page_(\d+)/)?.[1] || currentImageIndex + 1}
                     </span>
                     <button
                       className="results-nav-button"

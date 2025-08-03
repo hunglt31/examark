@@ -25,10 +25,10 @@ function MainPage() {
           <img src={FamiLogo} alt="Fami Logo" className="header-fami-logo" draggable="false" />
         </div>
       </header>
-      
+
       {/* Navigation Menu */}
       <nav className="MainPage-nav">
-        <Link to="/grade" draggable="false">
+        <Link to="/extract" draggable="false">
           <button className="nav-button">
             <img src={GradeIcon} alt="Grade Exam" draggable="false" />
             Start Auto Grading
@@ -60,13 +60,17 @@ function MainPage() {
           <i className="fas fa-hourglass-half card-icon"></i>
           <h3>Pending Exams</h3>
           <p className="dashboard-card-value">5</p>
-          <Link to="/grade" className="card-link">Grade Now</Link>
+          <Link to="/extract" className="card-link">
+            Grade Now
+          </Link>
         </div>
         <div className="dashboard-card">
           <i className="fas fa-check-circle card-icon"></i>
           <h3>Graded Today</h3>
           <p className="dashboard-card-value">12</p>
-          <Link to="/results" className="card-link">View Results</Link>
+          <Link to="/results" className="card-link">
+            View Results
+          </Link>
         </div>
         <div className="dashboard-card">
           <i className="fas fa-calendar-alt card-icon"></i>
@@ -84,7 +88,9 @@ function MainPage() {
           <i className="fas fa-headset card-icon"></i>
           <h3>Support Tickets</h3>
           <p className="dashboard-card-value">2 Open</p>
-          <Link to="/help" className="card-link">Get Support</Link>
+          <Link to="/help" className="card-link">
+            Get Support
+          </Link>
         </div>
         {/* Quick Tips card removed */}
       </section>

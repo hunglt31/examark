@@ -7,14 +7,13 @@ set(CMAKE_DEPENDS_GENERATOR "Unix Makefiles")
 # The top level Makefile was generated from the following files:
 set(CMAKE_MAKEFILE_DEPENDS
   "CMakeCache.txt"
+  "/home/hunglt31/Downloads/opencv/build/OpenCVConfig-version.cmake"
+  "/home/hunglt31/Downloads/opencv/build/OpenCVConfig.cmake"
+  "/home/hunglt31/Downloads/opencv/build/OpenCVModules.cmake"
   "../CMakeLists.txt"
   "CMakeFiles/3.22.1/CMakeCUDACompiler.cmake"
   "CMakeFiles/3.22.1/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.22.1/CMakeSystem.cmake"
-  "/usr/lib/x86_64-linux-gnu/cmake/opencv4/OpenCVConfig-version.cmake"
-  "/usr/lib/x86_64-linux-gnu/cmake/opencv4/OpenCVConfig.cmake"
-  "/usr/lib/x86_64-linux-gnu/cmake/opencv4/OpenCVModules-release.cmake"
-  "/usr/lib/x86_64-linux-gnu/cmake/opencv4/OpenCVModules.cmake"
   "/usr/share/cmake-3.22/Modules/CMakeCUDAInformation.cmake"
   "/usr/share/cmake-3.22/Modules/CMakeCXXInformation.cmake"
   "/usr/share/cmake-3.22/Modules/CMakeCommonLanguageInclude.cmake"

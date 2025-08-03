@@ -214,6 +214,30 @@ src/controllers/Controller.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/controllers/Controller.cpp.s
 .PHONY : src/controllers/Controller.cpp.s
 
+src/kernels/gamma_correction.o: src/kernels/gamma_correction.cu.o
+.PHONY : src/kernels/gamma_correction.o
+
+# target to build an object file
+src/kernels/gamma_correction.cu.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/kernels/gamma_correction.cu.o
+.PHONY : src/kernels/gamma_correction.cu.o
+
+src/kernels/gamma_correction.i: src/kernels/gamma_correction.cu.i
+.PHONY : src/kernels/gamma_correction.i
+
+# target to preprocess a source file
+src/kernels/gamma_correction.cu.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/kernels/gamma_correction.cu.i
+.PHONY : src/kernels/gamma_correction.cu.i
+
+src/kernels/gamma_correction.s: src/kernels/gamma_correction.cu.s
+.PHONY : src/kernels/gamma_correction.s
+
+# target to generate assembly for a file
+src/kernels/gamma_correction.cu.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/kernels/gamma_correction.cu.s
+.PHONY : src/kernels/gamma_correction.cu.s
+
 src/models/ModelBuilder.o: src/models/ModelBuilder.cpp.o
 .PHONY : src/models/ModelBuilder.o
 
@@ -286,29 +310,29 @@ src/services/Service.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/services/Service.cpp.s
 .PHONY : src/services/Service.cpp.s
 
-src/utils/ExamGrader.o: src/utils/ExamGrader.cpp.o
-.PHONY : src/utils/ExamGrader.o
+src/utils/ExamExtractor.o: src/utils/ExamExtractor.cpp.o
+.PHONY : src/utils/ExamExtractor.o
 
 # target to build an object file
-src/utils/ExamGrader.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/ExamGrader.cpp.o
-.PHONY : src/utils/ExamGrader.cpp.o
+src/utils/ExamExtractor.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o
+.PHONY : src/utils/ExamExtractor.cpp.o
 
-src/utils/ExamGrader.i: src/utils/ExamGrader.cpp.i
-.PHONY : src/utils/ExamGrader.i
+src/utils/ExamExtractor.i: src/utils/ExamExtractor.cpp.i
+.PHONY : src/utils/ExamExtractor.i
 
 # target to preprocess a source file
-src/utils/ExamGrader.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/ExamGrader.cpp.i
-.PHONY : src/utils/ExamGrader.cpp.i
+src/utils/ExamExtractor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.i
+.PHONY : src/utils/ExamExtractor.cpp.i
 
-src/utils/ExamGrader.s: src/utils/ExamGrader.cpp.s
-.PHONY : src/utils/ExamGrader.s
+src/utils/ExamExtractor.s: src/utils/ExamExtractor.cpp.s
+.PHONY : src/utils/ExamExtractor.s
 
 # target to generate assembly for a file
-src/utils/ExamGrader.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/ExamGrader.cpp.s
-.PHONY : src/utils/ExamGrader.cpp.s
+src/utils/ExamExtractor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.s
+.PHONY : src/utils/ExamExtractor.cpp.s
 
 src/utils/ImageProcessor.o: src/utils/ImageProcessor.cpp.o
 .PHONY : src/utils/ImageProcessor.o
@@ -385,6 +409,30 @@ src/utils/MinIOHTTPClient.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/MinIOHTTPClient.cpp.s
 .PHONY : src/utils/MinIOHTTPClient.cpp.s
 
+src/utils/utils.o: src/utils/utils.cpp.o
+.PHONY : src/utils/utils.o
+
+# target to build an object file
+src/utils/utils.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/utils.cpp.o
+.PHONY : src/utils/utils.cpp.o
+
+src/utils/utils.i: src/utils/utils.cpp.i
+.PHONY : src/utils/utils.i
+
+# target to preprocess a source file
+src/utils/utils.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/utils.cpp.i
+.PHONY : src/utils/utils.cpp.i
+
+src/utils/utils.s: src/utils/utils.cpp.s
+.PHONY : src/utils/utils.s
+
+# target to generate assembly for a file
+src/utils/utils.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/server.dir/build.make CMakeFiles/server.dir/src/utils/utils.cpp.s
+.PHONY : src/utils/utils.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -404,6 +452,9 @@ help:
 	@echo "... src/controllers/Controller.o"
 	@echo "... src/controllers/Controller.i"
 	@echo "... src/controllers/Controller.s"
+	@echo "... src/kernels/gamma_correction.o"
+	@echo "... src/kernels/gamma_correction.i"
+	@echo "... src/kernels/gamma_correction.s"
 	@echo "... src/models/ModelBuilder.o"
 	@echo "... src/models/ModelBuilder.i"
 	@echo "... src/models/ModelBuilder.s"
@@ -413,9 +464,9 @@ help:
 	@echo "... src/services/Service.o"
 	@echo "... src/services/Service.i"
 	@echo "... src/services/Service.s"
-	@echo "... src/utils/ExamGrader.o"
-	@echo "... src/utils/ExamGrader.i"
-	@echo "... src/utils/ExamGrader.s"
+	@echo "... src/utils/ExamExtractor.o"
+	@echo "... src/utils/ExamExtractor.i"
+	@echo "... src/utils/ExamExtractor.s"
 	@echo "... src/utils/ImageProcessor.o"
 	@echo "... src/utils/ImageProcessor.i"
 	@echo "... src/utils/ImageProcessor.s"
@@ -425,6 +476,9 @@ help:
 	@echo "... src/utils/MinIOHTTPClient.o"
 	@echo "... src/utils/MinIOHTTPClient.i"
 	@echo "... src/utils/MinIOHTTPClient.s"
+	@echo "... src/utils/utils.o"
+	@echo "... src/utils/utils.i"
+	@echo "... src/utils/utils.s"
 .PHONY : help
 
 
