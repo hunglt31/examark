@@ -90,8 +90,9 @@ cv::Mat ExamExtractor::createMetadataMatrix(const std::vector<Detection> &detect
           }
           sumGray -= minCandidate.second.avg_gray;
           float avg_gray_all = sumGray / (columnCandidates[col].size() - 1);
+          std::cout << "[DEBUG] MinGray/avgGray: " << minCandidate.second.avg_gray / avg_gray_all << std::endl;
           bool hasSelected = false;
-          if (minCandidate.second.avg_gray < avg_gray_all * 0.8f) {
+          if (minCandidate.second.avg_gray < avg_gray_all * 0.9f) {
             selected = minCandidate;
             hasSelected = true;
           }
@@ -200,8 +201,9 @@ cv::Mat ExamExtractor::createPart1Matrix(const std::vector<Detection> &detection
           }
           sumGray -= minCandidate.second.avg_gray;
           float avg_gray_all = sumGray / (rowCandidates[row].size() - 1);
+          std::cout << "[DEBUG] MinGray/avgGray: " << minCandidate.second.avg_gray / avg_gray_all << std::endl;
           bool hasSelected = false;
-          if (minCandidate.second.avg_gray < avg_gray_all * 0.8f) {
+          if (minCandidate.second.avg_gray < avg_gray_all * 0.9f) {
             selected = minCandidate;
             hasSelected = true;
           }
@@ -318,8 +320,9 @@ cv::Mat ExamExtractor::createPart2Matrix(const std::vector<Detection> &detection
             }
             sumGray -= minCandidate.second.avg_gray;
             float avg_gray_all = sumGray / (subRowCandidates.size() - 1);
+            std::cout << "[DEBUG] MinGray/avgGray: " << minCandidate.second.avg_gray / avg_gray_all << std::endl;
             bool hasSelected = false;
-            if (minCandidate.second.avg_gray < avg_gray_all * 0.8f) {
+            if (minCandidate.second.avg_gray < avg_gray_all * 0.9f) {
               selected = minCandidate;
               hasSelected = true;
             }
