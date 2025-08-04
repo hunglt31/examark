@@ -153,7 +153,7 @@ function GradeExamPage() {
 
         set_xlsx_file(virtualFile);
         set_valid_files(true);
-        setGradingMessage(`Exam file: ${pdfFile ? pdfFile.name : 'Unknown'}, Auto-loaded answer key: ${fileName}`);
+        // setGradingMessage(`Exam file: ${pdfFile ? pdfFile.name : 'Unknown'}, Auto-loaded answer key: ${fileName}`);
 
         localStorage.setItem('examarkAnswerKey', JSON.stringify(simpleJson));
         localStorage.setItem('examarkAnswerKeyFileName', fileName);
