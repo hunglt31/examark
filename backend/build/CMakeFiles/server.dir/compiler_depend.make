@@ -3560,9 +3560,18 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: ../src/services/Service.cpp \
   /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
   ../includes/utils/ExamConfig.h \
   ../includes/utils/ImageProcessor.h \
-  ../includes/kernels/gamma_correction.h \
   /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafeatures2d/include/opencv2/cudafeatures2d.hpp \
   /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafilters/include/opencv2/cudafilters.hpp \
+  /usr/include/poppler/cpp/poppler-document.h \
+  /usr/include/poppler/cpp/poppler-global.h \
+  /usr/include/poppler/cpp/poppler_cpp_export.h \
+  /usr/include/poppler/cpp/poppler-font.h \
+  /usr/include/poppler/cpp/poppler-image.h \
+  /usr/include/poppler/cpp/poppler-rectangle.h \
+  /usr/include/poppler/cpp/poppler-page-renderer.h \
+  /usr/include/poppler/cpp/poppler-image.h \
+  /usr/include/poppler/cpp/poppler-page.h \
+  ../includes/kernels/gamma_correction.h \
   ../includes/utils/MinIOHTTPClient.h \
   /usr/include/x86_64-linux-gnu/curl/curl.h \
   /usr/include/x86_64-linux-gnu/curl/curlver.h \
@@ -4058,13 +4067,7 @@ CMakeFiles/server.dir/src/utils/ExamExtractor.cpp.o: ../src/utils/ExamExtractor.
 CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcessor.cpp \
   /usr/include/stdc-predef.h \
   ../includes/utils/ImageProcessor.h \
-  ../includes/kernels/gamma_correction.h \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/include/opencv2/opencv.hpp \
-  /home/hunglt31/Downloads/opencv/build/opencv2/opencv_modules.hpp \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core.hpp \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cvdef.h \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/version.hpp \
-  /usr/include/c++/11/limits \
+  /usr/include/c++/11/functional \
   /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
   /usr/include/features.h \
@@ -4077,27 +4080,65 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/cpu_defines.h \
   /usr/include/c++/11/pstl/pstl_config.h \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/hal/interface.h \
-  /usr/include/c++/11/cstddef \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/stddef.h \
-  /usr/include/c++/11/cstdint \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdint.h \
-  /usr/include/stdint.h \
-  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
-  /usr/include/x86_64-linux-gnu/bits/types.h \
-  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
-  /usr/include/x86_64-linux-gnu/bits/time64.h \
-  /usr/include/x86_64-linux-gnu/bits/wchar.h \
-  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
-  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cv_cpu_dispatch.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/xmmintrin.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/mmintrin.h \
-  /usr/lib/gcc/x86_64-linux-gnu/11/include/mm_malloc.h \
-  /usr/include/c++/11/stdlib.h \
+  /usr/include/c++/11/bits/stl_function.h \
+  /usr/include/c++/11/bits/move.h \
+  /usr/include/c++/11/type_traits \
+  /usr/include/c++/11/backward/binders.h \
+  /usr/include/c++/11/new \
+  /usr/include/c++/11/bits/exception.h \
+  /usr/include/c++/11/tuple \
+  /usr/include/c++/11/utility \
+  /usr/include/c++/11/bits/stl_relops.h \
+  /usr/include/c++/11/bits/stl_pair.h \
+  /usr/include/c++/11/initializer_list \
+  /usr/include/c++/11/array \
+  /usr/include/c++/11/bits/functexcept.h \
+  /usr/include/c++/11/bits/exception_defines.h \
+  /usr/include/c++/11/bits/stl_algobase.h \
+  /usr/include/c++/11/bits/cpp_type_traits.h \
+  /usr/include/c++/11/ext/type_traits.h \
+  /usr/include/c++/11/ext/numeric_traits.h \
+  /usr/include/c++/11/bits/stl_iterator_base_types.h \
+  /usr/include/c++/11/bits/stl_iterator_base_funcs.h \
+  /usr/include/c++/11/bits/concept_check.h \
+  /usr/include/c++/11/debug/assertions.h \
+  /usr/include/c++/11/bits/stl_iterator.h \
+  /usr/include/c++/11/bits/ptr_traits.h \
+  /usr/include/c++/11/debug/debug.h \
+  /usr/include/c++/11/bits/predefined_ops.h \
+  /usr/include/c++/11/bits/range_access.h \
+  /usr/include/c++/11/bits/uses_allocator.h \
+  /usr/include/c++/11/bits/invoke.h \
+  /usr/include/c++/11/bits/functional_hash.h \
+  /usr/include/c++/11/bits/hash_bytes.h \
+  /usr/include/c++/11/bits/refwrap.h \
+  /usr/include/c++/11/bits/std_function.h \
+  /usr/include/c++/11/typeinfo \
+  /usr/include/c++/11/unordered_map \
+  /usr/include/c++/11/bits/allocator.h \
+  /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h \
+  /usr/include/c++/11/ext/new_allocator.h \
+  /usr/include/c++/11/bits/memoryfwd.h \
+  /usr/include/c++/11/ext/alloc_traits.h \
+  /usr/include/c++/11/bits/alloc_traits.h \
+  /usr/include/c++/11/bits/stl_construct.h \
+  /usr/include/c++/11/ext/aligned_buffer.h \
+  /usr/include/c++/11/bits/hashtable.h \
+  /usr/include/c++/11/bits/hashtable_policy.h \
+  /usr/include/c++/11/bits/enable_special_members.h \
+  /usr/include/c++/11/bits/node_handle.h \
+  /usr/include/c++/11/bits/unordered_map.h \
+  /usr/include/c++/11/bits/erase_if.h \
+  /usr/include/c++/11/vector \
+  /usr/include/c++/11/bits/stl_uninitialized.h \
+  /usr/include/c++/11/bits/stl_vector.h \
+  /usr/include/c++/11/bits/stl_bvector.h \
+  /usr/include/c++/11/bits/vector.tcc \
+  /usr/include/c++/11/bits/stl_algo.h \
   /usr/include/c++/11/cstdlib \
   /usr/include/stdlib.h \
+  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/stddef.h \
   /usr/include/x86_64-linux-gnu/bits/waitflags.h \
   /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
   /usr/include/x86_64-linux-gnu/bits/floatn.h \
@@ -4105,10 +4146,14 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
   /usr/include/x86_64-linux-gnu/sys/types.h \
+  /usr/include/x86_64-linux-gnu/bits/types.h \
+  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
+  /usr/include/x86_64-linux-gnu/bits/time64.h \
   /usr/include/x86_64-linux-gnu/bits/types/clock_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
   /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
   /usr/include/endian.h \
   /usr/include/x86_64-linux-gnu/bits/endian.h \
   /usr/include/x86_64-linux-gnu/bits/endianness.h \
@@ -4129,7 +4174,31 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/include/alloca.h \
   /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
   /usr/include/c++/11/bits/std_abs.h \
+  /usr/include/c++/11/bits/algorithmfwd.h \
+  /usr/include/c++/11/bits/stl_heap.h \
+  /usr/include/c++/11/bits/stl_tempbuf.h \
+  /usr/include/c++/11/bits/uniform_int_dist.h \
+  /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafeatures2d/include/opencv2/cudafeatures2d.hpp \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cuda.hpp \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core.hpp \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cvdef.h \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/version.hpp \
+  /usr/include/c++/11/limits \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/hal/interface.h \
+  /usr/include/c++/11/cstddef \
+  /usr/include/c++/11/cstdint \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdint.h \
+  /usr/include/stdint.h \
+  /usr/include/x86_64-linux-gnu/bits/wchar.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cv_cpu_dispatch.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/emmintrin.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/xmmintrin.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/mmintrin.h \
+  /usr/lib/gcc/x86_64-linux-gnu/11/include/mm_malloc.h \
+  /usr/include/c++/11/stdlib.h \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/base.hpp \
+  /home/hunglt31/Downloads/opencv/build/opencv2/opencv_modules.hpp \
   /usr/include/c++/11/climits \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/limits.h \
   /usr/lib/gcc/x86_64-linux-gnu/11/include/syslimits.h \
@@ -4142,67 +4211,7 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
   /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
   /usr/include/c++/11/algorithm \
-  /usr/include/c++/11/utility \
-  /usr/include/c++/11/bits/stl_relops.h \
-  /usr/include/c++/11/bits/stl_pair.h \
-  /usr/include/c++/11/bits/move.h \
-  /usr/include/c++/11/type_traits \
-  /usr/include/c++/11/initializer_list \
-  /usr/include/c++/11/bits/stl_algobase.h \
-  /usr/include/c++/11/bits/functexcept.h \
-  /usr/include/c++/11/bits/exception_defines.h \
-  /usr/include/c++/11/bits/cpp_type_traits.h \
-  /usr/include/c++/11/ext/type_traits.h \
-  /usr/include/c++/11/ext/numeric_traits.h \
-  /usr/include/c++/11/bits/stl_iterator_base_types.h \
-  /usr/include/c++/11/bits/stl_iterator_base_funcs.h \
-  /usr/include/c++/11/bits/concept_check.h \
-  /usr/include/c++/11/debug/assertions.h \
-  /usr/include/c++/11/bits/stl_iterator.h \
-  /usr/include/c++/11/bits/ptr_traits.h \
-  /usr/include/c++/11/debug/debug.h \
-  /usr/include/c++/11/bits/predefined_ops.h \
-  /usr/include/c++/11/bits/stl_algo.h \
-  /usr/include/c++/11/bits/algorithmfwd.h \
-  /usr/include/c++/11/bits/stl_heap.h \
-  /usr/include/c++/11/bits/stl_tempbuf.h \
-  /usr/include/c++/11/bits/stl_construct.h \
-  /usr/include/c++/11/new \
-  /usr/include/c++/11/bits/exception.h \
-  /usr/include/c++/11/bits/uniform_int_dist.h \
   /usr/include/c++/11/pstl/glue_algorithm_defs.h \
-  /usr/include/c++/11/functional \
-  /usr/include/c++/11/bits/stl_function.h \
-  /usr/include/c++/11/backward/binders.h \
-  /usr/include/c++/11/tuple \
-  /usr/include/c++/11/array \
-  /usr/include/c++/11/bits/range_access.h \
-  /usr/include/c++/11/bits/uses_allocator.h \
-  /usr/include/c++/11/bits/invoke.h \
-  /usr/include/c++/11/bits/functional_hash.h \
-  /usr/include/c++/11/bits/hash_bytes.h \
-  /usr/include/c++/11/bits/refwrap.h \
-  /usr/include/c++/11/bits/std_function.h \
-  /usr/include/c++/11/typeinfo \
-  /usr/include/c++/11/unordered_map \
-  /usr/include/c++/11/bits/allocator.h \
-  /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h \
-  /usr/include/c++/11/ext/new_allocator.h \
-  /usr/include/c++/11/bits/memoryfwd.h \
-  /usr/include/c++/11/ext/alloc_traits.h \
-  /usr/include/c++/11/bits/alloc_traits.h \
-  /usr/include/c++/11/ext/aligned_buffer.h \
-  /usr/include/c++/11/bits/hashtable.h \
-  /usr/include/c++/11/bits/hashtable_policy.h \
-  /usr/include/c++/11/bits/enable_special_members.h \
-  /usr/include/c++/11/bits/node_handle.h \
-  /usr/include/c++/11/bits/unordered_map.h \
-  /usr/include/c++/11/bits/erase_if.h \
-  /usr/include/c++/11/vector \
-  /usr/include/c++/11/bits/stl_uninitialized.h \
-  /usr/include/c++/11/bits/stl_vector.h \
-  /usr/include/c++/11/bits/stl_bvector.h \
-  /usr/include/c++/11/bits/vector.tcc \
   /usr/include/c++/11/pstl/execution_defs.h \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cvstd.hpp \
   /usr/include/c++/11/cstring \
@@ -4366,11 +4375,17 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/optim.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/ovx.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cvdef.h \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/calib3d/include/opencv2/calib3d.hpp \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cuda_types.hpp \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cuda.inl.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/features2d/include/opencv2/features2d.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/miniflann.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/defines.h \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/flann/include/opencv2/flann/config.h \
+  /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafilters/include/opencv2/cudafilters.hpp \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/imgproc/include/opencv2/imgproc.hpp \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/imgproc/include/opencv2/imgproc/segmentation.hpp \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/include/opencv2/opencv.hpp \
+  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/calib3d/include/opencv2/calib3d.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/affine.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/utils/logger.hpp \
   /usr/include/c++/11/iostream \
@@ -4436,8 +4451,6 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/highgui/include/opencv2/highgui.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/imgcodecs/include/opencv2/imgcodecs.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/videoio/include/opencv2/videoio.hpp \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/imgproc/include/opencv2/imgproc.hpp \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/imgproc/include/opencv2/imgproc/segmentation.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/ml/include/opencv2/ml.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/ml/include/opencv2/ml/ml.inl.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/objdetect/include/opencv2/objdetect.hpp \
@@ -4453,9 +4466,6 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/warpers.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/warpers.hpp \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cuda.hpp \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cuda_types.hpp \
-  /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/core/include/opencv2/core/cuda.inl.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/warpers_inl.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/warpers.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/stitching/include/opencv2/stitching/detail/matchers.hpp \
@@ -4479,9 +4489,17 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/video/include/opencv2/video.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/video/include/opencv2/video/tracking.hpp \
   /home/hunglt31/Downloads/opencv/opencv-4.10.0/modules/video/include/opencv2/video/background_segm.hpp \
+  /usr/include/poppler/cpp/poppler-document.h \
+  /usr/include/poppler/cpp/poppler-global.h \
+  /usr/include/poppler/cpp/poppler_cpp_export.h \
+  /usr/include/poppler/cpp/poppler-font.h \
+  /usr/include/poppler/cpp/poppler-image.h \
+  /usr/include/poppler/cpp/poppler-rectangle.h \
+  /usr/include/poppler/cpp/poppler-page-renderer.h \
+  /usr/include/poppler/cpp/poppler-image.h \
+  /usr/include/poppler/cpp/poppler-page.h \
+  ../includes/kernels/gamma_correction.h \
   ../includes/utils/Logger.h \
-  /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafeatures2d/include/opencv2/cudafeatures2d.hpp \
-  /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafilters/include/opencv2/cudafilters.hpp \
   /usr/include/c++/11/filesystem \
   /usr/include/c++/11/bits/fs_fwd.h \
   /usr/include/c++/11/bits/fs_path.h \
@@ -4491,16 +4509,7 @@ CMakeFiles/server.dir/src/utils/ImageProcessor.cpp.o: ../src/utils/ImageProcesso
   /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudaarithm/include/opencv2/cudaarithm.hpp \
   /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudaimgproc/include/opencv2/cudaimgproc.hpp \
   /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudawarping/include/opencv2/cudawarping.hpp \
-  /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/wechat_qrcode/include/opencv2/wechat_qrcode.hpp \
-  /usr/include/poppler/cpp/poppler-document.h \
-  /usr/include/poppler/cpp/poppler-global.h \
-  /usr/include/poppler/cpp/poppler_cpp_export.h \
-  /usr/include/poppler/cpp/poppler-font.h \
-  /usr/include/poppler/cpp/poppler-image.h \
-  /usr/include/poppler/cpp/poppler-rectangle.h \
-  /usr/include/poppler/cpp/poppler-page-renderer.h \
-  /usr/include/poppler/cpp/poppler-image.h \
-  /usr/include/poppler/cpp/poppler-page.h
+  /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/wechat_qrcode/include/opencv2/wechat_qrcode.hpp
 
 CMakeFiles/server.dir/src/utils/Logger.cpp.o: ../src/utils/Logger.cpp \
   /usr/include/stdc-predef.h \
@@ -5436,14 +5445,6 @@ CMakeFiles/server.dir/src/utils/utils.cpp.o: ../src/utils/utils.cpp \
 
 ../src/utils/MinIOHTTPClient.cpp:
 
-/usr/include/poppler/cpp/poppler-page.h:
-
-/usr/include/poppler/cpp/poppler-page-renderer.h:
-
-/usr/include/poppler/cpp/poppler-image.h:
-
-/usr/include/poppler/cpp/poppler-global.h:
-
 /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/wechat_qrcode/include/opencv2/wechat_qrcode.hpp:
 
 /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudawarping/include/opencv2/cudawarping.hpp:
@@ -5451,6 +5452,14 @@ CMakeFiles/server.dir/src/utils/utils.cpp.o: ../src/utils/utils.cpp \
 ../src/utils/ImageProcessor.cpp:
 
 ../src/utils/ExamExtractor.cpp:
+
+/usr/include/poppler/cpp/poppler-page.h:
+
+/usr/include/poppler/cpp/poppler-page-renderer.h:
+
+/usr/include/poppler/cpp/poppler-image.h:
+
+/usr/include/poppler/cpp/poppler-global.h:
 
 /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafeatures2d/include/opencv2/cudafeatures2d.hpp:
 

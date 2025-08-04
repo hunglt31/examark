@@ -79,19 +79,19 @@ cv::Mat ExamExtractor::createMetadataMatrix(const std::vector<Detection> &detect
       }
       std::pair<int, Detection> selected;
       if (class1Candidates.empty()) {
-        // No class 1 candidates—select the one with the minimum avgGray
+        // No class 1 candidates—select the one with the minimum avg_gray
         if (columnCandidates[col].size() > 1) {
           auto minCandidate = columnCandidates[col][0];
           float sumGray = 0.0f;
           for (const auto &candidate : columnCandidates[col]) {
-            if (candidate.second.avgGray < minCandidate.second.avgGray)
+            if (candidate.second.avg_gray < minCandidate.second.avg_gray)
               minCandidate = candidate;
-            sumGray += candidate.second.avgGray;
+            sumGray += candidate.second.avg_gray;
           }
-          sumGray -= minCandidate.second.avgGray;
-          float avgGrayAll = sumGray / (columnCandidates[col].size() - 1);
+          sumGray -= minCandidate.second.avg_gray;
+          float avg_gray_all = sumGray / (columnCandidates[col].size() - 1);
           bool hasSelected = false;
-          if (minCandidate.second.avgGray < avgGrayAll * 0.9f) {
+          if (minCandidate.second.avg_gray < avg_gray_all * 0.8f) {
             selected = minCandidate;
             hasSelected = true;
           }
@@ -108,7 +108,7 @@ cv::Mat ExamExtractor::createMetadataMatrix(const std::vector<Detection> &detect
         for (const auto &cand : class1Candidates) {
           bool removeCand = false;
           for (const auto &other : class1Candidates) {
-            if (cand.second.avgGray > other.second.avgGray * 1.1f) {
+            if (cand.second.avg_gray > other.second.avg_gray * 1.1f) {
               removeCand = true;
               break;
             }
@@ -122,7 +122,7 @@ cv::Mat ExamExtractor::createMetadataMatrix(const std::vector<Detection> &detect
         } else if (filtered.empty()) {
           selected = class1Candidates[0];
           for (const auto &cand : class1Candidates) {
-            if (cand.second.avgGray < selected.second.avgGray)
+            if (cand.second.avg_gray < selected.second.avg_gray)
               selected = cand;
           }
           matrix.at<uchar>(selected.first, col) = 1;
@@ -189,24 +189,24 @@ cv::Mat ExamExtractor::createPart1Matrix(const std::vector<Detection> &detection
       }
       std::pair<int, Detection> selected;
       if (class1Candidates.empty()) {
-        // No class 1 candidates—select the one with the minimum avgGray
+        // No class 1 candidates—select the one with the minimum avg_gray
         if (rowCandidates[row].size() > 1) {
           auto minCandidate = rowCandidates[row][0];
           float sumGray = 0.0f;
           for (const auto &candidate : rowCandidates[row]) {
-            if (candidate.second.avgGray < minCandidate.second.avgGray)
+            if (candidate.second.avg_gray < minCandidate.second.avg_gray)
               minCandidate = candidate;
-            sumGray += candidate.second.avgGray;
+            sumGray += candidate.second.avg_gray;
           }
-          sumGray -= minCandidate.second.avgGray;
-          float avgGrayAll = sumGray / (rowCandidates[row].size() - 1);
+          sumGray -= minCandidate.second.avg_gray;
+          float avg_gray_all = sumGray / (rowCandidates[row].size() - 1);
           bool hasSelected = false;
-          if (minCandidate.second.avgGray < avgGrayAll * 0.9f) {
+          if (minCandidate.second.avg_gray < avg_gray_all * 0.8f) {
             selected = minCandidate;
             hasSelected = true;
           }
           if (hasSelected) {
-            matrix.at<uchar>(row, selected.first) = 1;
+            matrix.at<uchar>(row, selected.first) = 2;
           }
         }
       } else if (class1Candidates.size() == 1) {
@@ -219,7 +219,7 @@ cv::Mat ExamExtractor::createPart1Matrix(const std::vector<Detection> &detection
         for (const auto &cand : class1Candidates) {
           bool removeCand = false;
           for (const auto &other : class1Candidates) {
-            if (cand.second.avgGray > other.second.avgGray * 1.1f) {
+            if (cand.second.avg_gray > other.second.avg_gray * 1.1f) {
               removeCand = true;
               break;
             }
@@ -233,7 +233,7 @@ cv::Mat ExamExtractor::createPart1Matrix(const std::vector<Detection> &detection
         } else if (filtered.empty()) {
           selected = class1Candidates[0];
           for (const auto &cand : class1Candidates) {
-            if (cand.second.avgGray < selected.second.avgGray)
+            if (cand.second.avg_gray < selected.second.avg_gray)
               selected = cand;
           }
           matrix.at<uchar>(row, selected.first) = 2;
@@ -307,37 +307,36 @@ cv::Mat ExamExtractor::createPart2Matrix(const std::vector<Detection> &detection
         }
         std::pair<int, Detection> selected;
         if (class1Candidates.empty()) {
-          // No class 1 candidates—select the one with the minimum avgGray
+          // No class 1 candidates—select the one with the minimum avg_gray
           if (subRowCandidates.size() > 1) {
             auto minCandidate = subRowCandidates[0];
             float sumGray = 0.0f;
             for (const auto &candidate : subRowCandidates) {
-              if (candidate.second.avgGray < minCandidate.second.avgGray)
+              if (candidate.second.avg_gray < minCandidate.second.avg_gray)
                 minCandidate = candidate;
-              sumGray += candidate.second.avgGray;
+              sumGray += candidate.second.avg_gray;
             }
-            sumGray -= minCandidate.second.avgGray;
-            float avgGrayAll = sumGray / (subRowCandidates.size() - 1);
+            sumGray -= minCandidate.second.avg_gray;
+            float avg_gray_all = sumGray / (subRowCandidates.size() - 1);
             bool hasSelected = false;
-            if (minCandidate.second.avgGray < avgGrayAll * 0.9f) {
+            if (minCandidate.second.avg_gray < avg_gray_all * 0.8f) {
               selected = minCandidate;
               hasSelected = true;
             }
             if (hasSelected) {
-              matrix.at<uchar>(row, selected.first) = 1;
+              matrix.at<uchar>(row, selected.first) = 2;
             }
           }
         } else if (class1Candidates.size() == 1) {
           // Only one class 1 candidate—select it directly.
           matrix.at<uchar>(row, class1Candidates[0].first) = 1;
         } else {
-          // Multiple class 1 candidates—filter out those that are significantly
-          // lighter.
+          // Multiple class 1 candidates—filter out those that are slighter.
           std::vector<std::pair<int, Detection>> filtered;
           for (const auto &cand : class1Candidates) {
             bool removeCand = false;
             for (const auto &other : class1Candidates) {
-              if (cand.second.avgGray > other.second.avgGray * 1.1f) {
+              if (cand.second.avg_gray > other.second.avg_gray * 1.1f) {
                 removeCand = true;
                 break;
               }
@@ -351,7 +350,7 @@ cv::Mat ExamExtractor::createPart2Matrix(const std::vector<Detection> &detection
           } else if (filtered.empty()) {
             selected = class1Candidates[0];
             for (const auto &cand : class1Candidates) {
-              if (cand.second.avgGray < selected.second.avgGray)
+              if (cand.second.avg_gray < selected.second.avg_gray)
                 selected = cand;
             }
             matrix.at<uchar>(row, selected.first) = 2;
@@ -479,7 +478,7 @@ std::vector<std::string> ExamExtractor::processContentPart2(const cv::Mat &array
       uchar val1 = rowPtr[colStart + 1];
 
       bool isSuggested = (val0 == 2 || val1 == 2);
-      // bool hasMultiple = (val0 == 3 || val1 == 3);
+      bool hasMultiple = (val0 == 3 || val1 == 3);
 
       if (val0 == 1) {
         eachAnswer.push_back('D');
@@ -491,10 +490,10 @@ std::vector<std::string> ExamExtractor::processContentPart2(const cv::Mat &array
         } else if (val1 == 2) {
           eachAnswer.push_back('s');
         }
-        // } else if (hasMultiple) {
-        //   eachAnswer.push_back('S');
+      } else if (hasMultiple) {
+        eachAnswer.push_back('X');
       } else {
-        eachAnswer.push_back('S');
+        eachAnswer.push_back('_');
       }
     }
     overallAnswers.emplace_back(eachAnswer);

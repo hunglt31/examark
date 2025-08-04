@@ -272,7 +272,7 @@ std::vector<std::vector<Detection>> ModelBuilder::inference(const std::vector<cv
       cv::Scalar meanVal = cv::mean(gray(safeBox));
       avgGray = meanVal[0];
 
-      dets.emplace_back(Detection(box, score, classId, avgGray));
+      dets.emplace_back(Detection(box, score, classId, avgGray, 0));
     }
     results[b] = dets;
   }

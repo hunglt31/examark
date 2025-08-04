@@ -190,12 +190,11 @@ std::vector<std::vector<Detection>> TritonClient::postprocess(const std::vector<
     }
 
     // Populate the results
-    cv::cuda::GpuMat gpu_img, gpu_gray, cropped;
+    cv::Mat gray_image, cropped, binary_image;
     cv::Rect roi;
 
     for (int i = 0; i < numImages; i++) {
-      gpu_img.upload(images[i]);
-      cv::cuda::cvtColor(gpu_img, gpu_gray, cv::COLOR_BGR2GRAY);
+      cv::cvtColor(images[i], gray_image, cv::COLOR_BGR2GRAY);
 
       for (int j = 0; j < maxOutputBoxes; j++) {
         int detIdx = i * maxOutputBoxes + j;
@@ -211,23 +210,23 @@ std::vector<std::vector<Detection>> TritonClient::postprocess(const std::vector<
         float width = x2 - x1;
         float height = y2 - y1;
 
-        det.box = cv::Rect(cvRound(x1), cvRound(y1), cvRound(width), cvRound(height));
-        det.score = scores[detIdx];
-        det.classId = classes[detIdx];
-
         roi.x = cvRound(x1 + width / 4);
         roi.y = cvRound(y1 + height / 4);
         roi.width = cvRound(width / 2);
         roi.height = cvRound(height / 2);
 
-        roi &= cv::Rect(0, 0, gpu_gray.cols, gpu_gray.rows);
+        roi &= cv::Rect(0, 0, gray_image.cols, gray_image.rows);
+        cropped = gray_image(roi);
 
-        cropped = gpu_gray(roi);
-        cv::Mat cpu_cropped;
-        cropped.download(cpu_cropped);
-        det.avgGray = cv::mean(cpu_cropped)[0];
+        const uchar color_threshold = 175;
+        cv::threshold(cropped, binary_image, color_threshold, 255, cv::THRESH_BINARY_INV);
 
-        results[i].emplace_back(det);
+        int pixel_count = cv::countNonZero(binary_image);
+        int total_pixels = cropped.total();
+
+        results[i].emplace_back(Detection(cv::Rect(cvRound(x1), cvRound(y1), cvRound(width), cvRound(height)),
+                                          scores[detIdx], classes[detIdx], cv::mean(cropped)[0],
+                                          static_cast<float>(pixel_count) / total_pixels));
       }
     }
     return results;

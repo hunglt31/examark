@@ -52,7 +52,7 @@ function GradeExamPage() {
   }, []);
 
   // Function to automatically find and load answer key file
-  const autoLoadAnswerKey = async () => {
+  const autoLoadAnswerKey = async (pdfFileName = null) => {
     try {
       // First, try to get a list of files in the answer-keys folder
       // Since we can't directly list files from frontend, we'll try common patterns
@@ -153,10 +153,15 @@ function GradeExamPage() {
 
         set_xlsx_file(virtualFile);
         set_valid_files(true);
-        setGradingMessage(`Exam file: ${pdfFile ? pdfFile.name : 'Unknown'}, Auto-loaded answer key: ${fileName}`);
+
+        // Use the passed PDF file name or fallback to current state
+        const currentPdfName = pdfFileName || (pdfFile ? pdfFile.name : 'Unknown');
+        // setGradingMessage(`Exam file: ${currentPdfName}, Auto-loaded answer key: ${fileName}`);
 
         localStorage.setItem('examarkAnswerKey', JSON.stringify(simpleJson));
         localStorage.setItem('examarkAnswerKeyFileName', fileName);
+
+        console.log('Answer key loaded successfully, valid_files set to true');
 
         return true;
       } catch (parseError) {
@@ -272,14 +277,23 @@ function GradeExamPage() {
     const file = event.target.files[0];
     if (file) {
       setPdfFile(file);
+      // setGradingMessage('Loading answer key...');
 
-      // Auto-load answer key when PDF is uploaded
-      const answerKeyLoaded = await autoLoadAnswerKey();
+      try {
+        // Auto-load answer key when PDF is uploaded, pass the PDF file name
+        const answerKeyLoaded = await autoLoadAnswerKey(file.name);
 
-      if (answerKeyLoaded) {
-        set_valid_files(true);
-      } else {
+        if (answerKeyLoaded) {
+          set_valid_files(true);
+          console.log('Answer key loaded successfully in handlePdfFileChange');
+        } else {
+          set_valid_files(false);
+          setGradingMessage('Failed to load answer key. Please ensure an .xlsx file exists in the answer-keys folder.');
+        }
+      } catch (error) {
+        console.error('Error in handlePdfFileChange:', error);
         set_valid_files(false);
+        setGradingMessage(`Error loading answer key: ${error.message}`);
       }
     } else {
       setPdfFile(null);

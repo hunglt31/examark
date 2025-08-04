@@ -704,9 +704,18 @@ CMakeFiles/server.dir/src/services/Service.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/struct_statx.h \
  /home/hunglt31/examark/backend/includes/utils/ExamConfig.h \
  /home/hunglt31/examark/backend/includes/utils/ImageProcessor.h \
- /home/hunglt31/examark/backend/includes/kernels/gamma_correction.h \
  /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafeatures2d/include/opencv2/cudafeatures2d.hpp \
  /home/hunglt31/Downloads/opencv/opencv_contrib-4.10.0/modules/cudafilters/include/opencv2/cudafilters.hpp \
+ /usr/include/poppler/cpp/poppler-document.h \
+ /usr/include/poppler/cpp/poppler-global.h \
+ /usr/include/poppler/cpp/poppler_cpp_export.h \
+ /usr/include/poppler/cpp/poppler-font.h \
+ /usr/include/poppler/cpp/poppler-image.h \
+ /usr/include/poppler/cpp/poppler-rectangle.h \
+ /usr/include/poppler/cpp/poppler-page-renderer.h \
+ /usr/include/poppler/cpp/poppler-image.h \
+ /usr/include/poppler/cpp/poppler-page.h \
+ /home/hunglt31/examark/backend/includes/kernels/gamma_correction.h \
  /home/hunglt31/examark/backend/includes/utils/MinIOHTTPClient.h \
  /usr/include/x86_64-linux-gnu/curl/curl.h \
  /usr/include/x86_64-linux-gnu/curl/curlver.h \

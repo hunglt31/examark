@@ -7,9 +7,11 @@ struct Detection {
   cv::Rect box;
   float score;
   int classId;
-  float avgGray;
-  Detection() : box(), score(0.0f), classId(0), avgGray(0.0f) {}
-  Detection(const cv::Rect &b, float s, int c, float a) : box(b), score(s), classId(c), avgGray(a) {}
+  float avg_gray;
+  float percent_below_threshold;
+  Detection() : box(), score(0.0f), classId(0), avg_gray(0.0f), percent_below_threshold(0.0f) {}
+  Detection(const cv::Rect &b, float s, int c, float a, float p)
+      : box(b), score(s), classId(c), avg_gray(a), percent_below_threshold(p) {}
 };
 
 #endif // DETECTION_H

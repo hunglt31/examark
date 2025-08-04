@@ -424,8 +424,6 @@ function ResultsPage() {
 
     if (answer && answer.match(/[a-z]/)) {
       style = { backgroundColor: 'cyan' };
-    } else if (part === '2' && currentAnswer && currentAnswer.includes('_')) {
-      style = { backgroundColor: '#d0f5dd' };
     } else if (!allowedAnswers.includes(currentAnswer)) {
       style = { backgroundColor: 'yellow' };
     }
@@ -882,9 +880,9 @@ function ResultsPage() {
         </>
       ) : (
         <div className="no-results-message">
-          <p>No exam results available. Please grade an exam first.</p>
-          <Link to="/grade">
-            <button className="start-grading-button">Go to Grading Page</button>
+          <p>No exam results available. Please extract an exam first.</p>
+          <Link to="/extract">
+            <button className="start-grading-button">Go to Extraction Page</button>
           </Link>
         </div>
       )}

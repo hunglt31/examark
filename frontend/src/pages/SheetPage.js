@@ -500,14 +500,55 @@ function SheetPage() {
     }
   };
 
+  const shouldHighlightColumn = (colIndex) => {
+    if (colIndex < 2 || !csvRows.length) return false;
+
+    let part1UnderscoreCount = 0;
+    let part2EmptyCount = 0;
+    let part1Total = 0;
+    let part2Total = 0;
+
+    csvRows.forEach((row, rowIndex) => {
+      if (rowIndex < 4) return;
+
+      const part = row[0];
+      const cellValue = row[colIndex] || '';
+
+      if (part === '1') {
+        part1Total++;
+        if (cellValue.trim() === '_') {
+          part1UnderscoreCount++;
+        }
+      } else if (part === '2') {
+        part2Total++;
+        if (cellValue.trim() === '______' || cellValue.trim() === '') {
+          part2EmptyCount++;
+        }
+      }
+    });
+
+    // Highlight if more than 50% of answers are missing/empty
+    const part1Threshold = part1Total > 0 ? part1UnderscoreCount / part1Total > 0.5 : false;
+    const part2Threshold = part2Total > 0 ? part2EmptyCount / part2Total > 0.5 : false;
+
+    return part1Threshold && part2Threshold;
+  };
+
   // Determine cell style based on content
   const getCellStyle = (value, rowIndex, colIndex) => {
+    const shouldHighlight = shouldHighlightColumn(colIndex);
+
     if (rowIndex < 4) {
       if ((rowIndex === 1 || rowIndex === 2) && colIndex > 1) {
         if (value && !isValidId(value)) {
           return { backgroundColor: 'yellow' };
         }
       }
+
+      if (shouldHighlight && colIndex > 1) {
+        return { backgroundColor: '#ffeb3b', border: '2px solid #ff9800' };
+      }
+
       return {};
     }
 
@@ -515,31 +556,6 @@ function SheetPage() {
     if (colIndex < 2) return {};
 
     let styles = {};
-
-    // Check if this is one of the last 3 rows (grading results) - DISABLED
-    // const isGradingResultRow = csvRows.length > 0 && rowIndex >= csvRows.length - 4;
-
-    // if (isGradingResultRow) {
-    //   if (value && /^\d+(\.\d+)?$/.test(value.toString())) {
-    //     styles.fontWeight = 'bold';
-    //     styles.fontSize = '18px';
-
-    //     const rowLabel = csvRows[rowIndex]?.[1]?.toLowerCase() || '';
-
-    //     if (rowLabel.includes('correct')) {
-    //       styles.backgroundColor = '#f3e5f5';
-    //       styles.color = '#6a1b9a';
-    //       styles.border = '2px solid #9c27b0';
-    //     } else if (rowLabel.includes('points')) {
-    //       // Red background for points (last row)
-    //       styles.backgroundColor = '#ffebee';
-    //       styles.color = '#c62828';
-    //       styles.border = '2px solid #f44336';
-    //     }
-    //   }
-
-    //   return styles;
-    // }
 
     // Style lowercase letters
     if (value && /[a-z]/.test(value)) {
@@ -551,12 +567,9 @@ function SheetPage() {
     // For Part 2, valid answers are D, S
     const part = csvRows[rowIndex]?.[0] || '';
     if (value && value.trim() !== '') {
-      if (value.trim() === '_') {
-        return { backgroundColor: '#d0f5dd' };
-      }
       if (part === '1') {
         // For Part 1, valid answers are A, B, C, D, _
-        const validAnswers = ['A', 'B', 'C', 'D'];
+        const validAnswers = ['A', 'B', 'C', 'D', '_'];
         if (!validAnswers.includes(value.toUpperCase())) {
           return { backgroundColor: 'yellow' };
         }
@@ -565,9 +578,6 @@ function SheetPage() {
         const validPattern = /^[DS_]+$/i;
         if (!validPattern.test(value)) {
           return { backgroundColor: 'yellow' };
-        }
-        if (value.includes('_')) {
-          return { backgroundColor: '#d0f5dd' };
         }
       }
     }
@@ -1544,9 +1554,9 @@ function SheetPage() {
         </>
       ) : (
         <div className="no-results-message">
-          <p>No data available. Please grade an exam first.</p>
-          <Link to="/grade">
-            <button className="btn btn-primary btn-large">Go to Grading Page</button>
+          <p>No data available. Please extract an exam first.</p>
+          <Link to="/extract">
+            <button className="btn btn-primary btn-large">Go to Extraction Page</button>
           </Link>
         </div>
       )}

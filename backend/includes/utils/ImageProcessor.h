@@ -1,19 +1,26 @@
 #ifndef IMAGE_PROCESSOR_H
 #define IMAGE_PROCESSOR_H
 
-#include "kernels/gamma_correction.h"
-#include "utils/Logger.h"
 #include <functional>
 #include <opencv2/cudafeatures2d.hpp>
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <vector>
 
+#include <poppler/cpp/poppler-document.h>
+#include <poppler/cpp/poppler-image.h>
+#include <poppler/cpp/poppler-page-renderer.h>
+#include <poppler/cpp/poppler-page.h>
+
+#include "kernels/gamma_correction.h"
+#include "utils/Logger.h"
+
 const int IMAGE_WIDTH = 2480;
 const int IMAGE_HEIGHT = 3508;
 
 class ImageProcessor {
 private:
+  // Variables for image alignment
   cv::Ptr<cv::SIFT> sift;
   cv::Ptr<cv::FlannBasedMatcher> flann_matcher;
 
