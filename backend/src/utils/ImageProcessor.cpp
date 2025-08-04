@@ -40,18 +40,18 @@ cv::Mat REF_IMG_GRAY = [] {
 
 const float LOWE_RATIO_THRESHOLD = 0.7f;
 const float RANSAC_THRESHOLD = 5.0f;
-const int ITERATIONS = 2000;
+const int ITERATIONS = 5000;
 
 // --- 3. Coordinates for metadata ---
-const int STUDENT_ID_CONTOUR_1_COORD_X = 167;
-const int STUDENT_ID_CONTOUR_1_COORD_Y = 372;
-const int STUDENT_ID_CONTOUR_2_COORD_X = 676;
-const int STUDENT_ID_CONTOUR_2_COORD_Y = 1109;
+const int STUDENT_ID_CONTOUR_1_COORD_X = 180;
+const int STUDENT_ID_CONTOUR_1_COORD_Y = 352;
+const int STUDENT_ID_CONTOUR_2_COORD_X = 666;
+const int STUDENT_ID_CONTOUR_2_COORD_Y = 1129;
 
-const int EXAM_ID_CONTOUR_1_COORD_X = 677;
-const int EXAM_ID_CONTOUR_1_COORD_Y = 372;
-const int EXAM_ID_CONTOUR_2_COORD_X = 888;
-const int EXAM_ID_CONTOUR_2_COORD_Y = 1109;
+const int EXAM_ID_CONTOUR_1_COORD_X = 687;
+const int EXAM_ID_CONTOUR_1_COORD_Y = 352;
+const int EXAM_ID_CONTOUR_2_COORD_X = 878;
+const int EXAM_ID_CONTOUR_2_COORD_Y = 1129;
 
 // --- 4. Coordinates for content ---
 const int CONTENT_11_CONTOUR_1_COORD_X = 230;
