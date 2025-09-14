@@ -27,11 +27,10 @@ extern std::unordered_map<std::string, JobProgress> jobProgressMap;
 namespace utils {
 
 /**
- * @brief Generate a random alphanumeric ID of specified length.
- * @param length Length of the generated ID. Default is 8.
- * @return A random alphanumeric string.
+ * @brief Generate an UUID v4 string.
+ * @return An UUID v4 string.
  */
-std::string generateRandomId(int length = 8);
+std::string generateUUIDv4();
 
 /**
  * @brief Update the progress of a grading job.
@@ -53,6 +52,11 @@ void updateJobProgress(const std::string &jobId, const std::string &stage, const
  */
 void updateJobQrInfo(const std::string &jobId, const std::string &qrInfo);
 
+/**
+ * @brief Get the current timestamp in ISO 8601 format.
+ * @return Current timestamp as a string.
+ */
+std::string getCurrentTimestamp();
 } // namespace utils
 
 #endif // UTILS_H

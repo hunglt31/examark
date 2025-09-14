@@ -15,6 +15,9 @@ import NextIcon from '../assets/icons/next.png';
 import PreviousIcon from '../assets/icons/previous.png';
 
 function SheetPage() {
+  const [examData, setExamData] = useState(null);
+  const [selectedPdf, setSelectedPdf] = useState(null);
+
   const [csvData, setCsvData] = useState('');
   const [csvRows, setCsvRows] = useState([]);
   const [images, setImages] = useState([]);
@@ -28,7 +31,6 @@ function SheetPage() {
   const [editedMetadata, setEditedMetadata] = useState({});
   const [editedAnswers, setEditedAnswers] = useState({});
   const [approved, setApproved] = useState(false);
-  const tableRef = useRef(null);
 
   const [isGrading, setIsGrading] = useState(false);
   const [answerKey, setAnswerKey] = useState(Array(24).fill(''));
@@ -45,6 +47,19 @@ function SheetPage() {
   const [hasPreviousAnswerKey, setHasPreviousAnswerKey] = useState(false);
   const [previousAnswerKeyFileName, setPreviousAnswerKeyFileName] = useState('');
   const [showRegradeOptions, setShowRegradeOptions] = useState(false);
+
+  const tableRef = useRef(null);
+
+  useEffect(() => {
+    const storedExamData = localStorage.getItem('examData');
+    if (storedExamData) {
+      const parsedExamData = JSON.parse(storedExamData);
+      setExamData(parsedExamData);
+      if (parsedExamData.data && parsedExamData.data.length > 0) {
+        updateSelectedPdf(parsedExamData.data[0]);
+      }
+    }
+  }, []);
 
   // Add alert state
   const [alert, setAlert] = useState({
@@ -75,6 +90,67 @@ function SheetPage() {
     });
   };
 
+  // Update selected PDF result: update CSV data, images, and jobId accordingly.
+  const updateSelectedPdf = (pdfResult) => {
+    setSelectedPdf(pdfResult);
+    setJobId(pdfResult.pdf);
+
+    // Use csvData if available, otherwise fall back to csv URL
+    let csvDataToUse = pdfResult.csvData || pdfResult.csv;
+
+    // If we have a URL instead of actual CSV data, we need to fetch it
+    if (csvDataToUse && csvDataToUse.startsWith('http')) {
+      // It's a URL, fetch the actual CSV data
+      fetch(csvDataToUse)
+        .then((response) => response.text())
+        .then((csvText) => {
+          setCsvData(csvText);
+          const rows = csvText.split('\n').map((line) => {
+            return line.split(',').map((cell) => cell.trim());
+          });
+          setCsvRows(rows);
+        })
+        .catch((error) => {
+          console.error('Error fetching CSV data:', error);
+          setCsvData('Error loading CSV data');
+          setCsvRows([]);
+        });
+    } else {
+      // It's actual CSV data
+      setCsvData(csvDataToUse);
+      const rows = csvDataToUse.split('\n').map((line) => {
+        return line.split(',').map((cell) => cell.trim());
+      });
+      setCsvRows(rows);
+    }
+
+    const processedImages = Object.entries(pdfResult.images).map(([page, url]) => ({
+      name: page,
+      url,
+    }));
+
+    const sortedImages = processedImages.sort((a, b) => {
+      const pageNumA = parseInt(a.name.match(/page_(\d+)/)?.[1] || '0', 10);
+      const pageNumB = parseInt(b.name.match(/page_(\d+)/)?.[1] || '0', 10);
+      return pageNumA - pageNumB;
+    });
+    setImages(sortedImages);
+
+    setHasResults(true);
+    setCurrentImageIndex(0);
+  };
+
+  // Handler for PDF selection dropdown
+  const handlePdfSelect = (e) => {
+    const selectedPdfId = e.target.value;
+    if (examData && examData.data) {
+      const selected = examData.data.find((item) => item.pdf === selectedPdfId);
+      if (selected) {
+        updateSelectedPdf(selected);
+      }
+    }
+  };
+
   const handleClearSheet = () => {
     showAlert('Do you want to clear all sheet data? This action cannot be undone.', 'warning', true, () => {
       localStorage.removeItem('examarkJobId');
@@ -88,223 +164,95 @@ function SheetPage() {
     });
   };
 
-  // [MinIO] Load data on component mount
-  useEffect(() => {
-    // Get URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlJobId = urlParams.get('jobId');
+  // // New helper function to apply edits to CSV rows
+  // const applyEditsToRows = (rows, edits) => {
+  //   if (!edits || !rows.length) return rows;
 
-    // Get data from localStorage
-    const savedJobId = localStorage.getItem('examarkJobId') || urlJobId;
-    const savedCsvData = localStorage.getItem('examarkCsvData');
-    const savedImages = localStorage.getItem('examarkImages');
+  //   const newRows = rows.map((row) => [...row]);
 
-    const savedAnswerKey = localStorage.getItem('examarkAnswerKey');
-    const savedFileName = localStorage.getItem('examarkAnswerKeyFileName');
+  //   // Apply metadata edits
+  //   if (edits.metadata) {
+  //     Object.entries(edits.metadata).forEach(([imageIndex, metadataObj]) => {
+  //       const imgIdx = parseInt(imageIndex, 10);
 
-    if (savedAnswerKey) {
-      setHasPreviousAnswerKey(true);
-      setPreviousAnswerKeyFileName(savedFileName || 'Previous answer key');
-    }
+  //       // Map image index to CSV column - this should match ResultsPage logic
+  //       const csvColumnIndex = imgIdx + 2; // Assuming metadata starts at column 2
 
-    if (savedJobId && savedCsvData && savedImages) {
-      setJobId(savedJobId);
+  //       // Apply each metadata edit
+  //       Object.entries(metadataObj).forEach(([label, value]) => {
+  //         // Find the row for this metadata item
+  //         for (let i = 0; i < Math.min(4, newRows.length); i++) {
+  //           // Check both first and second columns for the label
+  //           if (newRows[i][0] === label || newRows[i][1] === label) {
+  //             if (csvColumnIndex < newRows[i].length) {
+  //               newRows[i][csvColumnIndex] = value;
+  //             }
+  //             break;
+  //           }
+  //         }
+  //       });
+  //     });
+  //   }
 
-      // Parse CSV data
-      const rows = savedCsvData.split('\n').map((row) => {
-        const cells = [];
-        let current = '';
-        let inQuotes = false;
+  //   // Apply answer edits
+  //   if (edits.answers) {
+  //     Object.entries(edits.answers).forEach(([key, value]) => {
+  //       // Parse key format: "[imageIndex]-[part]-[questionIdx]"
+  //       const [imgIdx, part, questionIdx] = key.split('-');
+  //       const imageIndex = parseInt(imgIdx, 10);
 
-        for (let i = 0; i < row.length; i++) {
-          const char = row[i];
-          if (char === '"') {
-            inQuotes = !inQuotes;
-          } else if (char === ',' && !inQuotes) {
-            cells.push(current.trim());
-            current = '';
-          } else {
-            current += char;
-          }
-        }
-        cells.push(current.trim());
-        return cells;
-      });
+  //       // Map image index to CSV column
+  //       const csvColumnIndex = imageIndex + 2; // Same mapping as metadata
 
-      setCsvData(savedCsvData);
-      setCsvRows(rows);
+  //       // Find the correct row based on part and question index
+  //       let rowIndex = -1;
 
-      const parsedImages = JSON.parse(savedImages);
+  //       if (part === '1') {
+  //         // For part 1, find the row with matching part and question
+  //         const flatQuestionIndex = parseInt(questionIdx, 10);
+  //         const actualQuestionNumber = flatQuestionIndex + 1;
 
-      // Images should already have MinIO URLs from the backend
-      const processedImages = parsedImages.map((img) => {
-        if (typeof img === 'string') {
-          // Old format - shouldn't happen with MinIO but keep for safety
-          console.warn("Old image format detected, this shouldn't happen with MinIO");
-          return {
-            name: img,
-            url: `http://localhost:8080/results/${savedJobId}/images/${img}`,
-          };
-        } else {
-          // New format from MinIO - use direct URL
-          return {
-            name: img.name,
-            url: img.url, // Direct MinIO URL
-          };
-        }
-      });
+  //         for (let i = 4; i < newRows.length; i++) {
+  //           if (newRows[i][0] === '1' && parseInt(newRows[i][1]) === actualQuestionNumber) {
+  //             rowIndex = i;
+  //             break;
+  //           }
+  //         }
+  //       } else if (part === '2') {
+  //         // For part 2, handle the format "qIdx-row"
+  //         const [qIdx, qRow] = questionIdx.split('-');
+  //         const questionNumber = parseInt(qIdx, 10) + 1; // Convert 0-based to 1-based
+  //         const rowOffset = parseInt(qRow, 10);
 
-      // Sort images by page number
-      const sortedImages = processedImages.sort((a, b) => {
-        const pageNumA = parseInt(a.name.match(/page_(\d+)/)?.[1] || '0', 10);
-        const pageNumB = parseInt(b.name.match(/page_(\d+)/)?.[1] || '0', 10);
-        return pageNumA - pageNumB;
-      });
+  //         // Find the base row for this question in part 2
+  //         for (let i = 4; i < newRows.length; i++) {
+  //           if (newRows[i][0] === '2' && parseInt(newRows[i][1]) === questionNumber) {
+  //             rowIndex = i;
+  //             break;
+  //           }
+  //         }
 
-      setImages(sortedImages);
-      setHasResults(true);
-    }
+  //         // For part 2, we need to handle multi-character answers
+  //         // When editing in SheetPage, replace the entire answer string
+  //         if (rowIndex >= 0 && csvColumnIndex < newRows[rowIndex].length) {
+  //           // In SheetPage, we want to replace the entire answer string
+  //           // So we'll use the value directly as the new answer
+  //           newRows[rowIndex][csvColumnIndex] = value;
+  //         }
 
-    // *** THÊM: Reload data khi page được focus lại ***
-    const handlePageFocus = () => {
-      console.log('Page focused, reloading data...');
-      const savedCsvData = localStorage.getItem('examarkCsvData');
-      if (savedCsvData && savedCsvData !== csvData) {
-        setCsvData(savedCsvData);
-        // Parse lại CSV rows
-        const newRows = savedCsvData.split('\n').map((row) => {
-          const cells = [];
-          let current = '';
-          let inQuotes = false;
+  //         // Skip the normal assignment below
+  //         rowIndex = -1;
+  //       }
 
-          for (let i = 0; i < row.length; i++) {
-            const char = row[i];
-            if (char === '"') {
-              inQuotes = !inQuotes;
-            } else if (char === ',' && !inQuotes) {
-              cells.push(current.trim());
-              current = '';
-            } else {
-              current += char;
-            }
-          }
-          cells.push(current.trim());
-          return cells;
-        });
-        setCsvRows(newRows);
-        console.log('CSV data updated from localStorage');
-      }
-    };
+  //       // Apply the edit for part 1 or if we didn't handle it above
+  //       if (rowIndex >= 0 && csvColumnIndex < newRows[rowIndex].length) {
+  //         newRows[rowIndex][csvColumnIndex] = value;
+  //       }
+  //     });
+  //   }
 
-    // *** THÊM: Listen for storage changes from other tabs/pages ***
-    const handleStorageChange = (e) => {
-      if (e.key === 'examarkCsvData' && e.newValue) {
-        setCsvData(e.newValue);
-        console.log('CSV data updated from another page');
-      } else if (e.key === 'examarkEdits' && e.newValue) {
-        const edits = JSON.parse(e.newValue);
-        if (edits.metadata) setEditedMetadata(edits.metadata);
-        if (edits.answers) setEditedAnswers(edits.answers);
-        console.log('Edits updated from another page');
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [csvData]);
-
-  // New helper function to apply edits to CSV rows
-  const applyEditsToRows = (rows, edits) => {
-    if (!edits || !rows.length) return rows;
-
-    const newRows = rows.map((row) => [...row]);
-
-    // Apply metadata edits
-    if (edits.metadata) {
-      Object.entries(edits.metadata).forEach(([imageIndex, metadataObj]) => {
-        const imgIdx = parseInt(imageIndex, 10);
-
-        // Map image index to CSV column - this should match ResultsPage logic
-        const csvColumnIndex = imgIdx + 2; // Assuming metadata starts at column 2
-
-        // Apply each metadata edit
-        Object.entries(metadataObj).forEach(([label, value]) => {
-          // Find the row for this metadata item
-          for (let i = 0; i < Math.min(4, newRows.length); i++) {
-            // Check both first and second columns for the label
-            if (newRows[i][0] === label || newRows[i][1] === label) {
-              if (csvColumnIndex < newRows[i].length) {
-                newRows[i][csvColumnIndex] = value;
-              }
-              break;
-            }
-          }
-        });
-      });
-    }
-
-    // Apply answer edits
-    if (edits.answers) {
-      Object.entries(edits.answers).forEach(([key, value]) => {
-        // Parse key format: "[imageIndex]-[part]-[questionIdx]"
-        const [imgIdx, part, questionIdx] = key.split('-');
-        const imageIndex = parseInt(imgIdx, 10);
-
-        // Map image index to CSV column
-        const csvColumnIndex = imageIndex + 2; // Same mapping as metadata
-
-        // Find the correct row based on part and question index
-        let rowIndex = -1;
-
-        if (part === '1') {
-          // For part 1, find the row with matching part and question
-          const flatQuestionIndex = parseInt(questionIdx, 10);
-          const actualQuestionNumber = flatQuestionIndex + 1; // Convert 0-based to 1-based
-
-          for (let i = 4; i < newRows.length; i++) {
-            if (newRows[i][0] === '1' && parseInt(newRows[i][1]) === actualQuestionNumber) {
-              rowIndex = i;
-              break;
-            }
-          }
-        } else if (part === '2') {
-          // For part 2, handle the format "qIdx-row"
-          const [qIdx, qRow] = questionIdx.split('-');
-          const questionNumber = parseInt(qIdx, 10) + 1; // Convert 0-based to 1-based
-          const rowOffset = parseInt(qRow, 10);
-
-          // Find the base row for this question in part 2
-          for (let i = 4; i < newRows.length; i++) {
-            if (newRows[i][0] === '2' && parseInt(newRows[i][1]) === questionNumber) {
-              rowIndex = i;
-              break;
-            }
-          }
-
-          // For part 2, we need to handle multi-character answers
-          // When editing in SheetPage, replace the entire answer string
-          if (rowIndex >= 0 && csvColumnIndex < newRows[rowIndex].length) {
-            // In SheetPage, we want to replace the entire answer string
-            // So we'll use the value directly as the new answer
-            newRows[rowIndex][csvColumnIndex] = value;
-          }
-
-          // Skip the normal assignment below
-          rowIndex = -1;
-        }
-
-        // Apply the edit for part 1 or if we didn't handle it above
-        if (rowIndex >= 0 && csvColumnIndex < newRows[rowIndex].length) {
-          newRows[rowIndex][csvColumnIndex] = value;
-        }
-      });
-    }
-
-    return newRows;
-  };
+  //   return newRows;
+  // };
 
   const saveChanges = async () => {
     // First update the local state and get the updated CSV
@@ -1125,88 +1073,6 @@ function SheetPage() {
     }
   };
 
-  // // Handle answer key file selection
-  // const handleAnswerKeyFileChange = async (event) => {
-  //   const file = event.target.files[0];
-  //   if (!file) return;
-
-  //   if (file.type !== 'text/csv' && !file.name.toLowerCase().endsWith('.csv')) {
-  //     showAlert('Please select a CSV file for the answer key.', 'error');
-  //     return;
-  //   }
-
-  //   try {
-  //     setIsRegrade(true);
-
-  //     // Get current CSV data with any edits applied
-  //     const currentCsvData = updateCsvFromRows();
-
-  //     if (!currentCsvData) {
-  //       showAlert('No CSV data available for re-grading.', 'error');
-  //       setIsRegrade(false);
-  //       return;
-  //     }
-
-  //     // Read the answer key file content as text
-  //     const answerKeyContent = await new Promise((resolve, reject) => {
-  //       const reader = new FileReader();
-  //       reader.onload = (e) => resolve(e.target.result);
-  //       reader.onerror = (e) => reject(e);
-  //       reader.readAsText(file);
-  //     });
-
-  //     // Save the new answer key to localStorage for future use
-  //     localStorage.setItem('examarkAnswerKey', answerKeyContent);
-  //     localStorage.setItem('examarkAnswerKeyFileName', file.name);
-  //     setHasPreviousAnswerKey(true);
-  //     setPreviousAnswerKeyFileName(file.name);
-
-  //     // Prepare JSON payload
-  //     const regradePayload = {
-  //       jobId: jobId,
-  //       csvData: currentCsvData,
-  //       answerKey: answerKeyContent
-  //     };
-
-  //     console.log('Sending regrade request with new key:', regradePayload);
-
-  //     // Send re-grade request with JSON headers
-  //     const response = await fetch('http://127.0.0.1:8080/regrade', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Accept': 'application/json'
-  //       },
-  //       body: JSON.stringify(regradePayload)
-  //     });
-
-  //     if (!response.ok) {
-  //       const errorText = await response.text();
-  //       console.error('Regrade failed:', errorText);
-  //       throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-  //     }
-
-  //     const result = await response.json();
-  //     console.log('Regrade response:', result);
-
-  //     if (result.regrade_job_id) {
-  //       await pollRegradeStatus(result.regrade_job_id);
-  //     } else {
-  //       throw new Error('No regrade job ID returned');
-  //     }
-
-  //   } catch (error) {
-  //     console.error('Regrade error:', error);
-  //     setIsRegrade(false);
-  //     showAlert(`Re-grading failed: ${error.message}`, 'error');
-  //   } finally {
-  //     // Clear the file input for next use
-  //     if (answerKeyInputRef.current) {
-  //       answerKeyInputRef.current.value = '';
-  //     }
-  //   }
-  // };
-
   // Handle re-grade button click
   const handleRegradeClick = () => {
     if (!jobId) {
@@ -1228,69 +1094,6 @@ function SheetPage() {
       answerKeyInputRef.current.click();
     }
   };
-
-  // const handleRegradeWithExistingKey = async () => {
-  //   setShowRegradeOptions(false);
-
-  //   const savedAnswerKey = localStorage.getItem('examarkAnswerKey');
-  //   if (!savedAnswerKey) {
-  //     showAlert('No previous answer key found. Please upload a new one.', 'error');
-  //     setShowRegradeModal(true);
-  //     return;
-  //   }
-
-  //   try {
-  //     setIsRegrade(true);
-
-  //     // Get current CSV data with any edits applied
-  //     const currentCsvData = updateCsvFromRows();
-
-  //     if (!currentCsvData) {
-  //       showAlert('No CSV data available for re-grading.', 'error');
-  //       setIsRegrade(false);
-  //       return;
-  //     }
-
-  //     // Prepare JSON payload with existing answer key
-  //     const regradePayload = {
-  //       jobId: jobId,
-  //       csvData: currentCsvData,
-  //       answerKey: savedAnswerKey
-  //     };
-
-  //     console.log('Sending regrade request with existing key:', regradePayload);
-
-  //     // Send re-grade request
-  //     const response = await fetch('http://127.0.0.1:8080/regrade', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Accept': 'application/json'
-  //       },
-  //       body: JSON.stringify(regradePayload)
-  //     });
-
-  //     if (!response.ok) {
-  //       const errorText = await response.text();
-  //       console.error('Regrade failed:', errorText);
-  //       throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
-  //     }
-
-  //     const result = await response.json();
-  //     console.log('Regrade response:', result);
-
-  //     if (result.regrade_job_id) {
-  //       await pollRegradeStatus(result.regrade_job_id);
-  //     } else {
-  //       throw new Error('No regrade job ID returned');
-  //     }
-
-  //   } catch (error) {
-  //     console.error('Regrade error:', error);
-  //     setIsRegrade(false);
-  //     showAlert(`Re-grading failed: ${error.message}`, 'error');
-  //   }
-  // };
 
   const handleRegradeOptionsCancel = () => {
     setShowRegradeOptions(false);
@@ -1425,14 +1228,11 @@ function SheetPage() {
             {images.length > 0 ? (
               <>
                 <img
-                  //src={`http://127.0.0.1:8080/results/${jobId}/images/${images[currentImageIndex]}`}
                   src={images[currentImageIndex].url}
                   alt={`Exam page ${currentImageIndex + 1}`}
                   className="result-image"
                   onError={(e) => {
-                    console.error('Failed to load image from MinIO:', e.target.src);
-                    e.target.src =
-                      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y4ZjlmYSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2Yzc1N2QiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5JbWFnZSBub3QgYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg==';
+                    console.error('Image load error:', e.target.src);
                   }}
                 />
                 <div className="sheet-image-navigation">
@@ -1463,7 +1263,21 @@ function SheetPage() {
           <div className="text-container">
             <div className="csv-display">
               <div className="csv-controls">
-                <h3>Grading Sheet Editor</h3>
+                {/* Replace header with PDF selector */}
+                {examData && examData.data && examData.data.length > 1 ? (
+                  <div className="pdf-selector-header">
+                    <label htmlFor="pdfSelect">Class Filter: </label>
+                    <select id="pdfSelect" onChange={handlePdfSelect} value={selectedPdf?.pdf || ''}>
+                      {examData.data.map((item, idx) => (
+                        <option key={idx} value={item.pdf}>
+                          {item.pdf}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <h3>Grading Sheet Editor</h3>
+                )}
                 <div className="action-buttons">
                   {!isEditing ? (
                     <>
@@ -1471,7 +1285,7 @@ function SheetPage() {
                         EDIT SHEET
                       </button>
                       <button className="btn btn-success btn-small" onClick={handleRegradeClick} disabled={isRegrade}>
-                        {isRegrade ? 'REGRADING...' : 'REGRADE EXAMS'}
+                        {isRegrade ? 'GRADING...' : 'GRADE EXAMS'}
                       </button>
                     </>
                   ) : (
@@ -1554,7 +1368,7 @@ function SheetPage() {
         </>
       ) : (
         <div className="no-results-message">
-          <p>No data available. Please extract an exam first.</p>
+          <p>No exam data available. Please extract an exam first.</p>
           <Link to="/extract">
             <button className="btn btn-primary btn-large">Go to Extraction Page</button>
           </Link>

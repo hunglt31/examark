@@ -5,6 +5,7 @@ import MainPage from './pages/MainPage';
 import GradingPage from './pages/GradingPage';
 import ResultsPage from './pages/ResultsPage';
 import SheetPage from './pages/SheetPage';
+import ReviewPage from './pages/ReviewPage';
 import HelpPage from './pages/HelpPage';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/extract" element={<GradingPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/sheet" element={<SheetPage />} />
+        <Route path="/review" element={<ReviewPage />} />
         <Route path="/help" element={<HelpPage />} />
       </Routes>
     </Router>

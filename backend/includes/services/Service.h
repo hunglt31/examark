@@ -16,8 +16,10 @@
 namespace examark {
 namespace services {
 
-bool extract_all_exams_answers(const std::string &pdfFileName, const std::string &pdfData, TritonClient *tritonClient,
-                               const std::string &jobId);
+std::string get_pdf_qr_code(const std::string &pdfData);
+
+std::string extract_all_exams_answers(const std::string &pdfFileName, const std::string &pdfData,
+                                      TritonClient *tritonClient, const std::string &jobId);
 
 } // namespace services
 } // namespace examark

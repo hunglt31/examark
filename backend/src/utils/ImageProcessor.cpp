@@ -101,7 +101,7 @@ ImageProcessor::ImageProcessor() {
 }
 
 bool ImageProcessor::renderImages(const char *pdfData, int dataSize, std::vector<cv::Mat> &images,
-                                  ProgressCallback progressCallback, double dpi) {
+                                  ProgressCallback progressCallback, double dpi, int max_pages) {
   images.clear();
   if (progressCallback)
     progressCallback(0, 0, 0.0);
@@ -113,6 +113,10 @@ bool ImageProcessor::renderImages(const char *pdfData, int dataSize, std::vector
   int numPages = doc->pages();
   if (numPages == 0)
     return false;
+
+  if (max_pages > 0 && max_pages < numPages) {
+    numPages = max_pages;
+  }
 
   if (progressCallback)
     progressCallback(0, numPages, 0.0);

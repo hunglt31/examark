@@ -46,6 +46,12 @@ function MainPage() {
             Review Results Sheet
           </button>
         </Link>
+        <Link to="/review" draggable="false">
+          <button className="nav-button">
+            <img src={SheetIcon} alt="Final Review" draggable="false" />
+            Review Warning Results
+          </button>
+        </Link>
         <Link to="/help" draggable="false">
           <button className="nav-button">
             <img src={HelpIcon} alt="Help" draggable="false" />

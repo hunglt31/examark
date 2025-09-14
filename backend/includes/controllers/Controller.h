@@ -12,11 +12,20 @@
 
 namespace controller {
 /**
+ * @brief Register the SSE endpoint with the server.
+ * @param server The HTTP server instance.
+ */
+void registerSSEEndpoint(httplib::Server &server);
+
+/**
  * @brief Register the grading route with the server.
  * @param server The HTTP server instance.
  * @param tritonClient The Triton client instance for model inference.
  */
 void registerExtractRoute(httplib::Server &server, TritonClient *tritonClient);
+
+void processFileAsync(const std::string &filename, const std::string &fileContent, TritonClient *tritonClient,
+                      const std::string &jobId, const std::string &sessionId, const std::string &sessionFolder);
 
 } // namespace controller
 

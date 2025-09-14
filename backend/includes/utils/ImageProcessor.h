@@ -70,10 +70,11 @@ public:
    * @param images Vector to store the converted images.
    * @param progressCallback A callback function to report progress during the conversion.
    * @param dpi The DPI for the conversion (default is 300).
+   * @param max_pages Maximum number of pages to convert (-1 for all pages).
    * @return true if the conversion is successful, false otherwise.
    */
   bool renderImages(const char *pdfData, int dataSize, std::vector<cv::Mat> &images, ProgressCallback progressCallback,
-                    double dpi = 300.0);
+                    double dpi = 300.0, int max_pages = -1);
 
   /**
    * @brief Splits the scanned image into metadata and content regions.

@@ -1,6 +1,4 @@
 #include <algorithm>
-#include <atomic>
-#include <condition_variable>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -8,14 +6,20 @@
 #include <nlohmann/json.hpp>
 #include <pwd.h>
 #include <string>
-#include <thread>
 #include <unordered_map>
 
 #include "controllers/Controller.h"
 #include "services/Service.h"
+#include "utils/Logger.h"
 #include "utils/MinIOHTTPClient.h"
 #include "utils/httplib.h"
 #include "utils/utils.h"
+
+using json = nlohmann::json;
+
+// Global map to store completed results
+std::unordered_map<std::string, std::vector<nlohmann::json>> client_results;
+std::mutex client_results_mutex;
 
 class ThreadPool {
 private:
@@ -67,9 +71,57 @@ public:
 };
 
 // Global thread pool
-ThreadPool extracting_thread_pool(std::thread::hardware_concurrency());
+ThreadPool grading_thread_pool(std::thread::hardware_concurrency());
 
 namespace controller {
+void registerSSEEndpoint(httplib::Server &server) {
+  server.Get("/events/:jobId", [](const httplib::Request &req, httplib::Response &res) {
+    std::string jobId = req.path_params.at("jobId");
+
+    // Add CORS and SSE headers
+    res.set_header("Access-Control-Allow-Origin", "*");
+    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.set_header("Content-Type", "text/event-stream");
+    res.set_header("Cache-Control", "no-cache");
+    res.set_header("Connection", "keep-alive");
+
+    // Add the content provider to stream events
+    res.set_content_provider("text/event-stream", [jobId](size_t offset, httplib::DataSink &sink) {
+      while (true) {
+        {
+          std::lock_guard<std::mutex> lock(progressMutex);
+          auto it = jobProgressMap.find(jobId);
+          if (it != jobProgressMap.end()) {
+            json event;
+            event["currentStage"] = it->second.currentStage;
+            event["currentStep"] = it->second.currentStep;
+            event["progress"] = it->second.progressPercent;
+            event["status"] =
+                it->second.processCompleted ? "completed" : (it->second.hasError ? "error" : "processing");
+            event["currentPage"] = it->second.currentPage;
+            event["totalPages"] = it->second.totalPages;
+
+            std::string data = "data: " + event.dump() + "\n\n";
+            sink.write(data.c_str(), data.length());
+            sink.write(":\n\n", 3);
+
+            if (it->second.processCompleted || it->second.hasError) {
+              return false;
+            }
+          } else {
+            // Job not found
+            std::string data = "data: {\"status\":\"not_found\",\"message\":\"Job not found\"}\n\n";
+            sink.write(data.c_str(), data.length());
+            return false;
+          }
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+      }
+      return false;
+    });
+  });
+}
 
 void registerExtractRoute(httplib::Server &server, TritonClient *tritonClient) {
   server.Post("/extract", [tritonClient](const httplib::Request &req, httplib::Response &res) {
@@ -78,46 +130,169 @@ void registerExtractRoute(httplib::Server &server, TritonClient *tritonClient) {
     res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
     try {
-      auto pdf_file = req.get_file_value("pdfFile");
-
-      if (pdf_file.filename.empty()) {
+      // Parse file and parameters
+      auto range = req.files.equal_range("pdfFiles");
+      if (range.first == req.files.end()) {
         res.status = 400;
-        res.set_content("{\"error\":\"Missing required PDF file\"}", "application/json");
+        res.set_content("{\"error\":\"No PDF files provided\"}", "application/json");
         return;
       }
 
-      std::string jobId = utils::generateRandomId();
+      // Parse qr-info from request
+      std::unordered_set<std::string> allowedQRCodes;
+      auto qrInfoIt = req.files.find("qr-info");
+      if (qrInfoIt != req.files.end()) {
+        try {
+          nlohmann::json qrInfo = nlohmann::json::parse(qrInfoIt->second.content);
 
-      // Note: We'll use jobId for now, but later we can update it with QR info
-      // The actual folder name on MinIO will be determined after QR code reading
+          for (auto it = qrInfo.begin(); it != qrInfo.end(); ++it) {
+            if (it.value().is_string()) {
+              allowedQRCodes.insert(it.value().get<std::string>());
+            }
+          }
 
-      // Initialize job progress
-      {
-        std::lock_guard<std::mutex> lock(progressMutex);
-        jobProgressMap[jobId] = JobProgress{};
-        auto &progress = jobProgressMap[jobId];
-        progress.processCompleted = false;
-        progress.pdfFilename = pdf_file.filename;
-        progress.currentStage = "initializing";
-        progress.currentStep = "Starting extracting process...";
-        progress.progressPercent = 0.0;
+        } catch (const std::exception &e) {
+          Logger::error("EXTRACTING", "Failed to parse qr-info: " + std::string(e.what()));
+        }
       }
 
-      // Queue the extracting task
-      extracting_thread_pool.enqueue([=]() {
-        bool success =
-            examark::services::extract_all_exams_answers(pdf_file.filename, pdf_file.content, tritonClient, jobId);
-        if (!success) {
-          utils::updateJobProgress(jobId, "error", "extracting process failed", 0, 0, 0.0, true,
-                                   "Failed to complete extracting");
-          Logger::error("EXTRACTING", "Failed to complete extracting");
-        }
-      });
+      // Generate a unique session ID for this client's batch
+      std::string sessionId = utils::generateUUIDv4();
 
+      // Create session folder
+      std::string sessionFolder = "sessions/" + sessionId;
+      try {
+        if (!std::filesystem::create_directories(sessionFolder)) {
+          Logger::error("EXTRACTING", "Failed to create session folder: " + sessionFolder);
+          res.status = 500;
+          res.set_content("{\"error\":\"Failed to create session folder\"}", "application/json");
+          return;
+        }
+      } catch (const std::exception &e) {
+        Logger::error("EXTRACTING", "Exception creating session folder: " + std::string(e.what()));
+        res.status = 500;
+        res.set_content("{\"error\":\"Failed to create session folder: " + std::string(e.what()) + "\"}",
+                        "application/json");
+        return;
+      }
+
+      // Initialize session in client_results
+      {
+        std::lock_guard<std::mutex> lock(client_results_mutex);
+        client_results[sessionId] = std::vector<nlohmann::json>();
+      }
+
+      // First, save all PDF files to the session folder
+      std::vector<std::pair<std::string, std::string>> fileData;
+      std::vector<std::pair<std::string, std::string>> invalidFiles;
+      int count = 0;
+
+      for (auto it = range.first; it != range.second; ++it) {
+        const auto &file = it->second;
+        if (file.filename.find(".pdf") == std::string::npos) {
+          continue;
+        }
+
+        // Save file to session folder
+        std::string filePath = sessionFolder + "/" + file.filename;
+        std::ofstream outFile(filePath, std::ios::binary);
+        if (outFile.is_open()) {
+          outFile.write(file.content.c_str(), file.content.size());
+          outFile.close();
+
+          if (!allowedQRCodes.empty()) {
+            std::string extractedQR = examark::services::get_pdf_qr_code(file.content);
+            if (extractedQR.empty()) {
+              // Return immediately if a file has no QR code
+              nlohmann::json errorResponse;
+              errorResponse["status"] = "error";
+              errorResponse["message"] = "Invalid QR code detected in uploaded file";
+
+              nlohmann::json fileInfo;
+              fileInfo["filename"] = file.filename;
+              fileInfo["qr_code"] = "";
+              fileInfo["error"] = "QR code not found";
+
+              errorResponse["invalid_files"] = nlohmann::json::array();
+              errorResponse["invalid_files"].push_back(fileInfo);
+
+              std::filesystem::remove_all(sessionFolder);
+
+              res.status = 400;
+              res.set_content(errorResponse.dump(), "application/json");
+              return;
+            } else if (allowedQRCodes.find(extractedQR) == allowedQRCodes.end()) {
+              // Return immediately if a file has an invalid QR code
+              nlohmann::json errorResponse;
+              errorResponse["status"] = "error";
+              errorResponse["message"] = "Invalid QR code detected in uploaded file";
+
+              nlohmann::json fileInfo;
+              fileInfo["filename"] = file.filename;
+              fileInfo["qr_code"] = extractedQR;
+              fileInfo["error"] = "QR code does not match allowed classes";
+
+              errorResponse["invalid_files"] = nlohmann::json::array();
+              errorResponse["invalid_files"].push_back(fileInfo);
+
+              std::filesystem::remove_all(sessionFolder);
+
+              res.status = 400;
+              res.set_content(errorResponse.dump(), "application/json");
+              return;
+            }
+          }
+
+          fileData.push_back({file.filename, file.content});
+          ++count;
+        }
+      }
+
+      // Now process files sequentially
       nlohmann::json response;
-      response["jobId"] = jobId;
-      response["message"] = "Extracting started successfully";
+      response["metadata"]["sessionId"] = sessionId;
+      response["metadata"]["totalPDFs"] = count;
+      response["metadata"]["timestamp"] = utils::getCurrentTimestamp();
+      response["data"] = nlohmann::json::array();
+
+      // Create jobs and enqueue them for asynchronous processing
+      for (const auto &[filename, content] : fileData) {
+        std::string jobId = utils::generateUUIDv4();
+
+        Logger::info("EXTRACTING", "Processing file: " + filename + " with jobId: " + jobId);
+
+        // Initialize progress tracking
+        {
+          std::lock_guard<std::mutex> lock(progressMutex);
+          jobProgressMap[jobId] = JobProgress{};
+          auto &progress = jobProgressMap[jobId];
+          progress.processCompleted = false;
+          progress.pdfFilename = filename;
+          progress.currentStage = "queued";
+          progress.currentStep = "Job queued for processing";
+          progress.progressPercent = 0.0;
+        }
+
+        // Add job to response
+        nlohmann::json jobResult;
+        jobResult["jobId"] = jobId;
+        jobResult["pdf"] = filename;
+        jobResult["status"] = "queued";
+        response["data"].push_back(jobResult);
+
+        Logger::info("EXTRACTING", "Queuing file: " + filename + " with jobId: " + jobId);
+
+        // Enqueue the processing task to thread pool
+        grading_thread_pool.enqueue(
+            [=]() { processFileAsync(filename, content, tritonClient, jobId, sessionId, sessionFolder); });
+      }
+
+      // Return response immediately with all job IDs
+      res.set_header("Content-Type", "application/json");
       res.set_content(response.dump(), "application/json");
+
+      Logger::info("EXTRACTING",
+                   "Started processing " + std::to_string(count) + " files asynchronously for session: " + sessionId);
 
     } catch (const std::exception &e) {
       res.status = 500;
@@ -164,280 +339,175 @@ void registerExtractRoute(httplib::Server &server, TritonClient *tritonClient) {
     res.set_content(response.dump(), "application/json");
   });
 
-  // Get images list endpoint - returns MinIO URLs
-  server.Get("/results/:jobId/images", [](const httplib::Request &req, httplib::Response &res) {
+  // Get completed results for a specific client session
+  server.Get("/results/session/:sessionId", [](const httplib::Request &req, httplib::Response &res) {
+    res.set_header("Access-Control-Allow-Origin", "*");
+    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+    std::string sessionId = req.path_params.at("sessionId");
+
+    nlohmann::json response;
+    response["metadata"]["timestamp"] = utils::getCurrentTimestamp();
+    response["metadata"]["sessionId"] = sessionId;
+    response["data"] = nlohmann::json::array();
+
+    {
+      std::lock_guard<std::mutex> lock(client_results_mutex);
+      auto it = client_results.find(sessionId);
+      if (it != client_results.end()) {
+        // Return all results (both completed and error)
+        for (const auto &result : it->second) {
+          response["data"].push_back(result);
+        }
+        response["metadata"]["totalPDFs"] = response["data"].size();
+      } else {
+        response["metadata"]["totalPDFs"] = 0;
+      }
+    }
+
+    res.set_content(response.dump(), "application/json");
+  });
+
+  // Get specific job result (for individual job queries)
+  server.Get("/results/:jobId/complete", [](const httplib::Request &req, httplib::Response &res) {
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
     std::string jobId = req.path_params.at("jobId");
 
-    // Check job status
     {
-      std::lock_guard<std::mutex> lock(progressMutex);
-      auto it = jobProgressMap.find(jobId);
-      if (it == jobProgressMap.end() || !it->second.processCompleted) {
-        res.status = 404;
-        res.set_content("{\"error\":\"Results not ready or job not found\"}", "application/json");
-        return;
-      }
-    }
-
-    try {
-      // Initialize MinIO client
-      MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
-
-      // Get QR info and determine folder name
-      std::string folderName = jobId;
-      {
-        std::lock_guard<std::mutex> lock(progressMutex);
-        auto it = jobProgressMap.find(jobId);
-        if (it != jobProgressMap.end() && !it->second.qrInfo.empty()) {
-          folderName = it->second.qrInfo;
-        }
-      }
-
-      std::vector<std::string> allFiles = minioClient.listFiles(folderName + "/");
-
-      if (allFiles.empty() && folderName != jobId) {
-        allFiles = minioClient.listFiles(jobId + "/");
-        folderName = jobId;
-      }
-
-      // Filter and process image files
-      nlohmann::json response;
-      nlohmann::json imageUrls = nlohmann::json::array();
-
-      for (const std::string &filename : allFiles) {
-        // Only include image files
-        if (filename.find(".jpg") != std::string::npos || filename.find(".png") != std::string::npos ||
-            filename.find(".jpeg") != std::string::npos) {
-
-          nlohmann::json imageInfo;
-          imageInfo["name"] = filename;
-
-          std::string fullObjectName = folderName + "/" + filename;
-          imageInfo["url"] = minioClient.getFileUrl(fullObjectName);
-          imageUrls.emplace_back(imageInfo);
-        }
-      }
-
-      // Sort images by page number (page_1.jpg, page_2.jpg, etc.)
-      std::sort(imageUrls.begin(), imageUrls.end(), [](const nlohmann::json &a, const nlohmann::json &b) {
-        std::string nameA = a["name"];
-        std::string nameB = b["name"];
-
-        // Extract page numbers for proper sorting
-        auto extractPageNum = [](const std::string &name) -> int {
-          size_t start = name.find("page_");
-          if (start != std::string::npos) {
-            start += 5;
-            size_t end = name.find(".", start);
-            if (end != std::string::npos) {
-              try {
-                return std::stoi(name.substr(start, end - start));
-              } catch (...) {
-                return 0;
-              }
-            }
+      std::lock_guard<std::mutex> lock(client_results_mutex);
+      // Search through all sessions for this jobId
+      for (const auto &[sessionId, results] : client_results) {
+        for (const auto &result : results) {
+          if (result["jobId"] == jobId) {
+            res.set_content(result.dump(), "application/json");
+            return;
           }
-          return 0;
-        };
-
-        return extractPageNum(nameA) < extractPageNum(nameB);
-      });
-
-      response["images"] = imageUrls;
-
-      res.set_header("Content-Type", "application/json");
-      res.set_content(response.dump(), "application/json");
-
-    } catch (const std::exception &e) {
-      res.status = 500;
-      nlohmann::json errorResponse;
-      errorResponse["error"] = "Failed to fetch images: " + std::string(e.what());
-      res.set_content(errorResponse.dump(), "application/json");
+        }
+      }
     }
+
+    res.status = 404;
+    res.set_content("{\"error\":\"Job result not found\"}", "application/json");
   });
 
-  // Get CSV endpoint - fetches from MinIO or local
-  server.Get("/results/:jobId/csv", [](const httplib::Request &req, httplib::Response &res) {
+  server.Delete("/results/session/:sessionId", [](const httplib::Request &req, httplib::Response &res) {
     res.set_header("Access-Control-Allow-Origin", "*");
     res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-    std::string jobId = req.path_params.at("jobId");
+    std::string sessionId = req.path_params.at("sessionId");
 
-    // Check job status
     {
-      std::lock_guard<std::mutex> lock(progressMutex);
-      auto it = jobProgressMap.find(jobId);
-      if (it == jobProgressMap.end() || !it->second.processCompleted) {
+      std::lock_guard<std::mutex> lock(client_results_mutex);
+      auto it = client_results.find(sessionId);
+      if (it != client_results.end()) {
+        client_results.erase(it);
+        res.set_content("{\"message\":\"Session data cleared\"}", "application/json");
+      } else {
         res.status = 404;
-        res.set_content("Results not ready or job not found", "text/plain");
-        return;
+        res.set_content("{\"error\":\"Session not found\"}", "application/json");
       }
-    }
-
-    // Fetch CSV from MinIO
-    try {
-      MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
-
-      // Get QR info and determine folder name
-      std::string folderName = jobId;
-      {
-        std::lock_guard<std::mutex> lock(progressMutex);
-        auto it = jobProgressMap.find(jobId);
-        if (it != jobProgressMap.end() && !it->second.qrInfo.empty()) {
-          folderName = it->second.qrInfo;
-        }
-      }
-
-      // Try to get CSV from QR-based folder first, then fallback to jobId
-      std::vector<std::string> objects = minioClient.listFiles(folderName + "/");
-      std::string csvObjectName;
-
-      for (const std::string &objectName : objects) {
-        if (objectName.find(".csv") != std::string::npos) {
-          csvObjectName = objectName;
-          break;
-        }
-      }
-
-      // If not found in QR folder and folderName is not jobId, try jobId folder
-      if (csvObjectName.empty() && folderName != jobId) {
-        objects = minioClient.listFiles(jobId + "/");
-        folderName = jobId; // Update folderName for download
-        for (const std::string &objectName : objects) {
-          if (objectName.find(".csv") != std::string::npos) {
-            csvObjectName = objectName;
-            break;
-          }
-        }
-      }
-
-      if (csvObjectName.empty()) {
-        res.status = 404;
-        res.set_content("CSV file not found", "text/plain");
-        return;
-      }
-
-      // Download CSV content from MinIO
-      std::string fullObjectName = folderName + "/" + csvObjectName;
-      std::string csvContent = minioClient.downloadCSV(fullObjectName);
-      if (csvContent.empty()) {
-        res.status = 500;
-        res.set_content("Failed to download CSV from storage", "text/plain");
-        return;
-      }
-
-      // Return CSV content
-      res.set_header("Content-Type", "text/csv");
-      res.set_header("Content-Disposition", "attachment; filename=\"results.csv\"");
-      res.set_content(csvContent, "text/csv");
-
-    } catch (const std::exception &e) {
-      res.status = 500;
-      res.set_content("Failed to fetch CSV: " + std::string(e.what()), "text/plain");
     }
   });
+}
 
-  // Upload CSV endpoint - uploads updated CSV to MinIO
-  server.Post("/upload-csv/:jobId", [](const httplib::Request &req, httplib::Response &res) {
-    res.set_header("Access-Control-Allow-Origin", "*");
-    res.set_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+// Add this new function to handle individual file processing
+void processFileAsync(const std::string &filename, const std::string &fileContent, TritonClient *tritonClient,
+                      const std::string &jobId, const std::string &sessionId, const std::string &sessionFolder) {
+  try {
+    Logger::info("EXTRACTING", "Starting async processing for file: " + filename + " with jobId: " + jobId);
 
-    std::string jobId = req.path_params.at("jobId");
+    // Update progress to processing - fix the function call
+    utils::updateJobProgress(jobId, "initializing", "Starting extraction process...", 0, 0, 0.0, false, "");
 
-    // Check if job exists
-    {
-      std::lock_guard<std::mutex> lock(progressMutex);
-      auto it = jobProgressMap.find(jobId);
-      if (it == jobProgressMap.end()) {
-        res.status = 404;
-        res.set_content("{\"error\":\"Job not found\"}", "application/json");
-        return;
-      }
-    }
+    // Process the file
+    std::string extraction_result =
+        examark::services::extract_all_exams_answers(filename, fileContent, tritonClient, jobId);
 
+    // Parse and handle results
     try {
-      // Check if CSV file is present in request
-      if (!req.has_file("csvFile")) {
-        res.status = 400;
-        res.set_content("{\"error\":\"No CSV file provided\"}", "application/json");
-        return;
-      }
+      nlohmann::json result = nlohmann::json::parse(extraction_result);
 
-      const auto &file = req.get_file_value("csvFile");
-      std::string csvContent = file.content;
+      if (result["status"] == "error") {
+        utils::updateJobProgress(jobId, "error", "Extraction process failed", 0, 0, 0.0, true, result["message"]);
+        Logger::error("EXTRACTING", "Failed to complete extracting for jobId: " + jobId);
 
-      if (csvContent.empty()) {
-        res.status = 400;
-        res.set_content("{\"error\":\"Empty CSV content\"}", "application/json");
-        return;
-      }
-
-      // Upload to MinIO
-      MinIOHTTPClient minioClient(MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET);
-
-      // Get QR info and determine folder name
-      std::string folderName = jobId;
-      {
-        std::lock_guard<std::mutex> lock(progressMutex);
-        auto it = jobProgressMap.find(jobId);
-        if (it != jobProgressMap.end() && !it->second.qrInfo.empty()) {
-          folderName = it->second.qrInfo;
-        }
-      }
-
-      // Try to find existing CSV file in QR-based folder first, then fallback to jobId
-      std::vector<std::string> objects = minioClient.listFiles(folderName + "/");
-      std::string csvObjectName;
-
-      for (const std::string &objectName : objects) {
-        if (objectName.find(".csv") != std::string::npos) {
-          csvObjectName = folderName + "/" + objectName;
-          break;
-        }
-      }
-
-      // If not found in QR folder and folderName is not jobId, try jobId folder
-      if (csvObjectName.empty() && folderName != jobId) {
-        objects = minioClient.listFiles(jobId + "/");
-        for (const std::string &objectName : objects) {
-          if (objectName.find(".csv") != std::string::npos) {
-            csvObjectName = jobId + "/" + objectName;
-            folderName = jobId; // Update folderName for consistency
-            break;
+        // Store error result
+        {
+          std::lock_guard<std::mutex> lock(client_results_mutex);
+          auto it = client_results.find(sessionId);
+          if (it != client_results.end()) {
+            nlohmann::json jobResult;
+            jobResult["jobId"] = jobId;
+            jobResult["pdf"] = filename;
+            jobResult["status"] = "error";
+            jobResult["error"] = result["message"];
+            it->second.push_back(jobResult);
           }
         }
+      } else {
+        // Mark as completed - fix the function call
+        utils::updateJobProgress(jobId, "completed", "All processing completed successfully", 0, 0, 100.0, false, "");
+
+        // Store successful result
+        {
+          std::lock_guard<std::mutex> lock(client_results_mutex);
+          auto it = client_results.find(sessionId);
+          if (it != client_results.end()) {
+            nlohmann::json jobResult;
+            jobResult["jobId"] = jobId;
+            jobResult["pdf"] = result["pdf"];
+            jobResult["class"] = result["class"];
+            jobResult["csv"] = result["csv"];
+            jobResult["images"] = result["images"];
+            jobResult["status"] = result["status"];
+            it->second.push_back(jobResult);
+          }
+        }
+
+        Logger::info("EXTRACTING", "Successfully completed extracting for jobId: " + jobId);
       }
-
-      if (csvObjectName.empty()) {
-        // Create new CSV file name if none exists - use QR folder if available
-        csvObjectName = folderName + "/results.csv";
-      }
-
-      // Upload the updated CSV content
-      if (!minioClient.uploadCSV(csvObjectName, csvContent)) {
-        res.status = 500;
-        res.set_content("{\"error\":\"Failed to upload CSV to MinIO\"}", "application/json");
-        return;
-      }
-
-      nlohmann::json response;
-      response["message"] = "CSV uploaded successfully";
-      response["objectName"] = csvObjectName;
-      res.set_content(response.dump(), "application/json");
-
     } catch (const std::exception &e) {
-      res.status = 500;
-      nlohmann::json errorResponse;
-      errorResponse["error"] = "Failed to upload CSV: " + std::string(e.what());
-      res.set_content(errorResponse.dump(), "application/json");
+      utils::updateJobProgress(jobId, "error", "Failed to parse extraction result", 0, 0, 0.0, true, e.what());
+      Logger::error("EXTRACTING", "Failed to parse extraction result for jobId: " + jobId + " - " + e.what());
+
+      // Store error result
+      {
+        std::lock_guard<std::mutex> lock(client_results_mutex);
+        auto it = client_results.find(sessionId);
+        if (it != client_results.end()) {
+          nlohmann::json jobResult;
+          jobResult["jobId"] = jobId;
+          jobResult["pdf"] = filename;
+          jobResult["status"] = "error";
+          jobResult["error"] = e.what();
+          it->second.push_back(jobResult);
+        }
+      }
     }
-  });
+
+  } catch (const std::exception &e) {
+    Logger::error("EXTRACTING", "Exception during async processing for jobId " + jobId + ": " + e.what());
+    utils::updateJobProgress(jobId, "error", "Processing failed", 0, 0, 0.0, true, e.what());
+
+    // Store error result
+    {
+      std::lock_guard<std::mutex> lock(client_results_mutex);
+      auto it = client_results.find(sessionId);
+      if (it != client_results.end()) {
+        nlohmann::json jobResult;
+        jobResult["jobId"] = jobId;
+        jobResult["pdf"] = filename;
+        jobResult["status"] = "error";
+        jobResult["error"] = "Processing failed: " + std::string(e.what());
+        it->second.push_back(jobResult);
+      }
+    }
+  }
 }
 
 } // namespace controller

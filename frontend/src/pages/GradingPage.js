@@ -1,640 +1,466 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import './GradingPage.css';
-import CustomAlert from '../components/CustomAlert';
 import * as XLSX from 'xlsx';
-
+import { Link } from 'react-router-dom';
 import UniversityLogo from '../assets/logos/logo_hust.png';
 import FamiLogo from '../assets/logos/logo_fami.png';
-
-// Import sample answer key directly (for testing)
-// import sampleAnswerKey from '../../public/answer-keys/correct_answers.xlsx';
+import './GradingPage.css';
 
 function GradeExamPage() {
+  const [pdfFiles, setPdfFiles] = useState([]);
+  const [xlsxData, setXlsxData] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [gradingMessage, setGradingMessage] = useState('');
-  const [pdfFile, setPdfFile] = useState(null);
-  const [xlsx_file, set_xlsx_file] = useState(null);
-  const [valid_files, set_valid_files] = useState(false);
-
-  // States for results
-  const [jobId, setJobId] = useState(null);
-  const [isGrading, setIsGrading] = useState(false);
-  const [isGradingComplete, setIsGradingComplete] = useState(false);
-  const [csv_data, set_csv_data] = useState(null);
-  const [images, setImages] = useState([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [showNavigationOptions, setShowNavigationOptions] = useState(false);
-
-  const TOTAL_NUM_QUESTIONS = 15;
-
-  // Progress tracking states
-  const [progress, setProgress] = useState({
-    stage: '',
-    step: '',
-    currentPage: 0,
-    totalPages: 0,
-    progressPercent: 0.0,
-  });
-
-  // Refs
+  const [sessionId, setSessionId] = useState(null);
+  const [jobInfos, setJobInfos] = useState([]);
+  const [completedJobs, setCompletedJobs] = useState([]);
+  const [isPolling, setIsPolling] = useState(false);
   const pdfInputRef = useRef(null);
-  const xlsx_input_ref = useRef(null);
-  const statusCheckInterval = useRef(null);
-  const navigate = useNavigate();
+  const xlsxInputRef = useRef(null);
+  const pollingIntervalRef = useRef(null);
+  const [validationError, setValidationError] = useState(null);
 
-  // Clean up interval on component unmount
-  useEffect(() => {
-    return () => {
-      if (statusCheckInterval.current) {
-        clearInterval(statusCheckInterval.current);
-      }
+  // Handle XLSX file upload and extract user names and task numbers
+  const handleXlsxUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      // Convert sheet to JSON array (each row is an array of values)
+      const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      setXlsxData(jsonData);
+      extractUsers(jsonData);
     };
-  }, []);
+    reader.readAsArrayBuffer(file);
+  };
 
-  // Function to automatically find and load answer key file
-  const autoLoadAnswerKey = async (pdfFileName = null) => {
-    try {
-      // First, try to get a list of files in the answer-keys folder
-      // Since we can't directly list files from frontend, we'll try common patterns
-      const possibleFileNames = [
-        'correct_answers.xlsx',
-        'answer_key.xlsx',
-        'key.xlsx',
-        'answer.xlsx',
-        'exam_key.xlsx',
-        'test_key.xlsx',
-      ];
+  // Simplified extractUsers function
+  const extractUsers = (data) => {
+    if (!data.length) return;
 
-      let foundFile = null;
-      let fileName = null;
+    const header = data[0];
+    const nameIdx = header.findIndex((col) => col && col.toString().toLowerCase().includes('họ và tên'));
+    const qrIdx = header.findIndex((col) => col && col.toString().toLowerCase().includes('mã qr'));
 
-      // Try each possible filename
-      for (const name of possibleFileNames) {
-        try {
-          console.log(`Trying to load: /answer-keys/${name}`);
-          const response = await fetch(`/answer-keys/${name}`);
-          console.log(`Response status for ${name}:`, response.status, response.statusText);
+    if (nameIdx === -1) {
+      setGradingMessage("Could not find 'Họ và tên' column in the XLSX file");
+      return;
+    }
+    if (qrIdx === -1) {
+      setGradingMessage("Warning: Could not find 'Mã QR' column in the XLSX file");
+    }
 
-          if (response.ok) {
-            foundFile = await response.arrayBuffer();
-            fileName = name;
-            console.log(`Successfully loaded file: ${name}, size: ${foundFile.byteLength} bytes`);
+    // Keep track of user counts and QR codes
+    const userInfo = {};
 
-            // Debug: Check if file is actually XLSX by looking at first few bytes
-            const firstBytes = new Uint8Array(foundFile.slice(0, 8));
-            console.log(
-              `First 8 bytes of ${name}:`,
-              Array.from(firstBytes)
-                .map((b) => b.toString(16).padStart(2, '0'))
-                .join(' '),
-            );
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      if (row && row[nameIdx]) {
+        const userName = row[nameIdx].toString().trim();
+        const qrCode = qrIdx !== -1 && row[qrIdx] ? row[qrIdx].toString().trim() : null;
 
-            // XLSX files should start with PK (50 4B) - ZIP file signature
-            if (firstBytes[0] === 0x50 && firstBytes[1] === 0x4b) {
-              console.log(`${name} appears to be a valid ZIP/XLSX file`);
-            } else {
-              console.log(`${name} does not appear to be a valid XLSX file (should start with PK)`);
-              // Try to read as text to see what it actually contains
-              const textDecoder = new TextDecoder();
-              const textContent = textDecoder.decode(foundFile.slice(0, 200));
-              console.log(`First 200 characters of ${name}:`, textContent);
-            }
-
-            break;
-          } else {
-            console.log(`File not found: ${name} (status: ${response.status})`);
+        if (userInfo[userName]) {
+          userInfo[userName].fileCount++;
+          if (qrCode && !userInfo[userName].qrCodes.includes(qrCode)) {
+            userInfo[userName].qrCodes.push(qrCode);
           }
-        } catch (error) {
-          console.log(`Error loading ${name}:`, error);
-          // Continue to next filename
-          continue;
+        } else {
+          userInfo[userName] = {
+            name: userName,
+            fileCount: 1,
+            qrCodes: qrCode ? [qrCode] : [],
+          };
         }
       }
-
-      if (!foundFile) {
-        throw new Error(
-          'No answer key file found in answer-keys folder. Please ensure at least one .xlsx file exists.',
-        );
-      }
-
-      try {
-        console.log('Parsing XLSX file...');
-        const workbook = XLSX.read(foundFile, { type: 'array' });
-        console.log('Workbook sheets:', workbook.SheetNames);
-
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        console.log('Worksheet data range:', worksheet['!ref']);
-
-        const xlsxData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        console.log('Parsed XLSX data:', xlsxData);
-        console.log('First row:', xlsxData[0]);
-        console.log('Second row:', xlsxData[1]);
-        console.log('Third row:', xlsxData[2]);
-
-        // Validate data structure
-        if (!xlsxData || xlsxData.length < 3) {
-          throw new Error('Invalid file format: File must have at least 3 rows');
-        }
-
-        // Convert to your JSON format using existing function
-        const simpleJson = create_json_from_array(xlsxData);
-        console.log('Auto-loaded answer key JSON:', simpleJson);
-        console.log('JSON length:', simpleJson.length);
-        if (simpleJson.length > 0) {
-          console.log('First exam data:', simpleJson[0]);
-        }
-
-        // Create a virtual file object for compatibility
-        const virtualFile = {
-          name: fileName,
-          arrayBuffer: () => Promise.resolve(foundFile),
-        };
-
-        set_xlsx_file(virtualFile);
-        set_valid_files(true);
-
-        // Use the passed PDF file name or fallback to current state
-        const currentPdfName = pdfFileName || (pdfFile ? pdfFile.name : 'Unknown');
-        // setGradingMessage(`Exam file: ${currentPdfName}, Auto-loaded answer key: ${fileName}`);
-
-        localStorage.setItem('examarkAnswerKey', JSON.stringify(simpleJson));
-        localStorage.setItem('examarkAnswerKeyFileName', fileName);
-
-        console.log('Answer key loaded successfully, valid_files set to true');
-
-        return true;
-      } catch (parseError) {
-        console.error('Error parsing XLSX file:', parseError);
-        throw new Error(
-          `Failed to parse answer key file: ${parseError.message}. Please ensure the file format is correct.`,
-        );
-      }
-    } catch (error) {
-      console.error('Error auto-loading answer key:', error);
-      setGradingMessage(
-        `Error: ${error.message}. Please ensure at least one .xlsx file exists in the answer-keys folder.`,
-      );
-      return false;
     }
+
+    const extractedUsers = Object.values(userInfo);
+    setUsers(extractedUsers);
   };
 
-  // Sample XLSX download functionality
-  const download_sample_xlsx = () => {
-    const sampleXLSXData = [
-      ['ExamID', '101', '102'],
-      ['Part', 'Question', 'Key', 'Key'],
-      ['1', '1', 'A', 'A'],
-      ['1', '2', 'B', 'D'],
-      ['1', '3', 'A', 'B'],
-      ['1', '4', 'A', 'C'],
-      ['1', '5', 'A', 'B'],
-      ['1', '6', 'B', 'C'],
-      ['1', '7', 'A', 'A'],
-      ['1', '8', 'C', 'C'],
-      ['1', '9', 'C', 'C'],
-      ['1', '10', 'A', 'A'],
-      ['2', '1', 'AB', 'ACD'],
-      ['2', '2', 'DF', 'BCD'],
-      ['2', '3', 'AC', 'BCDE'],
-      ['2', '4', 'ACD', 'BCDF'],
-      ['2', '5', 'ACDE', 'ACD'],
-    ];
-
-    const worksheet = XLSX.utils.aoa_to_sheet(sampleXLSXData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sample Data');
-
-    const blob = new Blob([XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })], {
-      type: 'application/octet-stream',
-    });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'sample_answer_key.xlsx';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  };
-
-  // Function to create and save sample file to answer-keys folder
-  const create_sample_in_folder = async () => {
-    try {
-      const sampleXLSXData = [
-        ['ExamID', '101', '102'],
-        ['Part', 'Question', 'Key', 'Key'],
-        ['1', '1', 'A', 'A'],
-        ['1', '2', 'B', 'D'],
-        ['1', '3', 'A', 'B'],
-        ['1', '4', 'A', 'C'],
-        ['1', '5', 'A', 'B'],
-        ['1', '6', 'B', 'C'],
-        ['1', '7', 'A', 'A'],
-        ['1', '8', 'C', 'C'],
-        ['1', '9', 'C', 'C'],
-        ['1', '10', 'A', 'A'],
-        ['2', '1', 'AB', 'ACD'],
-        ['2', '2', 'DF', 'BCD'],
-        ['2', '3', 'AC', 'BCDE'],
-        ['2', '4', 'ACD', 'BCDF'],
-        ['2', '5', 'ACDE', 'ACD'],
-      ];
-
-      const worksheet = XLSX.utils.aoa_to_sheet(sampleXLSXData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Sample Data');
-
-      const blob = new Blob([XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
-
-      // Create download link to save file locally
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'answer_key.xlsx';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      console.log('Sample file downloaded. Please place it in the answer-keys folder.');
-      setGradingMessage(
-        'Sample file downloaded. Please place answer_key.xlsx in the answer-keys folder and try again.',
-      );
-
-      return true;
-    } catch (error) {
-      console.error('Error creating sample file:', error);
-      setGradingMessage('Error creating sample file: ' + error.message);
-      return false;
-    }
+  // Handle selection of user from the scroll
+  const handleUserSelect = (event) => {
+    setValidationError(null);
+    const userName = event.target.value;
+    setSelectedUser(users.find((u) => u.name === userName));
   };
 
   // Handle file input changes
   const handlePdfFileChange = async (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setPdfFile(file);
-      // setGradingMessage('Loading answer key...');
+    setValidationError(null);
+    const files = event.target.files;
+    console.log('Selected files:', files);
+    if (files && files.length > 0) {
+      const newFilesArray = Array.from(files);
+      console.log('New files array:', newFilesArray);
 
+      setPdfFiles((prevFiles) => {
+        const existingFileNames = prevFiles.map((f) => f.name);
+        const uniqueNewFiles = newFilesArray.filter((file) => !existingFileNames.includes(file.name));
+        const combinedFiles = [...prevFiles, ...uniqueNewFiles];
+        console.log('Combined files:', combinedFiles);
+
+        const fileNames = combinedFiles.map((f) => f.name);
+        setGradingMessage(`Selected file(s): ${fileNames.join(', ')}`);
+
+        return combinedFiles;
+      });
+    }
+
+    event.target.value = '';
+  };
+
+  // Function to remove a specific file from the selection
+  const removeFile = (indexToRemove) => {
+    setPdfFiles((prevFiles) => {
+      const updatedFiles = prevFiles.filter((_, index) => index !== indexToRemove);
+      const fileNames = updatedFiles.map((f) => f.name);
+      setGradingMessage(updatedFiles.length > 0 ? `Selected file(s): ${fileNames.join(', ')}` : '');
+      return updatedFiles;
+    });
+  };
+
+  // Function to clear all files
+  const clearAllFiles = () => {
+    setPdfFiles([]);
+    setGradingMessage('');
+  };
+
+  // Open EventSource (SSE) for a given jobId to listen to progress updates
+  const subscribeJobProgress = (jobId) => {
+    const evtSource = new EventSource(`http://localhost:8080/events/${jobId}`);
+
+    // Log when connection opens
+    evtSource.onopen = () => {
+      console.log(`EventSource connection opened for job ${jobId}`);
+    };
+
+    evtSource.onmessage = (e) => {
+      console.log(`Job ${jobId} progress update:`, e.data);
       try {
-        // Auto-load answer key when PDF is uploaded, pass the PDF file name
-        const answerKeyLoaded = await autoLoadAnswerKey(file.name);
+        const data = JSON.parse(e.data);
 
-        if (answerKeyLoaded) {
-          set_valid_files(true);
-          console.log('Answer key loaded successfully in handlePdfFileChange');
-        } else {
-          set_valid_files(false);
-          setGradingMessage('Failed to load answer key. Please ensure an .xlsx file exists in the answer-keys folder.');
+        // Update job info in state
+        setJobInfos((prevJobs) =>
+          prevJobs.map((job) =>
+            job.jobId === jobId
+              ? {
+                  ...job,
+                  progress: data.progress || 0,
+                  currentStage: data.currentStage || job.currentStage,
+                  currentStep: data.currentStep || job.currentStep,
+                  currentPage: data.currentPage || 0,
+                  totalPages: data.totalPages || 0,
+                  status: data.status || job.status,
+                  errorMessage: data.error || job.errorMessage,
+                }
+              : job,
+          ),
+        );
+
+        // Close connection if job is complete or has error
+        if (data.status === 'completed' || data.status === 'error') {
+          console.log(`Job ${jobId} finished with status: ${data.status}`);
+          evtSource.close();
         }
-      } catch (error) {
-        console.error('Error in handlePdfFileChange:', error);
-        set_valid_files(false);
-        setGradingMessage(`Error loading answer key: ${error.message}`);
+      } catch (err) {
+        console.error(`Error parsing SSE data for job ${jobId}:`, err, 'Raw data:', e.data);
       }
-    } else {
-      setPdfFile(null);
-      set_valid_files(false);
-      setGradingMessage('');
+    };
+
+    evtSource.onerror = (e) => {
+      console.error(`EventSource error for job ${jobId}:`, e);
+      evtSource.close();
+    };
+
+    // Return the evtSource to allow closing it if needed
+    return evtSource;
+  };
+
+  // Function to fetch CSV data from URL
+  const fetchCSVData = async (csvUrl) => {
+    try {
+      const response = await fetch(csvUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch CSV: ${response.status}`);
+      }
+      const csvText = await response.text();
+      return csvText;
+    } catch (error) {
+      console.error('Error fetching CSV data:', error);
+      return null;
     }
   };
 
-  const create_json_from_array = (xlsx_data) => {
-    if (!xlsx_data || xlsx_data.length < 3) {
-      throw new Error('File must have at least 3 rows');
-    }
-
-    // Validate header structure
-    const firstRow = xlsx_data[0];
-    const secondRow = xlsx_data[1];
-
-    if (!firstRow || !secondRow) {
-      throw new Error('Invalid file structure: Missing header rows');
-    }
-
-    // Check if first row contains ExamID or Assignment
-    const firstCell = firstRow[0] ? firstRow[0].toString().toLowerCase() : '';
-    if (!firstCell.includes('examid') && !firstCell.includes('assignment')) {
-      throw new Error('Invalid file format: First row must start with "ExamID" or "Assignment"');
-    }
-
-    // Check if second row contains Part and Question
-    if (
-      !secondRow[0] ||
-      !secondRow[1] ||
-      !secondRow[0].toString().toLowerCase().includes('part') ||
-      !secondRow[1].toString().toLowerCase().includes('question')
-    ) {
-      throw new Error('Invalid file format: Second row must contain "Part" and "Question"');
-    }
-
-    const results = [];
-    for (let col = 2; col < xlsx_data[0].length; col++) {
-      const raw_exam_id = xlsx_data[0][col];
-      const exam_id = raw_exam_id !== undefined && raw_exam_id !== null ? String(raw_exam_id).trim() : '';
-      if (!exam_id) break;
-
-      const result = { exam_id: exam_id };
-
-      let questionNumber = 1;
-      for (let row = 2; row < xlsx_data.length && questionNumber <= TOTAL_NUM_QUESTIONS; row++) {
-        const cell_raw = xlsx_data[row][col];
-        result[String(questionNumber)] = cell_raw !== undefined && cell_raw !== null ? String(cell_raw).trim() : '';
-        questionNumber++;
+  // Poll for completed results from the session endpoint
+  const pollSessionResults = async (sessionId) => {
+    try {
+      const response = await fetch(`http://localhost:8080/results/session/${sessionId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch session results: ${response.status}`);
       }
-      results.push(result);
-    }
 
-    if (results.length === 0) {
-      throw new Error('No valid exam data found. Please check the file format.');
-    }
+      const sessionData = await response.json();
+      console.log('Session results:', sessionData);
 
-    return results;
-  };
+      if (sessionData.data && sessionData.data.length > 0) {
+        const jobsWithCSVData = await Promise.all(
+          sessionData.data.map(async (result) => {
+            if (result.csv && result.status === 'completed') {
+              const csvData = await fetchCSVData(result.csv);
+              return {
+                ...result,
+                csvData: csvData,
+              };
+            }
+            return result;
+          }),
+        );
 
-  const handle_key_file_change = async (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      set_xlsx_file(file);
-      setGradingMessage(pdfFile ? `Exam file: ${pdfFile.name}, Key file: ${file.name}` : `Key file: ${file.name}`);
+        setCompletedJobs(jobsWithCSVData);
 
-      try {
-        if (!file.name.toLowerCase().endsWith('.xlsx')) {
-          throw new Error('Please upload an XLSX file.');
+        // Check if all jobs are completed
+        const allJobsCompleted = jobInfos.every((job) =>
+          jobsWithCSVData.some((result) => result.jobId === job.jobId && result.status === 'completed'),
+        );
+
+        if (allJobsCompleted && jobsWithCSVData.length === jobInfos.length) {
+          setIsPolling(false);
+          setGradingMessage('All grading tasks completed successfully!');
         }
-
-        // Parse XLSX to 2D array
-        const arrayBuffer = await file.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const xlsxData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-        // Convert to your JSON format
-        const simpleJson = create_json_from_array(xlsxData);
-        console.log('Parsed answer key JSON:', simpleJson);
-
-        set_valid_files(true);
-        localStorage.setItem('examarkAnswerKey', JSON.stringify(simpleJson));
-        localStorage.setItem('examarkAnswerKeyFileName', file.name);
-      } catch (error) {
-        setGradingMessage(`Error parsing key file: ${error.message}`);
-        console.error('Error parsing key file:', error);
       }
-    } else {
-      set_xlsx_file(null);
-      set_valid_files(false);
-      setGradingMessage(pdfFile ? `Exam file: ${pdfFile.name}` : '');
+    } catch (error) {
+      console.error('Error polling session results:', error);
+      setGradingMessage(`Error fetching results: ${error.message}`);
     }
   };
+
+  // Separate useEffect for polling
+  useEffect(() => {
+    if (sessionId && isPolling) {
+      pollingIntervalRef.current = setInterval(() => {
+        pollSessionResults(sessionId);
+      }, 10000);
+
+      return () => {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+        }
+      };
+    }
+  }, [sessionId, isPolling]);
+
+  // Separate useEffect to check if all jobs are completed
+  useEffect(() => {
+    if (jobInfos.length > 0 && completedJobs.length > 0) {
+      const allJobsCompleted = jobInfos.every((job) =>
+        completedJobs.some((result) => result.jobId === job.jobId && result.status === 'completed'),
+      );
+
+      if (allJobsCompleted && completedJobs.length === jobInfos.length) {
+        setIsPolling(false);
+        setGradingMessage('All grading tasks completed successfully!');
+      }
+    }
+  }, [jobInfos, completedJobs]);
 
   // Start grading process
-  const handle_grade_exam = async () => {
-    if (!pdfFile) {
-      setGradingMessage('Please upload the exam PDF file.');
+  const handleGradeExam = async () => {
+    if (!selectedUser) {
+      setGradingMessage('Please select a user.');
+      return;
+    }
+    const requiredTasks = selectedUser.taskCount;
+    if (pdfFiles.length < requiredTasks) {
+      setGradingMessage(`Not enough files uploaded. Required: ${requiredTasks}, uploaded: ${pdfFiles.length}`);
       return;
     }
 
-    if (!xlsx_file) {
-      setGradingMessage('Please ensure at least one .xlsx file exists in the answer-keys folder.');
-      return;
-    }
+    setGradingMessage(`Starting grading for ${pdfFiles.length} file(s)...`);
 
-    setGradingMessage(`Uploading and initiating grading for PDF: ${pdfFile.name} with auto-loaded answer key...`);
-    setIsGrading(true);
-    setIsGradingComplete(false);
-    set_csv_data(null);
-    setImages([]);
-    setShowNavigationOptions(false);
-    setProgress({
-      stage: 'initializing',
-      step: 'Starting upload...',
-      currentPage: 0,
-      totalPages: 0,
-      progressPercent: 0.0,
+    const formData = new FormData();
+    pdfFiles.forEach((file) => {
+      formData.append('pdfFiles', file);
     });
 
-    try {
-      // Get the parsed answer key JSON from localStorage
-      const answerKeyJson = JSON.parse(localStorage.getItem('examarkAnswerKey') || '[]');
-      if (answerKeyJson.length === 0) {
-        throw new Error('Failed to parse answer key file');
-      }
-
-      const formData = new FormData();
-      formData.append('pdfFile', pdfFile);
-      const jsonBlob = new Blob([JSON.stringify(answerKeyJson)], {
-        type: 'application/json',
+    const qrInfo = {};
+    if (selectedUser.qrCodes && selectedUser.qrCodes.length > 0) {
+      selectedUser.qrCodes.forEach((qr, idx) => {
+        qrInfo[`qr${idx + 1}`] = qr;
       });
-      formData.append('answerKey', jsonBlob, 'answer_key.json');
+    }
+    formData.append('qr-info', JSON.stringify(qrInfo));
 
+    try {
       const response = await fetch('http://localhost:8080/extract', {
         method: 'POST',
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status} - ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      const newJobId = result.jobId;
-      setJobId(newJobId);
-      localStorage.setItem('examarkAnswerKeyJobId', newJobId);
-      setGradingMessage(`Grading job started with ID: ${newJobId}. Processing...`);
-
-      // Start polling for status immediately and more frequently
-      if (statusCheckInterval.current) {
-        clearInterval(statusCheckInterval.current);
-      }
-
-      // Check immediately
-      checkGradingStatus(newJobId);
-
-      // Then check every 2 seconds for better responsiveness
-      statusCheckInterval.current = setInterval(() => {
-        checkGradingStatus(newJobId);
-      }, 2000);
-    } catch (error) {
-      console.error('Error sending grading request:', error);
-      setGradingMessage('An error occurred while communicating with the server. Please try again.');
-      setIsGrading(false);
-      setProgress({
-        stage: 'error',
-        step: 'Failed to start grading',
-        currentPage: 0,
-        totalPages: 0,
-        progressPercent: 0.0,
-      });
-    }
-  };
-
-  // Check the status of grading
-  const checkGradingStatus = async (id) => {
-    try {
-      const response = await fetch(`http://localhost:8080/status/${id}`);
+      const resultJson = await response.json();
+      console.log('Extract API response:', resultJson);
 
       if (!response.ok) {
-        throw new Error(`Status check failed: ${response.status}`);
+        // Handle error response
+        if (resultJson.invalid_files) {
+          setValidationError({
+            message: resultJson.message || 'QR code validation failed',
+            invalidFiles: resultJson.invalid_files,
+          });
+        } else {
+          setGradingMessage(`Error: ${resultJson.error || 'Unknown error occurred'}`);
+        }
+        return;
       }
 
-      const statusData = await response.json();
-
-      // Update progress state
-      setProgress({
-        stage: statusData.currentStage || '',
-        step: statusData.currentStep || '',
-        currentPage: statusData.currentPage || 0,
-        totalPages: statusData.totalPages || 0,
-        progressPercent: statusData.progress || 0.0,
-      });
-
-      // Update grading message with current progress
-      let progressMessage = statusData.currentStep || 'Processing...';
-      if (statusData.totalPages > 0) {
-        progressMessage += ` (${statusData.currentPage}/${statusData.totalPages})`;
+      const serverSessionId = resultJson.metadata?.sessionId;
+      if (!serverSessionId) {
+        setGradingMessage('Error: No session ID returned from server');
+        return;
       }
-      if (statusData.progress > 0) {
-        progressMessage += ` - ${Math.round(statusData.progress)}%`;
-      }
-      setGradingMessage(progressMessage);
 
-      if (statusData.status === 'completed') {
-        clearInterval(statusCheckInterval.current);
-        setGradingMessage('Grading completed! Fetching results...');
-        setIsGradingComplete(true);
-
-        // Fetch results
-        fetchResults(id);
-      } else if (statusData.status === 'error') {
-        clearInterval(statusCheckInterval.current);
-        setGradingMessage(`Error: ${statusData.error || 'Grading failed'}`);
-        setIsGrading(false);
-        setProgress({
-          stage: 'error',
-          step: statusData.error || 'Grading failed',
-          currentPage: 0,
-          totalPages: 0,
-          progressPercent: 0.0,
-        });
-      }
-    } catch (error) {
-      console.error('Error checking status:', error);
-      setGradingMessage(`Error checking grading status: ${error.message}`);
-      setIsGrading(false);
-      setProgress({
-        stage: 'error',
-        step: 'Failed to check status',
+      const initialJobs = resultJson.data.map((job) => ({
+        ...job,
+        jobId: job.jobId,
+        progress: 0,
+        status: 'processing',
+        currentStep: 'Initializing...',
         currentPage: 0,
         totalPages: 0,
-        progressPercent: 0.0,
-      });
-    }
-  };
-
-  // [MinIO] Fetch results once grading is complete
-  const fetchResults = async (id) => {
-    try {
-      // Fetch CSV data from MinIO via backend
-      const csvResponse = await fetch(`http://localhost:8080/results/${id}/csv`);
-      if (!csvResponse.ok) {
-        throw new Error(`Failed to fetch CSV: ${csvResponse.status}`);
-      }
-
-      const csvText = await csvResponse.text();
-      set_csv_data(csvText);
-
-      // Fetch image list from MinIO via backend - returns MinIO URLs
-      const imagesResponse = await fetch(`http://localhost:8080/results/${id}/images`);
-      if (!imagesResponse.ok) {
-        throw new Error(`Failed to fetch image list: ${imagesResponse.status}`);
-      }
-
-      const imagesData = await imagesResponse.json();
-
-      // Images now come with MinIO URLs directly
-      const imageUrls = imagesData.images.map((img) => ({
-        name: img.name,
-        url: img.url, // Direct MinIO URL
       }));
 
-      setImages(imageUrls);
+      console.log('Setting up jobs:', initialJobs);
+      setJobInfos(initialJobs);
+      setSessionId(serverSessionId);
+      setIsPolling(true);
+      setGradingMessage('Grading tasks launched. Listening for progress updates...');
 
-      // Clear any previous edits
-      localStorage.removeItem('examarkEdits');
-
-      // Save results to localStorage for other pages
-      localStorage.setItem('examarkJobId', id);
-      localStorage.setItem('examarkCsvData', csvText);
-      localStorage.setItem('examarkImages', JSON.stringify(imageUrls));
-
-      // Save QR info if available
-      if (imagesData.qrInfo) {
-        localStorage.setItem('examarkQrInfo', imagesData.qrInfo);
-      }
-
-      setGradingMessage('Grading request completed successfully!');
-      setIsGrading(false);
-      setShowNavigationOptions(true);
-      setProgress({
-        stage: 'completed',
-        step: 'All done!',
-        currentPage: 0,
-        totalPages: 0,
-        progressPercent: 100.0,
+      // Subscribe to each job's progress updates with a slight delay between each
+      initialJobs.forEach((job, index) => {
+        // Add a small delay between each subscription to avoid overwhelming the server
+        setTimeout(() => {
+          console.log(`Subscribing to job ${job.jobId} progress updates`);
+          subscribeJobProgress(job.jobId);
+        }, index * 200);
       });
     } catch (error) {
-      console.error('Error fetching results:', error);
-      setGradingMessage(`Error fetching results: ${error.message}`);
-      setIsGrading(false);
-      setProgress({
-        stage: 'error',
-        step: 'Failed to fetch results',
-        currentPage: 0,
-        totalPages: 0,
-        progressPercent: 0.0,
-      });
+      console.error('Error during grading process:', error);
+      setGradingMessage(`Error grading exams: ${error.message}`);
     }
   };
 
-  // Navigation handlers
-  const navigateToResults = () => {
-    navigate('/results?refresh=' + new Date().getTime());
-  };
+  // Save completed jobs to localStorage when ready
+  React.useEffect(() => {
+    if (completedJobs.length > 0) {
+      const examData = {
+        metadata: {
+          totalPDFs: completedJobs.length,
+          timestamp: new Date().toISOString(),
+        },
+        data: completedJobs,
+      };
+      localStorage.setItem('examData', JSON.stringify(examData));
+    }
+  }, [completedJobs]);
 
-  const navigateToSheet = () => {
-    navigate('/sheet?refresh=' + new Date().getTime());
-  };
+  // Cleanup polling on component unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
 
-  // Progress bar component
-  const ProgressBar = () => {
-    if (!isGrading && !isGradingComplete) return null;
+  // Progress bar component for individual jobs
+  const JobProgressBar = ({ job }) => {
+    const progress = typeof job.progress === 'number' ? job.progress : 0;
+    const status = job.status || 'processing';
+    const currentStep = job.currentStep || 'Initializing...';
+
+    console.log('JobProgressBar props:', { progress, status, currentStep, job });
 
     return (
-      <div className="progress-container">
-        <div className="progress-info">
-          <div className="progress-stage">
-            <strong>Stage:</strong> {progress.stage.replace('_', ' ').toUpperCase()}
-          </div>
-          <div className="progress-step">{progress.step}</div>
-          {progress.totalPages > 0 && (
+      <div className="job-progress-container">
+        <div className="job-progress-header">
+          <strong>{job.pdf}</strong>
+          <span className={`status-badge ${status}`}>{status}</span>
+        </div>
+
+        <div className="job-progress-info">
+          <div className="progress-step">{currentStep}</div>
+          {job.currentStage && (
+            <div className="progress-stage">Stage: {job.currentStage.replace('_', ' ').toUpperCase()}</div>
+          )}
+          {job.totalPages > 0 && (
             <div className="progress-pages">
-              Page {progress.currentPage} of {progress.totalPages}
+              Page {job.currentPage || 0} of {job.totalPages}
             </div>
           )}
         </div>
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{
-              width: `${Math.max(0, Math.min(100, progress.progressPercent))}%`,
-            }}
-          ></div>
+
+        <div className="progress-bar-container">
+          <div className="progress-bar">
+            <div
+              className={`progress-fill ${status}`}
+              style={{
+                width: `${Math.max(0, Math.min(100, progress))}%`,
+                transition: 'width 0.3s ease-in-out',
+              }}
+            />
+          </div>
+          <div className="progress-percentage">{Math.round(progress)}%</div>
         </div>
-        <div className="progress-percentage">{Math.round(progress.progressPercent)}%</div>
+
+        {job.errorMessage && (
+          <div className="error-message">
+            <i className="fas fa-exclamation-triangle"></i>
+            {job.errorMessage}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Component to display QR validation errors
+  const QRValidationError = ({ message, invalidFiles }) => {
+    return (
+      <div className="qr-validation-error">
+        <div className="error-header">
+          <i className="fas fa-exclamation-triangle"></i>
+          <h4>{message}</h4>
+        </div>
+        <div className="invalid-files-list">
+          <h5>Invalid Files:</h5>
+          <ul>
+            {invalidFiles.map((file, idx) => (
+              <li key={idx} className="invalid-file-item">
+                <strong>{file.filename}</strong>
+                <span className="error-reason">{file.error}</span>
+                {file.qr_code && <span className="qr-code">QR Code: {file.qr_code}</span>}
+              </li>
+            ))}
+          </ul>
+          <div className="error-help">
+            <p>Please make sure to upload files with QR codes that match the selected user's assigned classes.</p>
+            <ul>
+              {selectedUser && selectedUser.qrCodes && selectedUser.qrCodes.length > 0 && (
+                <li>
+                  <strong>Allowed QR codes for {selectedUser.name}:</strong>
+                  <ul>
+                    {selectedUser.qrCodes.map((qr, idx) => (
+                      <li key={idx}>{qr}</li>
+                    ))}
+                  </ul>
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
       </div>
     );
   };
@@ -650,166 +476,218 @@ function GradeExamPage() {
           <p>Upload your exam files to begin automated grading</p>
         </div>
         <div className="grade-header-right">
+          <Link to="/" className="back-link-header">
+            <button className="btn btn-secondary btn-medium">Back to Main Page</button>
+          </Link>
           <img src={FamiLogo} alt="Fami Logo" className="grade-header-fami-logo" />
         </div>
       </header>
 
       <div className="exam-container">
         <div className="exam-content">
-          {!showNavigationOptions ? (
-            <>
-              <p>Upload the exam papers (PDF) to begin grading.</p>
-
-              <div className="file-upload-section">
-                <div className="file-upload-area">
-                  <button
-                    type="button"
-                    onClick={() => pdfInputRef.current && pdfInputRef.current.click()}
-                    className="btn btn-primary btn-large"
-                    disabled={isGrading}
-                  >
-                    <i className="fas fa-file-pdf"></i> Upload Exam PDF
-                  </button>
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    onChange={handlePdfFileChange}
-                    ref={pdfInputRef}
-                    style={{ display: 'none' }}
-                    id="pdf-upload"
-                    disabled={isGrading}
-                  />
-                  {pdfFile && <span className="file-name">PDF: {pdfFile.name}</span>}
-                </div>
-
-                {/* Answer key upload section is now hidden - auto-loaded from answer-keys folder */}
-                <div className="file-upload-area" style={{ display: 'none' }}>
-                  <button
-                    type="button"
-                    onClick={() => xlsx_input_ref.current && xlsx_input_ref.current.click()}
-                    className="btn btn-info btn-large"
-                    disabled={isGrading}
-                  >
-                    <i className="fas fa-file-xlsx"></i> Upload Answer XLSX
-                  </button>
-                  <input
-                    type="file"
-                    accept=".xlsx"
-                    onChange={handle_key_file_change}
-                    ref={xlsx_input_ref}
-                    style={{ display: 'none' }}
-                    id="xlsx-upload"
-                    disabled={isGrading}
-                  />
-                  {xlsx_file && <span className="file-name">CSV: {xlsx_file.name}</span>}
-                </div>
-              </div>
-
-              <button
-                onClick={handle_grade_exam}
-                className="btn btn-success btn-xl"
-                disabled={!valid_files || isGrading}
-              >
-                {isGrading ? 'Grading in progress...' : 'Start Grading'}
-              </button>
-
-              <ProgressBar />
-
-              {gradingMessage && <p className="grading-message">{gradingMessage}</p>}
-
-              {/* CSV Helper Section - hidden when grading is in progress */}
-              {!isGrading && !isGradingComplete && (
-                <div className="csv-helper-section">
-                  <div className="helper-info">
-                    <h3>
-                      <i className="fas fa-question-circle"></i> Answer Key Setup
-                    </h3>
-                    <p>Place any .xlsx answer key file in the answer-keys folder to enable automatic loading.</p>
-                    <button type="button" onClick={download_sample_xlsx} className="btn btn-outline btn-medium">
-                      <i className="fas fa-download"></i> Download Sample Key
-                    </button>
+          {jobInfos.length === 0 ? (
+            <div className="two-column-layout">
+              {/* Left Column - Task Assignment */}
+              <div className="left-column">
+                <div className="task-assignment-section">
+                  <h3>Task Assignment</h3>
+                  <div className="task-upload">
                     <button
                       type="button"
-                      onClick={create_sample_in_folder}
-                      className="btn btn-outline btn-medium"
-                      style={{ marginLeft: '10px' }}
+                      onClick={() => xlsxInputRef.current && xlsxInputRef.current.click()}
+                      className="btn btn-primary btn-medium"
                     >
-                      <i className="fas fa-plus"></i> Create Sample in Folder
+                      <i className="fas fa-file-excel"></i> Upload Task XLSX
                     </button>
+                    <input
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={handleXlsxUpload}
+                      ref={xlsxInputRef}
+                      style={{ display: 'none' }}
+                    />
                   </div>
-                  <div className="csv-format-info">
-                    <h4>Key File Format Guidelines:</h4>
-                    <ul>
-                      <li>
-                        <strong>Header Row:</strong> Contains ExamID and exam ids (101, 102, etc.)
-                      </li>
-                      <li>
-                        <strong>Part Column:</strong> Indicates the section number (1, 2, etc.)
-                      </li>
-                      <li>
-                        <strong>Question Column:</strong> Question number within each part
-                      </li>
-                      <li>
-                        <strong>Key Columns:</strong> Correct answers for each exam version
-                      </li>
-                      <li>
-                        <strong>Multiple Choice:</strong> Use single letters (A, B, C, D)
-                      </li>
-                      <li>
-                        <strong>Multiple Selection:</strong> Use combinations (AB, ACD, BCDE)
-                      </li>
-                    </ul>
-                  </div>
+
+                  {users.length > 0 && (
+                    <div className="user-selection">
+                      <label htmlFor="user-select">Select Grader:</label>
+                      <select
+                        id="user-select"
+                        onChange={handleUserSelect}
+                        value={selectedUser ? selectedUser.name : ''}
+                        className="user-select-dropdown"
+                      >
+                        <option value="" disabled>
+                          -- Select User --
+                        </option>
+                        {users.map((user) => (
+                          <option key={user.name} value={user.name}>
+                            {user.name} ({user.fileCount} files required)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {selectedUser && (
+                    <div className="user-tasks-info">
+                      <h4>{selectedUser.name}</h4>
+                      <p>
+                        <strong>Required PDF files:</strong> {selectedUser.fileCount}
+                      </p>
+                      <p className="upload-status">
+                        <strong>Current status:</strong> {pdfFiles.length} of {selectedUser.fileCount} files uploaded
+                        {pdfFiles.length >= selectedUser.fileCount ? (
+                          <span className="status-complete"> ✓ Complete</span>
+                        ) : (
+                          <span className="status-incomplete"> ⚠️ Incomplete</span>
+                        )}
+                      </p>
+                      {selectedUser.qrCodes && selectedUser.qrCodes.length > 0 && (
+                        <div className="user-qr-codes">
+                          <p>
+                            <strong>Classes to grade:</strong>
+                          </p>
+                          <ul className="qr-list">
+                            {selectedUser.qrCodes.map((qr, idx) => (
+                              <li key={idx}>{qr}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
-            </>
-          ) : (
-            <div className="navigation-options">
-              <h3>Grading Complete!</h3>
-              <p>Your results have been processed successfully. Where would you like to view them?</p>
-
-              <div className="navigation-buttons">
-                <button onClick={navigateToResults} className="nav-button results-button">
-                  <i className="fas fa-list-alt"></i>
-                  View Grading Results
-                  <span className="description">Detailed view of each page with answers</span>
-                </button>
-
-                <button onClick={navigateToSheet} className="nav-button sheet-button">
-                  <i className="fas fa-table"></i>
-                  View Grading Sheet
-                  <span className="description">Edit all exam results in spreadsheet format</span>
-                </button>
               </div>
 
-              <button
-                className="btn btn-secondary btn-medium"
-                onClick={() => {
-                  setIsGradingComplete(false);
-                  setIsGrading(false);
-                  set_csv_data(null);
-                  setImages([]);
-                  setPdfFile(null);
-                  set_xlsx_file(null);
-                  setShowNavigationOptions(false);
-                  setGradingMessage('');
-                  setProgress({
-                    stage: '',
-                    step: '',
-                    currentPage: 0,
-                    totalPages: 0,
-                    progressPercent: 0.0,
-                  });
-                }}
-              >
-                Grade Another Exam
-              </button>
+              {/* Right Column - PDF Upload */}
+              <div className="right-column">
+                <div className="file-upload-section">
+                  <h3>Upload Exam PDFs</h3>
+                  <p>Upload the exam papers (PDF) to begin grading.</p>
+                  <div className="file-upload-area">
+                    <button
+                      type="button"
+                      onClick={() => pdfInputRef.current && pdfInputRef.current.click()}
+                      className="btn btn-primary btn-large"
+                    >
+                      <i className="fas fa-file-pdf"></i> Upload Exam PDF(s)
+                    </button>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      multiple
+                      onChange={handlePdfFileChange}
+                      ref={pdfInputRef}
+                      style={{ display: 'none' }}
+                    />
+                    {/* Display selected files with remove option */}
+                    {pdfFiles.length > 0 && (
+                      <div className="selected-files">
+                        <div className="files-header">
+                          <span className="file-count">Selected {pdfFiles.length} PDF(s):</span>
+                          <button type="button" onClick={clearAllFiles} className="btn btn-danger btn-small">
+                            Clear All
+                          </button>
+                        </div>
+                        <ul className="file-list">
+                          {pdfFiles.map((file, index) => (
+                            <li key={index} className="file-item">
+                              <span className="file-name">{file.name}</span>
+                              <button
+                                type="button"
+                                onClick={() => removeFile(index)}
+                                className="btn btn-danger btn-tiny"
+                              >
+                                ×
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="results-section">
+              <h3>Grading Progress</h3>
+              {sessionId && (
+                <p>
+                  <strong>Session ID:</strong> {sessionId}
+                </p>
+              )}
+
+              {jobInfos.length > 0 && (
+                <div className="jobs-section">
+                  <h3>Job Progress</h3>
+                  {jobInfos.map((job) => (
+                    <JobProgressBar key={job.jobId} job={job} />
+                  ))}
+                </div>
+              )}
+
+              {/* Overall progress summary */}
+              <div className="overall-progress">
+                <p>
+                  <strong>Overall Progress:</strong> {completedJobs.length} of {jobInfos.length} jobs completed
+                </p>
+                {isPolling && (
+                  <p>
+                    <em>Polling for results every 10 seconds...</em>
+                  </p>
+                )}
+              </div>
+
+              {completedJobs.length > 0 && (
+                <div className="completed-results">
+                  <h3>Completed Grading - View Results</h3>
+                  <ul>
+                    {completedJobs.map((result, idx) => (
+                      <li key={idx} className="completed-job">
+                        <div className="job-result-info">
+                          <Link to={`/sheet?jobId=${encodeURIComponent(result.pdf)}`}>
+                            {result.pdf} - View Grading Sheet
+                          </Link>
+                          {result.csvData ? (
+                            <span className="csv-status success">✓ CSV Data Loaded</span>
+                          ) : result.csv ? (
+                            <span className="csv-status loading">⏳ Loading CSV...</span>
+                          ) : (
+                            <span className="csv-status error">⚠ No CSV Available</span>
+                          )}
+                        </div>
+                        {result.csvData && (
+                          <details className="csv-preview">
+                            <summary>Preview CSV Data</summary>
+                            <pre className="csv-content">
+                              {result.csvData.split('\n').slice(0, 10).join('\n')}
+                              {result.csvData.split('\n').length > 10 && '\n... (showing first 10 lines)'}
+                            </pre>
+                          </details>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
+          {/* Common elements that should appear below both columns */}
+          <div className="bottom-section">
+            {/* Add validation error display here */}
+            {validationError && (
+              <QRValidationError message={validationError.message} invalidFiles={validationError.invalidFiles} />
+            )}
 
-          <Link to="/">
-            <button className="btn btn-secondary btn-medium">Back to Main Page</button>
-          </Link>
+            {/* Display regular status messages */}
+            {gradingMessage && <p className="grading-message">{gradingMessage}</p>}
+
+            <button onClick={handleGradeExam} className="btn btn-success btn-xl" disabled={pdfFiles.length === 0}>
+              Start Grading
+            </button>
+          </div>
         </div>
       </div>
     </div>

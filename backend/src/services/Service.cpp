@@ -43,8 +43,38 @@ std::string generateCSVString(const std::vector<std::vector<std::string>> &resul
   return csvStream.str();
 }
 
-bool examark::services::extract_all_exams_answers(const std::string &pdfFileName, const std::string &pdfData,
-                                                  TritonClient *tritonClient, const std::string &jobId) {
+std::string examark::services::get_pdf_qr_code(const std::string &pdfData) {
+  try {
+    ImageProcessor imgProc;
+    std::vector<cv::Mat> images;
+
+    auto progressCallback = [](int currentPage, int totalPages, double percent) {};
+
+    if (!imgProc.renderImages(pdfData.c_str(), pdfData.size(), images, progressCallback, 300.0, 1)) {
+      Logger::error("SERVICE", "Failed to render first page of PDF");
+      return "";
+    }
+    if (images.empty()) {
+      Logger::error("SERVICE", "No images rendered from PDF");
+      return "";
+    }
+
+    std::string qr_info;
+    if (!imgProc.get_qr_code_info(images[0], qr_info)) {
+      Logger::error("SERVICE", "No QR code found in the first page");
+      return "";
+    }
+
+    std::replace(qr_info.begin(), qr_info.end(), ' ', '-');
+    return qr_info;
+  } catch (const std::exception &e) {
+    Logger::error("SERVICE", "Error extracting QR code: " + std::string(e.what()));
+    return "";
+  }
+}
+
+std::string examark::services::extract_all_exams_answers(const std::string &pdfFileName, const std::string &pdfData,
+                                                         TritonClient *tritonClient, const std::string &jobId) {
   try {
     /* ============================================= */
     /* ===== Stage 1: Rendering images (0-9%) ===== */
@@ -70,7 +100,10 @@ bool examark::services::extract_all_exams_answers(const std::string &pdfFileName
       utils::updateJobProgress(jobId, "rendering_images", "Error: Failed to convert PDF", 0, 0, 0.0, true,
                                "Failed to convert PDF to images");
       Logger::error("SERVICE", "Failed to convert PDF to images");
-      return false;
+      nlohmann::json error_response;
+      error_response["status"] = "error";
+      error_response["message"] = "Failed to convert PDF to images";
+      return error_response.dump();
     }
 
     utils::updateJobProgress(jobId, "rendering_images",
@@ -118,7 +151,7 @@ bool examark::services::extract_all_exams_answers(const std::string &pdfFileName
     /* ===== Stage 3: Preprocess and upload images to MinIO (10-90%) ===== */
     /* =================================================================== */
     std::vector<cv::Mat> exam_images;
-    std::vector<std::string> exam_image_names;
+    nlohmann::json images_map = nlohmann::json::object();
 
     utils::updateJobProgress(jobId, "processing_images", "Preprocessing and uploading images to storage...", 0,
                              images.size(), 10.0, false, "");
@@ -129,18 +162,17 @@ bool examark::services::extract_all_exams_answers(const std::string &pdfFileName
     for (int i = first_exam_image_idx; i < total_images; ++i) {
       cv::Mat exam_image = imgProc.preprocessImage(images[i]);
 
-      std::string imageBasename = "page_" + std::to_string(i + 1);
-      std::string minioObjectName = qr_info + "/" + imageBasename + ".jpg";
+      std::string page_key = "page_" + std::to_string(i + 1);
+      std::string minioObjectName = qr_info + "/" + page_key + ".jpg";
 
       if (!minioClient.uploadImage(minioObjectName, exam_image)) {
         utils::updateJobProgress(
             jobId, "processing_images", "Failed to process image " + std::to_string(i - first_exam_image_idx + 1),
             i - first_exam_image_idx + 1, total_exam_images, 0.0, true, "Failed to upload image to storage");
-        return false;
       }
 
       exam_images.emplace_back(exam_image);
-      exam_image_names.emplace_back(minioObjectName);
+      images_map[page_key] = minioClient.getFileUrl(minioObjectName);
 
       double uploadProgress = 10.0 + (double(i - first_exam_image_idx + 1) / total_exam_images) * 80.0;
       utils::updateJobProgress(jobId, "processing_images",
@@ -209,17 +241,32 @@ bool examark::services::extract_all_exams_answers(const std::string &pdfFileName
       utils::updateJobProgress(jobId, "saving_results", "Error: Failed to upload results to storage", 0, 0, 0.0, true,
                                "Failed to upload CSV to storage");
       Logger::error("SERVICE", "Failed to upload CSV to MinIO.");
-      return false;
+      nlohmann::json error_response;
+      error_response["status"] = "error";
+      error_response["message"] = "Failed to upload CSV to storage";
+      return error_response.dump();
     }
     Logger::info("SERVICE", "Results uploaded to MinIO at " + csvObjectName + " (QR: " + qr_info + ")");
 
     utils::updateJobProgress(jobId, "completed", "All processing completed successfully", total_exam_images,
                              total_exam_images, 100.0, false, "");
-    return true;
+
+    nlohmann::json success_response;
+    success_response["pdf"] = pdfFileName;
+    success_response["class"] = qr_info;
+    success_response["csv"] = minioClient.getFileUrl(csvObjectName);
+    success_response["images"] = images_map;
+    success_response["status"] = "completed";
+
+    return success_response.dump();
+
   } catch (const std::exception &e) {
     utils::updateJobProgress(jobId, "error", "Extracting answers failed: " + std::string(e.what()), 0, 0, 0.0, true,
                              e.what());
     Logger::error("SERVICE", "Extracting answers failed: " + std::string(e.what()));
-    return false;
+    nlohmann::json error_response;
+    error_response["status"] = "error";
+    error_response["message"] = "Extracting answers failed: " + std::string(e.what());
+    return error_response.dump();
   }
 }

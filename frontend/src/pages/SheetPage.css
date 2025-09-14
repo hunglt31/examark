@@ -641,3 +641,116 @@
   color: #666;
   font-style: italic;
 }
+
+/* PDF Selector as header replacement */
+.pdf-selector-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.pdf-selector-header label {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.pdf-selector-header label::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  transition: width 0.3s ease;
+}
+
+.pdf-selector-header:hover label::after {
+  width: 100%;
+}
+
+.pdf-selector-header label:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.pdf-selector-header select {
+  padding: 8px 12px;
+  border: 2px solid #3498db;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  color: #2c3e50;
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 220px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+}
+
+.pdf-selector-header select:hover {
+  border-color: #2980b9;
+  background: linear-gradient(135deg, #f8f9fa, #ffffff);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.pdf-selector-header select:focus {
+  outline: none;
+  border-color: #2980b9;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2), 0 4px 12px rgba(52, 152, 219, 0.3);
+  transform: translateY(-1px);
+}
+
+.pdf-selector-header select option {
+  padding: 10px 12px;
+  background: #ffffff;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.pdf-selector-header select option:hover {
+  background: linear-gradient(135deg, #ecf0f1, #bdc3c7);
+}
+
+/* Animation for when the selector appears */
+.pdf-selector-header {
+  animation: slideInFromLeft 0.5s ease-out;
+}
+
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Pulsing effect for the label */
+.pdf-selector-header label {
+  animation: subtlePulse 2s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}

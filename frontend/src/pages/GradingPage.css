@@ -55,6 +55,55 @@
   margin-left: 15px;
 }
 
+/* Two-column layout */
+.two-column-layout {
+  display: flex;
+  gap: 30px;
+  margin-bottom: 20px;
+}
+
+.left-column, .right-column {
+  flex: 1;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.left-column {
+  max-width: 40%;
+}
+
+.right-column {
+  max-width: 60%;
+}
+
+/* Bottom section */
+.bottom-section {
+  width: 100%;
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.btn-success.btn-xl {
+  padding: 12px 50px;
+  font-size: 1.2rem;
+  margin-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .two-column-layout {
+    flex-direction: column;
+  }
+  
+  .left-column, .right-column {
+    max-width: 100%;
+  }
+}
+
 /* Updated ExamPage to match ResultsPage layout */
 .ExamPage {
   height: 100vh;
@@ -250,31 +299,70 @@
   transform: translateY(-1px);
 }
 
-/* Progress Bar Styling */
-.progress-container {
-  width: 100%;
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #f8f9fa;
+/* Job Progress Section Styles */
+.jobs-progress-section {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.job-progress-container {
+  border: 1px solid #ddd;
   border-radius: 8px;
-  border: 1px solid #dee2e6;
+  padding: 15px;
+  background: #f9f9f9;
 }
 
-.progress-info {
-  margin-bottom: 15px;
+.job-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-.progress-stage {
-  font-size: 16px;
-  color: #007bff;
-  margin-bottom: 5px;
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-badge.queued {
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+.status-badge.processing {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.completed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.job-progress-info {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #666;
 }
 
 .progress-step {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 5px;
+  font-style: italic;
+  margin-bottom: 4px;
+}
+
+.progress-stage {
+  font-size: 12px;
+  color: #888;
 }
 
 .progress-pages {
@@ -282,27 +370,76 @@
   color: #888;
 }
 
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .progress-bar {
-  width: 100%;
+  flex: 1;
   height: 20px;
   background-color: #e9ecef;
   border-radius: 10px;
   overflow: hidden;
-  margin: 10px 0;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #007bff 0%, #28a745 100%);
   transition: width 0.3s ease;
   border-radius: 10px;
 }
 
+.progress-fill.queued {
+  background-color: #6c757d;
+}
+
+.progress-fill.processing {
+  background-color: #ffc107;
+}
+
+.progress-fill.completed {
+  background-color: #28a745;
+}
+
+.progress-fill.error {
+  background-color: #dc3545;
+}
+
 .progress-percentage {
-  text-align: center;
   font-weight: bold;
-  color: #495057;
-  margin-top: 5px;
+  min-width: 50px;
+  text-align: right;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 8px;
+  padding: 8px;
+  background-color: #f8d7da;
+  border-radius: 4px;
+  border: 1px solid #f5c6cb;
+}
+
+.error-message i {
+  margin-right: 6px;
+}
+
+.overall-progress {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #e7f3ff;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.completed-results {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #d4edda;
+  border-radius: 8px;
+  border-left: 4px solid #28a745;
 }
 
 /* CSV Helper Section Styles */
@@ -409,4 +546,290 @@
   min-width: 120px;
   flex-shrink: 0;
   margin-right: 10px;
+}
+
+/* Add to your GradingPage.css */
+.selected-files {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.files-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.file-count {
+  font-weight: bold;
+}
+
+.file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-name {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.btn-tiny {
+  padding: 2px 6px;
+  font-size: 12px;
+  min-width: 20px;
+}
+
+.btn-small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* Completed Job Results Section */
+.completed-job {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background: #f8f9fa;
+}
+
+.job-result-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.csv-status {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.csv-status.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.csv-status.loading {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.csv-status.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.csv-preview {
+  margin-top: 8px;
+}
+
+.csv-preview summary {
+  cursor: pointer;
+  font-size: 14px;
+  color: #007bff;
+}
+
+.csv-content {
+  margin-top: 8px;
+  padding: 10px;
+  background: #f1f1f1;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* For the task assignment section */
+.task-assignment-section {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.task-assignment-section h3 {
+  margin-top: 0;
+  color: #333;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.task-upload {
+  margin-bottom: 15px;
+}
+
+.user-selection {
+  margin: 15px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-selection label {
+  font-weight: bold;
+  color: #444;
+}
+
+.user-select-dropdown {
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  width: 100%;
+  max-width: 400px;
+  background-color: white;
+}
+
+.user-tasks-info {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+}
+
+.user-tasks-info h4 {
+  margin-top: 0;
+  color: #2c3e50;
+}
+
+.user-classes {
+  margin-top: 10px;
+}
+
+.class-list {
+  list-style-type: disc;
+  margin: 10px 0 0 20px;
+  padding-left: 0;
+}
+
+.class-list li {
+  margin-bottom: 5px;
+}
+
+/* Message bar styles */
+.message-bar {
+  background-color: #f1f8ff;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 20px 0;
+  border-left: 4px solid #3498db;
+  text-align: center;
+}
+
+.grading-message {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.user-qr-codes {
+  margin-top: 12px;
+}
+
+.qr-list {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.qr-list li {
+  background-color: #e9f7fe;
+  border: 1px solid #b3e0ff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+
+/* QR Code Validation Error Styles */
+.qr-validation-error {
+  background-color: #fff8f8;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 16px;
+  margin: 16px 0;
+  color: #721c24;
+}
+
+.qr-validation-error .error-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.qr-validation-error .error-header i {
+  font-size: 24px;
+  margin-right: 12px;
+  color: #dc3545;
+}
+
+.qr-validation-error h4 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.invalid-files-list {
+  background-color: #f9f9f9;
+  padding: 12px;
+  border-radius: 4px;
+}
+
+.invalid-file-item {
+  margin-bottom: 8px;
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.invalid-file-item .error-reason {
+  display: block;
+  color: #dc3545;
+  margin: 4px 0;
+}
+
+.invalid-file-item .qr-code {
+  display: block;
+  font-family: monospace;
+  background-color: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 2px;
+  margin-top: 4px;
+}
+
+.error-help {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed #ddd;
+}
+
+.error-help p {
+  font-style: italic;
 }

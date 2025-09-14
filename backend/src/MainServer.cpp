@@ -39,6 +39,7 @@ int main() {
 
   Logger::info("SERVER", "Starting Examark Server...");
   httplib::Server examarkServer;
+  controller::registerSSEEndpoint(examarkServer);
   controller::registerExtractRoute(examarkServer, g_tritonClient.get());
 
   Logger::success("SERVER", "Server listening on port 8080...");
